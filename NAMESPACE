@@ -1,0 +1,5 @@
+export(RDS.I.estimates,
+           RDS.I.DS.estimates,
+           RDS.II.estimates)
+           
+           
