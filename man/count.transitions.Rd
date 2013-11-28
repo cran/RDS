@@ -1,0 +1,22 @@
+\name{count.transitions}
+\alias{count.transitions}
+\title{Counts the number or recruiter->recruitee transitions between different levels
+of the grouping variable.}
+\usage{
+  count.transitions(rds.data, group.variable)
+}
+\arguments{
+  \item{rds.data}{An rds.data.frame}
+
+  \item{group.variable}{The name of a categorical variable
+  in rds.data}
+}
+\description{
+  Counts the number or recruiter->recruitee transitions
+  between different levels of the grouping variable.
+}
+\examples{
+data(faux)
+count.transitions(faux,"X")
+}
+

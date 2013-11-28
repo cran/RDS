@@ -1,0 +1,24 @@
+\name{rds.I.weights}
+\alias{rds.I.weights}
+\title{RDS-I weights}
+\usage{
+  rds.I.weights(rds.data, outcome.variable, N = NULL,
+    smoothed = FALSE, ...)
+}
+\arguments{
+  \item{rds.data}{An rds.data.frame}
+
+  \item{outcome.variable}{The variable used to base the
+  weights on.}
+
+  \item{N}{Population size}
+
+  \item{smoothed}{Should the data smoothed RDS-I weights be
+  computed.}
+
+  \item{...}{Unused}
+}
+\description{
+  RDS-I weights
+}
+

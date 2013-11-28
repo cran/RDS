@@ -1,0 +1,20 @@
+\name{get.seed.id}
+\alias{get.seed.id}
+\title{Calculates the root seed id for each node of the recruitement tree.}
+\usage{
+  get.seed.id(data)
+}
+\arguments{
+  \item{data}{An rds.data.frame}
+}
+\description{
+  Calculates the root seed id for each node of the
+  recruitement tree.
+}
+\examples{
+data(fauxmadrona)
+seeds <- get.seed.id(fauxmadrona)
+#number recruited by each seed
+barplot(table(seeds))
+}
+

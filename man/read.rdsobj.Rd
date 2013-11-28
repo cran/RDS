@@ -1,0 +1,18 @@
+\name{read.rdsobj}
+\alias{read.rdsobj}
+\title{Import data saved using write.rdsobj}
+\usage{
+  read.rdsobj(file)
+}
+\arguments{
+  \item{file}{the name of the file which the data are to be
+  read from.  If it does not contain an _absolute_ path,
+  the file name is _relative_ to the current working
+  directory, 'getwd()'.  Tilde-expansion is performed where
+  supported.  As from R 2.10.0 this can be a compressed
+  file (see 'file')}
+}
+\description{
+  Import data saved using write.rdsobj
+}
+

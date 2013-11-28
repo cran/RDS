@@ -1,0 +1,21 @@
+\name{get.h.hat}
+\alias{get.h.hat}
+\title{Get Horvitz-Thompson estimator assuming inclusion probability proportional
+to the inverse of newtwork.var (i.e. degree).}
+\usage{
+  get.h.hat(rds.data, group.variable,
+    network.var = attr(rds.data, "network.size"))
+}
+\arguments{
+  \item{rds.data}{An rds.data.from}
+
+  \item{group.variable}{The grouping variable.}
+
+  \item{network.var}{The network.size variable.}
+}
+\description{
+  Get Horvitz-Thompson estimator assuming inclusion
+  probability proportional to the inverse of newtwork.var
+  (i.e. degree).
+}
+

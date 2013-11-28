@@ -1,0 +1,16 @@
+\name{get.population.size}
+\alias{get.population.size}
+\title{Returns the population size assosiated with the data.}
+\usage{
+  get.population.size(x, check.type = TRUE)
+}
+\arguments{
+  \item{x}{the rds.data.frame}
+
+  \item{check.type}{if true, x is required to be of type
+  rds.data.frame}
+}
+\description{
+  Returns the population size assosiated with the data.
+}
+

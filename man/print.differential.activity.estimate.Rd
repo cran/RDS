@@ -1,0 +1,15 @@
+\name{print.differential.activity.estimate}
+\alias{print.differential.activity.estimate}
+\title{Prints an differential.activity.estimate object}
+\usage{
+  \method{print}{differential.activity.estimate} (x, ...)
+}
+\arguments{
+  \item{x}{an differential.activity.estimate object}
+
+  \item{...}{unused}
+}
+\description{
+  Prints an differential.activity.estimate object
+}
+

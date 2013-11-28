@@ -1,0 +1,55 @@
+\name{reingold.tilford.plot}
+\alias{reingold.tilford.plot}
+\title{Plots the recruitment network uing the reingold tilford algorithm.}
+\usage{
+  reingold.tilford.plot(x, vertex.color = NULL,
+    vertex.color.scale = hue_pal(), vertex.size = 2,
+    vertex.size.range = c(1, 5), edge.arrow.size = 0,
+    vertex.label.cex = 0.2, vertex.frame.color = NA,
+    vertex.label = get.id(x), show.legend = TRUE, ...)
+}
+\arguments{
+  \item{x}{An rds.data.frame}
+
+  \item{vertex.color}{The name of the categorical variable
+  in x to color the points with.}
+
+  \item{vertex.color.scale}{The scale to create the color
+  pallette.}
+
+  \item{vertex.size}{The size of the vertex points. either
+  a number or the name of a column of x.}
+
+  \item{vertex.size.range}{If vertex.size represents a
+  variable, vertex.size.range is a vector of length 2
+  representing the minimum and maximum cex for the points.}
+
+  \item{edge.arrow.size}{The size of the arrow from
+  recruiter to recruitee.}
+
+  \item{vertex.label}{The name of a variable to use as
+  vertex labels. NA implies no labels.}
+
+  \item{vertex.label.cex}{The size expansion factor for the
+  vertex.labels.}
+
+  \item{vertex.frame.color}{the color of the outside of the
+  vertex.points.}
+
+  \item{show.legend}{If true and either vertex.color or
+  vertex.size represent variables, legends will be
+  displayed at the bottom of the plot.}
+
+  \item{...}{Additional parameters passed to plot.igraph.}
+}
+\description{
+  Plots the recruitment network uing the reingold tilford
+  algorithm.
+}
+\examples{
+data(fauxmadrona)
+data(faux)
+reingold.tilford.plot(faux)
+reingold.tilford.plot(fauxmadrona,vertex.color="disease")
+}
+

@@ -1,45 +1,90 @@
 \name{RDS.I.estimates}
 \alias{RDS.I.estimates}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{Compute RDS-I Estimates}
-\description{
-This function computes the basic RDS-I estimates for a categorical variable.
-}
 \usage{
-RDS.I.estimates(rds.data, group.variable, network.variable)
+  RDS.I.estimates(rds.data, outcome.variable, N = NULL,
+    subset = NULL, smoothed = FALSE, empir.lik = TRUE)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{rds.data}{A data frame.  This data frame must identify recruitment patters by a pair of fields named ``recruitment.id'' and ``recruiter.id''.}
-  \item{group.variable}{A categorical variable to be analyzed.}
-  \item{network.variable}{A string giving the name of the variable in the \code{rds.data} that contains the network sizes of 
-    survey respondents.}
+  \item{rds.data}{An \code{rds.data.frame} that indicates
+  recruitment patterns by a pair of attributes named ``id''
+  and ``recruiter.id''.}
+
+  \item{outcome.variable}{A string giving the name of the
+  variable in the \code{rds.data} that contains a
+  categorical variable to be analyzed.}
+
+  \item{subset}{An expression defining a subset of
+  rds.data.}
+
+  \item{smoothed}{Logical, if TRUE then the ``data
+  smoothed'' version of RDS-I is used, where it is assumed
+  that the observed Markov process is reversible.}
+
+  \item{empir.lik}{Should confidence intervals be estimated
+  using empirical likelihood.}
+
+  \item{N}{Population size to be used to calculate the
+  empirical likelihood interval. If NULL, this value is
+  taken to be the population.size.mid attribute of the data
+  and if that is not set, no finite population correction
+  is used.}
 }
-\details{}
-\value{A vector of proportion estimates.}
-\references{
-Gile, K. J., Handcock, M. S., 2009b. \emph{Respondent-driven sampling: An assessment 
-of current methodology}. Under review, Nuffield College, University of Oxford.
+\value{
+  If the \code{empir.lik} is true, an object of class
+  \code{rds.interval.estimate} is returned. This is a list
+  with components \itemize{ \item\code{estimate}: The
+  numerical point estimate of proportion of the
+  \code{trait.variable}.  \item\code{interval}: A matrix
+  with six columns and one row per category of
+  \code{trait.variable}: \itemize{ \item\code{point
+  estimate}: The HT estimate of the population mean.
+  \item\code{95\% Lower Bound}: Lower 95\% confidence
+  bound.  \item\code{95\% Upper Bound}: Upper 95\%
+  confidence bound.  \item\code{Design Effect}: The design
+  effect of the RDS.  \item\code{s.e.}: Standard error.
+  \item\code{n}: Count of the number of sample values with
+  that value of the trait.  } }
 
-Neely, W. W., 2009. \emph{Bayesian methods for data from respondent driven sampling}. Dissertation in-progress, Department of Statistics, University of Wisconsin, Madison.
-
-Salganik, M., Heckathorn, D. D., 2004. \emph{Sampling and estimation in hidden populations using respondent-driven sampling}. Sociological Methodology 34, 193-239.
-
-Volz, E., Heckathorn, D., 2008. \emph{Probability based estimation theory for Respondent Driven Sampling}. The Journal of Official Statistics 24 (1), 79-97.
+  Otherwise an object of class \code{rds.I.estimate} object
+  is returned.
 }
-\author{W. Whipple Neely}
-\note{This is an initial version of the software.  A more developed version of the package will be released during Summer of 2009.}
-\seealso{
-\itemize{
-   \item{RDS.I.DS.estimates}{\code{\link{RDS.I.DS.estimates}}}
-   \item{RDS.II.estimates}{\code{\link{RDS.II.estimates}}}
-   }
+\description{
+  This function computes the RDS-I type estimates for a
+  categorical variable. It is also referred to as the
+  Salganik-Heckathorn estimator.
 }
 \examples{
-data(simulated)
-RDS.I.estimates(rds.data=simulated.data,group.variable='X',network.variable='network.size')
+data(faux)
+RDS.I.estimates(rds.data=faux,outcome.variable='X')
+RDS.I.estimates(rds.data=faux,outcome.variable='X',smoothed=TRUE)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{survey}
+\author{
+  Mark S. Handcock and W. Whipple Neely
+}
+\references{
+  Gile, Krista J., Handcock, Mark S., 2010,
+  \emph{Respondent-driven Sampling: An Assessment of
+  Current Methodology}. Sociological Methodology 40,
+  285-327.
+
+  Neely, W. W., 2009. \emph{Bayesian methods for data from
+  respondent driven sampling}. Dissertation in-progress,
+  Department of Statistics, University of Wisconsin,
+  Madison.
+
+  Salganik, M., Heckathorn, D. D., 2004. \emph{Sampling and
+  estimation in hidden populations using respondent-driven
+  sampling}. Sociological Methodology 34, 193-239.
+
+  Volz, E., Heckathorn, D., 2008. \emph{Probability based
+  estimation theory for Respondent Driven Sampling}. The
+  Journal of Official Statistics 24 (1), 79-97.
+}
+\seealso{
+  \code{\link{RDS.II.estimates}},
+  \code{\link{RDS.SS.estimates}}
+}
 \keyword{manip}
+\keyword{survey}
+

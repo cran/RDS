@@ -1,0 +1,35 @@
+\name{bottleneck.plot}
+\alias{bottleneck.plot}
+\title{Bottleneck Plot}
+\usage{
+  bottleneck.plot(rds.data, outcome.variable,
+    est.func = RDS.II.estimates, as.factor = FALSE, ...)
+}
+\arguments{
+  \item{rds.data}{An rds.data.frame.}
+
+  \item{outcome.variable}{A character vector of outcome
+  variables.}
+
+  \item{est.func}{A function taking rds.data and
+  outcome.variable as parameters and returning an
+  rds.weighted.estimate object.}
+
+  \item{...}{additional parameters for est.func.}
+
+  \item{as.factor}{Convert all outcome variables to
+  factors}
+}
+\description{
+  Bottleneck Plot
+}
+\examples{
+data(fauxmadrona)
+bottleneck.plot(fauxmadrona,"disease")
+}
+\references{
+  Krista J. Gile, Lisa G. Johnston, Matthew J. Salganik
+  \emph{Diagnostics for Respondent-driven Sampling} eprint
+  arXiv:1209.6254, 2012
+}
+

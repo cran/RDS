@@ -1,0 +1,31 @@
+#cat("'RDS Analyst' is a suite of packages for the statistical modeling of network data.\n")
+#cat('Please read the license using license.statnet()\n')
+
+citHeader("If you are using 'RDS' for research that will be published, we request that you acknowledge this with the following citation:")
+
+  desc <- packageDescription("RDS")
+
+# auts <- eval(parse(text=desc$`Authors@R`))
+# auts <- auts[sapply(auts, function(aut) "aut" %in% aut$role)]
+
+bibentry("Manual",
+         title = paste(desc$Package,": ", desc$Title, sep=""),
+         author = personList(as.person("Mark S. Handcock"),
+                             as.person("Ian E. Fellows"),
+                             as.person("Krista J. Gile")),
+         year         = substr(desc$Date,1,4),
+         note         = paste("R package version ", desc$Version, sep=""),
+         address      = "Los Angeles, CA",
+         url          = "http://CRAN.R-project.org/package=RDS",
+         
+         textVersion = 
+         paste("Mark S. Handcock, Ian E. Fellows, Krista J. Gile (2012) ", 
+               paste(desc$Package,": ", desc$Title, sep=""),
+               ", Version ", desc$Version, ". Project home page at http://hpmrg.org",
+               ",", " URL http://CRAN.R-project.org/package=RDS.",
+               sep="")
+         )
+
+citFooter("We have invested a lot of time and effort in creating the",
+          "'RDS' package for use by other researchers.",
+          "Please cite it in all papers where it is used.")

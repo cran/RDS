@@ -1,0 +1,25 @@
+\docType{methods}
+\name{[<-.rds.data.frame}
+\alias{[<-,rds.data.frame-method}
+\alias{[<-.rds.data.frame}
+\title{indexing}
+\usage{
+  \method{[}{rds.data.frame} (x, i, j) <- value
+}
+\arguments{
+  \item{x}{object}
+
+  \item{i}{indices}
+
+  \item{j}{indices}
+
+  \item{value}{value}
+}
+\description{
+  indexing
+}
+\details{
+  Indexed assignment. If the result is not a valid
+  rds.data.frame, an error is emitted.
+}
+

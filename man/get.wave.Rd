@@ -1,0 +1,22 @@
+\name{get.wave}
+\alias{get.wave}
+\title{Calculates the depth of the recruitment tree (i.e. the recruitment wave)
+at each node.}
+\usage{
+  get.wave(data)
+}
+\arguments{
+  \item{data}{An rds.data.frame}
+}
+\description{
+  Calculates the depth of the recruitment tree (i.e. the
+  recruitment wave) at each node.
+}
+\examples{
+data(fauxmadrona)
+#number subjects in each wave
+w <- get.wave(fauxmadrona)
+#number recruited in each wave
+barplot(table(w))
+}
+

@@ -1,0 +1,16 @@
+\name{vh.weights}
+\alias{vh.weights}
+\title{Volz-Heckathorn (RDS-II) weights}
+\usage{
+  vh.weights(degs, N = NULL)
+}
+\arguments{
+  \item{degs}{The degrees (i.e. network sizes) of the
+  sample units.}
+
+  \item{N}{Population size}
+}
+\description{
+  Volz-Heckathorn (RDS-II) weights
+}
+

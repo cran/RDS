@@ -1,0 +1,20 @@
+\name{get.id}
+\alias{get.id}
+\title{Get the subject id}
+\usage{
+  get.id(x, check.type = TRUE)
+}
+\arguments{
+  \item{x}{an rds.data.frame object}
+
+  \item{check.type}{if true, x is required to be of type
+  rds.data.frame}
+}
+\description{
+  Get the subject id
+}
+\details{
+  returns the variable indicated by the 'id' attribute,
+  coersing to a character vector
+}
+
