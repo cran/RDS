@@ -1,0 +1,19 @@
+\name{assert.valid.rds.data.frame}
+\alias{assert.valid.rds.data.frame}
+\title{Does various checks and throws errors if x is not a valid rds.data.frame}
+\usage{
+  assert.valid.rds.data.frame(x, ...)
+}
+\arguments{
+  \item{x}{an rds.data.frame}
+
+  \item{...}{unsued}
+}
+\description{
+  Does various checks and throws errors if x is not a valid
+  rds.data.frame
+}
+\details{
+  Throws an informative message if x is malformed.
+}
+

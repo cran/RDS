@@ -1,0 +1,20 @@
+\name{get.seed.rid}
+\alias{get.seed.rid}
+\title{Gets the recruiter id assosiated with the seeds}
+\usage{
+  get.seed.rid(x, check.type = TRUE)
+}
+\arguments{
+  \item{x}{an rds.data.frame object}
+
+  \item{check.type}{if true, x is required to be of type
+  rds.data.frame}
+}
+\description{
+  Gets the recruiter id assosiated with the seeds
+}
+\details{
+  All seed nodes must have the same placeholder recruiter
+  id.
+}
+

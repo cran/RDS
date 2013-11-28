@@ -1,0 +1,35 @@
+\name{rid.from.coupons}
+\alias{rid.from.coupons}
+\title{Determines the recruiter.id from recruitment coupon information}
+\usage{
+  rid.from.coupons(data, subject.coupon = NULL,
+    coupon.variables, subject.id = NULL, seed.id = "seed")
+}
+\arguments{
+  \item{data}{a data.frame}
+
+  \item{subject.coupon}{The variable representing the
+  coupon returned by subject}
+
+  \item{coupon.variables}{The variable representing the
+  coupon ids given to the subject}
+
+  \item{subject.id}{The variable representing the subject's
+  id}
+
+  \item{seed.id}{The recruiter.id to assign to seed
+  subjects.}
+}
+\description{
+  Determines the recruiter.id from recruitment coupon
+  information
+}
+\examples{
+fpath <- system.file("extdata", "nyjazz.csv", package="RDS")
+dat <- read.csv(fpath)
+dat$recruiter.id <- rid.from.coupons(dat,"own.coupon",paste0("coupon.",1:7),"id")
+
+#create and rds.data.frame
+rds <- as.rds.data.frame(dat,network.size="network.size")
+}
+

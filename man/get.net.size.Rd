@@ -1,0 +1,17 @@
+\name{get.net.size}
+\alias{get.net.size}
+\title{Returns the network size of each subject (i.e. their degree).}
+\usage{
+  get.net.size(x, check.type = TRUE)
+}
+\arguments{
+  \item{x}{the rds.data.frame}
+
+  \item{check.type}{if true, x is required to be of type
+  rds.data.frame}
+}
+\description{
+  Returns the network size of each subject (i.e. their
+  degree).
+}
+

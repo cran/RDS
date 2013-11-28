@@ -1,0 +1,49 @@
+\docType{data}
+\name{fauxsycamore}
+\alias{fauxsycamore}
+\alias{fauxsycamore.network}
+\title{A Simulated RDS Data Set with extreme seed dependency}
+\format{An rds.data.frame plus the original network as a network object}
+\description{
+  This is a faux set used to demonstrate RDS functions and
+  analysis.  The population had N=715 nodes.  In this case,
+  the sample size is 500 so that there is a relatively
+  large sample fraction (70\%). There is homophily on
+  disease status (R=5) and there is differential activity
+  by disease status whereby the infected nodes have mean
+  degree twice that of the uninfected (w=1.8).
+}
+\details{
+  In the sampling the seeds are chosen randomly from the
+  infected population, so there is extreme dependency
+  induced by seed selection.
+
+  Each sample member is given 2 uniquely identified coupons
+  to distribute to other members of the target population
+  in their acquaintance.  Further each respondent
+  distributes their coupons completely at random from among
+  those they are connected to.
+
+  With 70\% sample, the VH is substantially biased, so the
+  SS (and presumably MA) do much better.  We expect the MA
+  to perform a bit better than the SS.
+
+  It is network 702 and its sample from YesYes on mosix.
+  Look for "extract702.R" \cr The original network is
+  included as \code{fauxsycamore.network} as a
+  \code{network} object.  \cr The data set also includes
+  the \code{data.frame} of the RDS data set as
+  \code{fauxsycamore}.  \cr Use \code{data(package="RDS")}
+  to get a full list of datasets.
+}
+\references{
+  Gile, Krista J., Handcock, Mark S., 2009.
+  \emph{Respondent-driven Sampling: An Assessment of
+  Current Methodology}, \emph{Sociological Methodology},
+  40, 285-327.
+}
+\seealso{
+  \code{\link{faux}}, \code{\link{fauxmadrona}}
+}
+\keyword{datasets}
+

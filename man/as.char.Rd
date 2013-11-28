@@ -1,0 +1,16 @@
+\name{as.char}
+\alias{as.char}
+\title{converts to character with minimal loss of precision for numeric variables}
+\usage{
+  as.char(x, ...)
+}
+\arguments{
+  \item{x}{the value}
+
+  \item{...}{passed to either format or as.character.}
+}
+\description{
+  converts to character with minimal loss of precision for
+  numeric variables
+}
+

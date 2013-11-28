@@ -1,0 +1,41 @@
+\name{differential.activity.estimates}
+\alias{differential.activity.estimates}
+\title{Differential Activity between groups}
+\usage{
+  differential.activity.estimates(rds.data,
+    outcome.variable, weight.type = "Gile's SS", N = NULL,
+    subset = NULL, ...)
+}
+\arguments{
+  \item{rds.data}{An rds.data.frame object}
+
+  \item{outcome.variable}{A character string of column
+  names representing categorical variables.}
+
+  \item{weight.type}{A string giving the type of estimator
+  to use. The options are \code{"Gile's SS"},
+  \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, and
+  \code{"Arithemic Mean"}. It defaults to \code{"Gile's
+  SS"}.}
+
+  \item{N}{The population size.}
+
+  \item{subset}{An expression defining a subset of
+  rds.data.}
+
+  \item{...}{Additional parameters passed to
+  compute.weights.}
+}
+\description{
+  Differential Activity between groups
+}
+\details{
+  This function estimates the ratio of the average degree
+  of one population group divided by the average degree of those in
+  another population group.
+}
+\examples{
+data(faux)
+differential.activity.estimates(faux,"X",weight.type="RDS-II")
+}
+

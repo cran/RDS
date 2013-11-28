@@ -1,9 +1,11 @@
-\name{RDS.II.estimates}
-\alias{RDS.II.estimates}
-\title{RDS-II Estimates}
+\name{RDS.SS.estimates}
+\alias{RDS.SS.estimates}
+\title{Gile's SS Estimates}
 \usage{
-  RDS.II.estimates(rds.data, outcome.variable, N = NULL,
-    subset = NULL, empir.lik = TRUE)
+  RDS.SS.estimates(rds.data, outcome.variable, N = NULL,
+    subset = NULL, number.ss.samples.per.iteration = 500,
+    number.ss.iterations = 5, hajek = TRUE,
+    empir.lik = TRUE)
 }
 \arguments{
   \item{rds.data}{An \code{rds.data.frame} that indicates
@@ -14,9 +16,11 @@
   variable in the \code{rds.data} that contains a
   categorical or numeric variable to be analyzed.}
 
-  \item{empir.lik}{If true, and outcome.variable is
-  numeric, standard errors based on empirical likelihood
-  will be given.}
+  \item{N}{An estimate of the number of members of the
+  population being sampled. If \code{NULL} it is read as
+  the \code{population.size.mid} attribute of the
+  \code{rds.data} frame. If that is missing it defaults to
+  1000.}
 
   \item{subset}{An optional criterion to subset
   \code{rds.data} by. It is a character string giving an R
@@ -27,14 +31,27 @@
   means include it in the analysis. If \code{NULL} then no
   subsetting is done.}
 
-  \item{N}{Population size to be used to calculate the
-  empirical likelihood interval. If NULL, this value is
-  taken to be the population.size.mid attribute of the data
-  and if that is not set, no finite population correction
-  is used.}
+  \item{number.ss.samples.per.iteration}{The number of
+  samples to take in estimating the inclusion probabilites
+  in each iteration of the sequential sampling algorithm.
+  If \code{NULL} it is read as the
+  \code{number.ss.samples.per.iteration} attribute of
+  \code{rds.data}. If that is missing it defaults to 5000.}
+
+  \item{number.ss.iterations}{The number of iterations of
+  the sequential sampling algorithm. If that is missing it
+  defaults to 5.}
+
+  \item{hajek}{logical; Use the standard Hajek-type
+  estimator of Gile (2011) or the standard
+  Hortitz-Thompson. The default is TRUE.}
+
+  \item{empir.lik}{If true, and outcome.variable is
+  numeric, standard errors based on empirical likelihood
+  will be given.}
 }
 \value{
-  If \code{outcome.variable} is numeric then the RDS-II
+  If \code{outcome.variable} is numeric then the Gile SS
   estimate of the mean is returned, otherwise a vector of
   proportion estimates is returned. If the \code{empir.lik}
   is true, an object of class \code{rds.interval.estimate}
@@ -51,27 +68,34 @@
   error.  \item\code{n}: Count of the number of sample
   values with that value of the trait.  } }
 
-  Otherwise, an object of class \code{rds.II.estimate} is
+  Otherwise, an object of class \code{rds.SS.estimate} is
   returned.
 }
 \description{
-  This function computes the RDS-II estimates for a
-  categorical variable or the RDS-II estimate for a numeric
-  variable.
+  This function computes the sequential sampling (SS)
+  estimates for a categorical variable or numeric variable.
 }
 \examples{
-data(faux)
-RDS.II.estimates(rds.data=faux,outcome.variable='X')
-RDS.II.estimates(rds.data=faux,outcome.variable='X',subset= Y!="blue")
+data(fauxmadrona)
+RDS.SS.estimates(rds.data=fauxmadrona,outcome.variable="disease",N=1000)
 }
 \author{
-  Mark S. Handcock and W. Whipple Neely
+  Krista J. Gile with help from Mark S. Handcock
 }
 \references{
-  Gile, Krista J., Handcock, Mark S., 2010,
+  Gile, Krista J. 2011 \emph{Improved Inference for
+  Respondent-Driven Sampling Data with Application to HIV
+  Prevalence Estimation}, \emph{Journal of the American
+  Statistical Association}, 106, 135-146.
+
+  Gile, Krista J., Handcock, Mark S., 2010
   \emph{Respondent-driven Sampling: An Assessment of
-  Current Methodology}. Sociological Methodology 40,
-  285-327.
+  Current Methodology}, \emph{Sociological Methodology},
+  40, 285-327.
+
+  Gile, Krista J., Handcock, Mark S., 2011 \emph{Network
+  Model-Assisted Inference from Respondent-Driven Sampling
+  Data}, \emph{ArXiv Preprint}.
 
   Salganik, M., Heckathorn, D. D., 2004. \emph{Sampling and
   estimation in hidden populations using respondent-driven
@@ -83,7 +107,7 @@ RDS.II.estimates(rds.data=faux,outcome.variable='X',subset= Y!="blue")
 }
 \seealso{
   \code{\link{RDS.I.estimates}},
-  \code{\link{RDS.SS.estimates}}
+  \code{\link{RDS.II.estimates}}
 }
 \keyword{manip}
 \keyword{survey}

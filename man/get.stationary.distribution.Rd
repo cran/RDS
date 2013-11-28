@@ -1,0 +1,18 @@
+\name{get.stationary.distribution}
+\alias{get.stationary.distribution}
+\title{Markov chain statistionary distribution}
+\usage{
+  get.stationary.distribution(mle)
+}
+\arguments{
+  \item{mle}{The transition probabilities}
+}
+\value{
+  A vector of proportions representing the proportion in
+  each group at the stationary distribution of the Markov
+  chain.
+}
+\description{
+  Markov chain statistionary distribution
+}
+

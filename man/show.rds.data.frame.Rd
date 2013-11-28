@@ -1,0 +1,16 @@
+\name{show.rds.data.frame}
+\alias{show.rds.data.frame}
+\title{Displays an rds.data.frame}
+\usage{
+  show.rds.data.frame(x, ...)
+}
+\arguments{
+  \item{x}{an rds.data.frame object.}
+
+  \item{...}{additional parameters passed to
+  print.data.frame.}
+}
+\description{
+  Displays an rds.data.frame
+}
+

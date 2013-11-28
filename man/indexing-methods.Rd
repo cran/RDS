@@ -1,0 +1,37 @@
+\docType{methods}
+\name{[.rds.data.frame}
+\alias{[,rds.data.frame-method}
+\alias{[.rds.data.frame}
+\title{indexing}
+\usage{
+  \method{[}{rds.data.frame} (x, i, j, ..., drop,
+    warn = TRUE)
+}
+\arguments{
+  \item{x}{object}
+
+  \item{i}{indices}
+
+  \item{j}{indices}
+
+  \item{...}{unused}
+
+  \item{drop}{drop}
+
+  \item{warn}{Warn if any new seeds are created}
+}
+\description{
+  indexing
+}
+\details{
+  Subsetting of RDS recruitment trees does not always yield
+  a full RDS tree. In this case, subjects whose recruiter
+  is no longer in the dataset are considered seeds. is
+  issued if the 'warn' parameter is TRUE. dat <-
+  data.frame(id=c(1,2,3,4,5), recruiter.id=c(2,-1,2,-1,4),
+  network.size.variable=c(4,8,8,2,3)) r <-
+  as.rds.data.frame(dat) r[1:3,] # A valid pruning of the
+  RDS tree. r[c(1,5),warn=FALSE] # recruiter.id of last row
+  set to -1 (i.e. a seed) to maintain validity of tree
+}
+

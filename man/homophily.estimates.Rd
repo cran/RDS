@@ -1,0 +1,159 @@
+\name{homophily.estimates}
+\alias{homophily.estimates}
+\title{This function computes an estimate of the population homophily and the recruitment homophily based on
+a categorical variable.}
+\usage{
+  homophily.estimates(rds.data, outcome.variable,
+    weight.type = NULL, uncertainty = NULL,
+    recruitment = FALSE, N = NULL,
+    to.group0.variable = NULL, to.group1.variable = NULL,
+    number.ss.samples.per.iteration = NULL,
+    confidence.level = 0.95)
+}
+\arguments{
+  \item{rds.data}{An \code{rds.data.frame} that indicates
+  recruitment patterns by a pair of attributes named ``id''
+  and ``recruiter.id''.}
+
+  \item{outcome.variable}{A string giving the name of the
+  variable in the \code{rds.data} that contains a
+  categorical or numeric variable to be analyzed.}
+
+  \item{weight.type}{A string giving the type of estimator
+  to use. The options are \code{"Gile's SS"},
+  \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, and
+  \code{"Arithemic Mean"}. If \code{NULL} it defaults to
+  \code{"Gile's SS"}.}
+
+  \item{uncertainty}{A string giving the type of
+  uncertainty estimator to use. The options are
+  \code{"Gile's SS"} and \code{"Salganik"}. This is usually
+  determined by \code{weight.type} to be consistent with
+  the estimator's origins (e.g., for \code{"Gile's SS"},
+  \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, and
+  \code{"Arithemic Mean"}). Hence it's current
+  functionality is limited. If \code{NULL} it defaults to
+  \code{"Gile's SS"}.}
+
+  \item{recruitment}{A logical indicating if the homophily
+  in the recruitment chains should be computed also. The
+  default is FALSE.}
+
+  \item{N}{An estimate of the number of members of the
+  population being sampled. If \code{NULL} it is read as
+  the \code{population.size.mid} attribute of the
+  \code{rds.data} frame. If that is missing it defaults to
+  1000.}
+
+  \item{to.group0.variable}{The number in the network of
+  each survey respondent who have group variable value 0.
+  Usually this is not available. The default is to not use
+  this variable.}
+
+  \item{to.group1.variable}{The number in the network of
+  each survey respondent who have group variable value 1.
+  Usually this is not available. The default is to not use
+  this variable.}
+
+  \item{number.ss.samples.per.iteration}{The number of
+  samples to take in estimating the inclusion probabilites
+  in each iteration of the sequential sampling algorithm.
+  If \code{NULL} it is read as the
+  \code{number.ss.samples.per.iteration} attribute of
+  \code{rds.data}. If that is missing it defaults to 5000.}
+
+  \item{confidence.level}{The confidence level for the
+  confidence intervals. The default is 0.95 for 95\%.}
+}
+\value{
+  If \code{outcome.variable} is binary then the homophily
+  estimate of 0 verses 1 is returned, otherwise a vector of
+  differential homophily estimates is returned.
+}
+\description{
+  This function computes an estimate of the population
+  homophily and the recruitment homophily based on a
+  categorical variable.
+}
+\section{Recruitment Homophily}{
+  The recruitment homophily is a homophily measure for the
+  recruitment process. It addresses the question: Do
+  respondents differential recruit people like themselves?
+  That is, the homophily on a variable in the recruitment
+  chains. Take as an example infection status. In this
+  case, it is the ratio of number of recruits that have the
+  same infection status as their recruiter to the number we
+  would expect if there was no homophily on infection
+  status. The difference with the Population Homophily (see
+  below) is that this is in the recruitment chain rather
+  than the population of social ties. For example, of the
+  recruitment homophily on infection status is about 1, we
+  see little effect of recruitment homophily on infection
+  status (as the numbers of homophilous pairs are close to
+  what we would expect by chance).
+}
+
+\section{Population Homophily}{
+  This is an estimate the homophily of a given variable in
+  the underlying networked population. For example,
+  consider HIV status. The population homophily is the
+  homophily in the HIV status of two people who are tied in
+  the underlying population social network (a ``couple'').
+  Specifically, the population homophily is the ratio of
+  the expected number of HIV discordant couples absent
+  homophily to the expected number of HIV discordant
+  couples with the homophily. Hence larger values of
+  population homophily indicate more homophily on HIV
+  status. For example, a value of 1 means the couple are
+  random with respect to HIV status. A value of 2 means
+  there are twice as many HIV discordant couples as we
+  would expect if there was no homophily in the population.
+  This measure is meaningful across different levels of
+  differential activity. As we do not see most of the
+  population network, we estimate the population homophily
+  from the RDS data. As an example, suppose the population
+  homophily on HIV is 0.75 so there are 25\% more HIV
+  discordant couples than expected due to chance. So their
+  is actually heterophily on HIV in the population. If the
+  population homophily on sex is 1.1, there are 10\% more
+  same-sex couples than expected due to chance. Hence there
+  is modest homophily on sex.
+}
+\examples{
+data(fauxmadrona)
+names(fauxmadrona)
+#
+# True value:
+#
+if(require(network)){
+	a=as.sociomatrix(fauxmadrona.network)
+	deg <- apply(a,1,sum)
+	dis <- fauxmadrona.network \\\%v\\\% "disease"
+	deg1 <- apply(a[dis==1,],1,sum)
+	deg0 <- apply(a[dis==0,],1,sum)
+	# differential activity
+	mean(deg1)/ mean(deg0)
+	p=mean(dis)
+	N=1000
+	# True homophily
+	true.homophily <- p*(1-p)*mean(deg0)*mean(deg1)*N/(mean(deg)*sum(a[dis==1,dis==0]))
+}
+# HT based estimators using the to.group information
+data(fauxmadrona)
+homophily.estimates(fauxmadrona,outcome.variable="disease",
+  to.group0.variable="tonondiseased", to.group1.variable="todiseased",
+  N=1000)
+# HT based estimators not using the to.group information
+homophily.estimates(fauxmadrona,outcome.variable="disease",
+  N=1000,weight.type="RDS-II")
+}
+\author{
+  Mark S. Handcock with help from Krista J. Gile
+}
+\references{
+  Gile, Krista J., Handcock, Mark S., 2010,
+  \emph{Respondent-driven Sampling: An Assessment of
+  Current Methodology}. Sociological Methodology 40,
+  285-327.
+}
+

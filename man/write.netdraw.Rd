@@ -1,0 +1,24 @@
+\name{write.netdraw}
+\alias{write.netdraw}
+\title{Writes out the RDS tree in NetDraw format}
+\usage{
+  write.netdraw(x, file = NULL, by.seed = FALSE)
+}
+\arguments{
+  \item{x}{An rds.data.frame.}
+
+  \item{file}{a character vector representing a file.}
+
+  \item{by.seed}{If true, seperate files will be created
+  for each seed.}
+}
+\description{
+  Writes out the RDS tree in NetDraw format
+}
+\details{
+  If by.seed is false, two files are created using 'file'
+  as a base name. \code{paste0(file,".DL")} contains the
+  edge infomration, and \code{paste0(file,".vna")} contains
+  the nodal attribures.
+}
+
