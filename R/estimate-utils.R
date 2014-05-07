@@ -38,7 +38,7 @@ EL.se<-function(weights,outcome,N=NULL, use.second.order=TRUE){
 
 
 #' Get Horvitz-Thompson estimator assuming inclusion probability proportional
-#' to the inverse of newtwork.var (i.e. degree).
+#' to the inverse of network.var (i.e. degree).
 #' @param rds.data An rds.data.from
 #' @param group.variable The grouping variable.
 #' @param network.var The network.size variable.
@@ -109,6 +109,8 @@ count.transitions <- function(rds.data, group.variable)
 	id <- get.id(rds.data)
 	recruiter.id <- get.rid(rds.data)
 	grp <- as.factor(rds.data[[group.variable]])
+#       Make sure the factor labels are alphabetic!
+	grp=factor(grp,levels=levels(grp)[order(levels(grp))])
 	
 	#count transitions
 	ri <- match(recruiter.id,id)
@@ -129,7 +131,7 @@ count.transitions <- function(rds.data, group.variable)
 
 #' calculates the mle. ie.e the row proportions of the transition matrix
 #' @param transition.counts a matrix or table of transition counts
-#' @details depricated. just useprop.table(transition.counts,1)
+#' @details depreicated. just use prop.table(transition.counts,1)
 transition.counts.to.Markov.mle <- function(transition.counts){
 	#return(prop.table(tij,1))
 	tij <- transition.counts + .Machine$double.eps

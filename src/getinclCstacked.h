@@ -4,6 +4,9 @@
 void getinclCstacked (
             int *nbyclass,
             double *size, 
+            double *props2,
+            int *offby,
+            int *N, 
             int *K, 
             int *n, 
             int *samplesize,

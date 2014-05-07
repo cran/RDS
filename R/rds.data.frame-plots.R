@@ -25,7 +25,7 @@ plot.rds.data.frame <- function(x,
 		plot.type=c("Recruitment tree",
 				"Network size by wave",					
 				"Recruits by wave",
-				"Recruits per seed",
+				"Recruits per seed",					
 				"Recruits per subject"),
 		stratify.by=NULL,
 			...){
@@ -124,7 +124,10 @@ plot.rds.data.frame <- function(x,
 #' @param vertex.frame.color the color of the outside of the vertex.points.
 #' @param show.legend If true and either vertex.color or vertex.size represent variables, 
 #' legends will be displayed at the bottom of the plot.
+#' @param plot Logical, if TRUE then a plot is produced of recruitment tree.
+#' ratio statistic with the observed statistics plotted as a vertical dashed line.
 #' @param ... Additional parameters passed to plot.igraph.
+#' @return A two-column vector of the positions of the nodes in the recruitment tree.
 #' @export
 #' @examples 
 #' data(fauxmadrona)
@@ -141,6 +144,7 @@ reingold.tilford.plot <-function(x,
 		vertex.frame.color=NA, 
 		vertex.label = get.id(x),
 		show.legend=TRUE,
+		plot=TRUE,
 		...){	
 	x <- as.rds.data.frame(x)
 	
@@ -290,6 +294,7 @@ reingold.tilford.plot <-function(x,
 	# now plot it
 	###########
 	t <- do.call(rbind,xyl2)
+	if(plot){
 	igr <- igraph::graph.disjoint.union(grl)
 	nm <- do.call(c,lapply(grl,function(a)igraph::V(a)$name))
 	vcol <- do.call(c,lapply(grl,function(a)igraph::V(a)$color))
@@ -334,6 +339,8 @@ reingold.tilford.plot <-function(x,
 		s <- s/200
 		symbols(x=t$x-.075,y=t$y,circles=s,add=TRUE,inches=FALSE,bg="SkyBlue2")
 	}
+	}
+	invisible(t)
 }
 
 

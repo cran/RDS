@@ -10,12 +10,17 @@
 void getinclCstacked (
             int *nbyclass,
             double *size, 
+            double *props2,
+            int *offby,
+            int *N, 
             int *K, 
             int *n, 
             int *samplesize,
             int *Nk
 		 ) {
 	int i, ni, Ki, isamp, isamplesize;
+	int j, offbi, Ni;
+	double rU, temp;
 	// nbyclass = the number of members of class k=1,...,K
 	// size = the size (i.e., degree) of the kth class k=1,...,K
 	// K = number of classes (of degrees)
@@ -31,12 +36,75 @@ void getinclCstacked (
 	// ni = RDS sample size
 	// Ki = number of classes (of degrees)
 	// isamplesize = number of w.o.replacement samples to take
+	offbi=(*offby);
+	Ni=(*N);
 
 	int *perm = (int *) malloc(sizeof(int) * Ki);
 	int *tperm = (int *) malloc(sizeof(int) * Ki);
 	double *tsize = (double *) malloc(sizeof(double) * Ki);
 	int *tnbyclass = (int *) malloc(sizeof(int) * Ki);
+	int *snbyclass = (int *) malloc(sizeof(int) * Ki);
 	int *samp = (int *) malloc(sizeof(int) * ni);
+	double *dif = (double *) malloc(sizeof(double) * Ki);
+	double *cdif = (double *) malloc(sizeof(double) * Ki);
+
+	if(offbi>0){
+	  for (i=0; i<offbi; i++){
+	    dif[0]=props2[0]-nbyclass[0]/(1.0*Ni);
+	    cdif[0] = dif[0];
+	    if(dif[0]<0.0){dif[0] = 0.0;}
+	    for (j=1; j<Ki; j++){
+	      dif[j]=props2[j]-nbyclass[j]/(1.0*Ni);
+	      if(dif[j]<0.0){dif[j] = 0.0;}
+	      /* compute cumulative probabilities */
+	      cdif[j] = cdif[j-1] + dif[j];
+	    }
+	    rU = unif_rand()*cdif[Ki-1];
+	    for (j = 0; j < Ki; j++) {if (rU <= cdif[j]) break;}
+	    nbyclass[j]++;
+	  }
+	}
+
+	if(offbi<0){
+	  for (i=0; i<(-offbi); i++){
+	    dif[0]=nbyclass[0]/(1.0*Ni) - props2[0];
+	    if(dif[0]<0.0){dif[0] = 0.0;}
+	    if(nbyclass[0]==1){dif[0] = 0.0;}
+	    temp=dif[0];
+	    cdif[0] = dif[0];
+	    for (j=1; j<Ki; j++){
+	      dif[j]=nbyclass[j]/(1.0*Ni) - props2[j];
+	      if(dif[j]<0.0){dif[j] = 0.0;} if(nbyclass[j]==1){dif[j] = 0.0;}
+	      temp+=dif[j];
+	      /* compute cumulative probabilities */
+	      cdif[j] = cdif[j-1] + dif[j];
+	    }
+	    if(temp==0.0){
+	     dif[0]=1.0-(props2[0]-nbyclass[0]/(1.0*Ni));
+	     if(nbyclass[0]==1){dif[0] = 0.0;}
+	     cdif[0] = dif[0];
+	     for (j=1; j<Ki; j++){
+	      dif[j]=1.0-(props2[j]-nbyclass[j]/(1.0*Ni));
+	      if(nbyclass[j]==1){dif[j] = 0.0;}
+	      /* compute cumulative probabilities */
+	      cdif[j] = cdif[j-1] + dif[j];
+	     }
+	    }
+	    rU = unif_rand()*cdif[Ki-1];
+	    for (j = 0; j < Ki; j++) {if (rU <= cdif[j]) break;}
+	    nbyclass[j]--;
+	  }
+	}
+
+	temp=0.0;
+	for (i=0; i<Ki; i++){
+	  size[i]*=nbyclass[i];
+	  temp+=size[i];
+	}
+	for (i=0; i<Ki; i++){
+	  size[i]/=temp;
+	  snbyclass[i]=nbyclass[i];
+	}
 
 	for (i=0; i<Ki; i++){
 		Nk[i]=0;
@@ -74,6 +142,9 @@ void getinclCstacked (
 		}
 	}
 	PutRNGstate();  /* Disable RNG before returning */
+	for (i=0; i<Ki; i++){
+	  nbyclass[i]=snbyclass[i];
+	}
 	free(samp);
 	free(tsize);
 	free(tnbyclass);

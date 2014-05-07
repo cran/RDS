@@ -1,5 +1,5 @@
 ################################################################################
-# Class definition for "rds.wieghted.estimate".   This class will be returned as the
+# Class definition for "rds.weighted.estimate".   This class will be returned as the
 # result of computing RDS estimates with no confidence interval.    
 ################################################################################
 
@@ -9,7 +9,8 @@ setClass("rds.weighted.estimate",
 				outcome.variable="character",
 				mean.group.weights="numeric",
 				weight.type="character",
-				subset="logical"))
+				subset="logical",
+				csubset="character"))
 
 
 setMethod("initialize",
@@ -19,33 +20,38 @@ setMethod("initialize",
 				weights,
 				outcome.variable,
 				weight.type,
-				subset) {
+				subset,
+				csubset) {
 			
 			.Object@estimate <- estimate
 			.Object@weights <- weights
 			.Object@outcome.variable <- outcome.variable
 			.Object@weight.type <- weight.type
-			if(is.null(subset))
+			se <- substitute(subset)
+			if(is.null(se))
 				subset <- rep(TRUE,length(weights))
 			.Object@subset <- subset
+			.Object@csubset <- csubset
 			return(.Object)
 		})
 
 # A "friendly" constructor.  
 
 rds.weighted.estimate <- function(estimate, weights,
-		outcome.variable,weight.type,subset){
+		outcome.variable,weight.type,subset,csubset){
 	new("rds.weighted.estimate", estimate, weights,
-			outcome.variable,weight.type,subset)
+			outcome.variable,weight.type,subset,csubset)
 }
 
 
 setMethod("print",signature="rds.weighted.estimate",
 		definition=function(x){
-			cat(x@weight.type,"Estimate for",x@outcome.variable,"\n")
-			if(!is.null(attr(x@estimate,"se"))){
-				se <- attr(x@estimate,"se")
-				attr(x@estimate,"se") <- NULL
+			cat(x@weight.type,"Estimate for",x@outcome.variable,
+	switch(((x@csubset=="")|(x@csubset=="NULL"))+1,paste("[",x@csubset,"]",sep=""),NULL),
+			"\n")
+			if(!is.null(attr(x@estimate,"EL.se"))){
+				se <- attr(x@estimate,"EL.se")
+				attr(x@estimate,"EL.se") <- NULL
 				print(x@estimate)
 				if(se > 0){
 					cat("Estimated standard error","\n")
@@ -59,10 +65,12 @@ setMethod("print",signature="rds.weighted.estimate",
 
 setMethod("show",signature="rds.weighted.estimate",
 		definition=function(object){
-			cat(object@weight.type,"Estimate for",object@outcome.variable,"\n")
-			if(!is.null(attr(object@estimate,"se"))){
-				se <- attr(object@estimate,"se")
-				attr(object@estimate,"se") <- NULL
+			cat(object@weight.type,"Estimate for",object@outcome.variable,
+	switch(((object@csubset=="")|(object@csubset=="NULL"))+1,paste("[",object@csubset,"]",sep=""),NULL),
+				"\n")
+			if(!is.null(attr(object@estimate,"EL.se"))){
+				se <- attr(object@estimate,"EL.se")
+				attr(object@estimate,"EL.se") <- NULL
 				print(object@estimate)
 				if(se > 0){
 					cat("Estimated standard error","\n")

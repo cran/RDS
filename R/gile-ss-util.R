@@ -36,7 +36,7 @@ probtodist<-function(classes,nums,prob,n,hajek=TRUE){
 
 
 
-getestCstacked<-function(samp,n,nit=5, nsampsamp=1000, trace=FALSE, hajek=TRUE){
+getestCstacked<-function(samp,n,nit=5, nsampsamp=1000, trace=FALSE, hajek=TRUE,SS.infinity=0.04){
 	# samp: sample
 	# n: population size
 	classes<-sort(unique(samp))
@@ -51,7 +51,7 @@ getestCstacked<-function(samp,n,nit=5, nsampsamp=1000, trace=FALSE, hajek=TRUE){
 	temp<-probtodist(classes=classes,nums=nums,prob=prob,n=n,hajek=hajek)
 	#temp$classes: size value of each class 
 	#temp$props: proportion of the population in that class
-	if(n*0.04 < nsamp){
+	if(n*SS.infinity < nsamp){
 		newprobs<-getinclCstacked(classes=temp$classes,props=temp$props,n=n,
 				nsamp=nsamp,
 				nsampsamp=nsampsamp,
@@ -100,43 +100,23 @@ getinclCstacked<-function(classes,props,n,nsamp,nsampsamp,nums,hajek=TRUE){
 	nbyclass<-round(n*props2)
 	nbyclass[nbyclass==0]<-1
 	offby<-n-sum(nbyclass)
-	if(is.na(offby)){
-		print("Error in getincl: offby")
-	}
-	if(offby>0){
-		for(ii in 1:offby){
-			dif<-props2-nbyclass/n
-			dif[dif<0]<-0
-			tochange<-sample(1:length(dif),1,prob=dif)
-			nbyclass[tochange]<-nbyclass[tochange]+1
-		}
-	}else{
-		if(offby<0){
-			for(ii in 1:abs(offby)){		
-				dif<-nbyclass/n - props2
-				dif[dif<0]<-0
-				dif[nbyclass==1]<-0 #don't get rid of the last of any class
-				if(sum(dif==0)){
-					dif<-1-(props2-nbyclass/n)
-					dif[nbyclass==1]<-0
-				}	
-				tochange<-sample(1:length(dif),1,prob=dif)
-				nbyclass[tochange]<-nbyclass[tochange]-1
-			}
-		}
-	}
+        if(is.na(offby)){
+                print("Error in getincl: offby")
+        }
 	# based on estimate of degrees, estimate true inclusion probs by class
-	probclass <- classes*nbyclass/sum(classes*nbyclass)
 	Cret <- .C("getinclCstacked",
 			nbyclass=as.integer(nbyclass),
-			size=as.double(probclass),
+			size=as.double(classes),
+			props2=as.double(props2),
+			offby=as.integer(offby),
+			N=as.integer(n),
 			K=as.integer(length(classes)),
 			n=as.integer(nsamp),
 			samplesize=as.integer(nsampsamp),
 			Nk=as.integer(classes),
 			PACKAGE="RDS")
 	Ninf <- (Cret$Nk+nums)/(sum(Cret$Nk)+nsamp)
-	Ninf <- nsamp*Ninf/nbyclass
-	list(degvec=classes,pvec=Ninf,nbyclass=nbyclass)
+	Ninf <- nsamp*Ninf/Cret$nbyclass
+	list(degvec=classes,pvec=Ninf,nbyclass=Cret$nbyclass)
 }
 

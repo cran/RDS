@@ -1,6 +1,7 @@
 
 
 RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
+		control=control.rds.estimates(),
 		empir.lik=TRUE, weight.type, N=NULL, ...){
 	
 	if(is(rds.data,"rds.data.frame")){
@@ -16,8 +17,12 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 		stop("rds.data must be of type rds.data.frame")
 	}
 	
-	if(weight.type %in% c("RDS-I","RDS-I (DS)"))
-		rds.data[[outcome.variable]] <- factor(rds.data[[outcome.variable]])
+	if(weight.type %in% c("RDS-I","RDS-I (DS)")){
+		outcome <- factor(rds.data[[outcome.variable]])
+# 		Make sure the factor labels are alphabetic!
+		outcome=factor(outcome,levels=levels(outcome)[order(levels(outcome))])
+		rds.data[[outcome.variable]] <- outcome
+	}
 	
 	
 	if(is.null(N)){
@@ -44,9 +49,13 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 	# the RDS estimates.   The cases for numeric and categorical outcomes are handled 
 	# separately.
 	
-	if(is.null(subset)){
+	se <- substitute(subset)
+	subset <- eval(se,rds.data,parent.frame())
+        if(is.null(se)|is.null(subset)){
+		csubset <- ""
 		subset <- rep(TRUE,length=nrow(rds.data.nomiss))
 	}else{
+		csubset <- as.character(enquote(substitute(subset)))[2]
 		subset[is.na(subset)] <- FALSE
 		if(!is.null(N)){
 			#use VH estimator to adjust population size to sub-population
@@ -63,11 +72,16 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 		rds.data.nomiss <- rds.data.nomiss[subset,,warn=FALSE]
 		
 		#drop 0 count levels
-		if(is.factor(rds.data[[outcome.variable]]))
-			rds.data.nomiss[[outcome.variable]] <- factor(rds.data.nomiss[[outcome.variable]])
+		if(is.factor(rds.data[[outcome.variable]])){
+			outcome <- factor(rds.data.nomiss[[outcome.variable]])
+# 			Make sure the factor labels are alphabetic!
+			outcome=factor(outcome,levels=levels(outcome)[order(levels(outcome))])
+			rds.data.nomiss[[outcome.variable]] <- outcome
+		}
 	}
 	weights.all <- compute.weights(rds.data.nomiss,
-			weight.type=weight.type,outcome.variable=outcome.variable, N=N, ...)
+			weight.type=weight.type,outcome.variable=outcome.variable, N=N,
+			control=control, ...)
 	
 	
 	#########################################################################################
@@ -78,10 +92,13 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 	toutcome <- table(outcome)
 	if(is.numeric(outcome)){
 		estimate <- HT.estimate(weights=weights.all,outcome=outcome)
-		if(empir.lik)
-			attr(estimate,"se") <- EL.se(weights.all,outcome,N=N)
+		if(empir.lik){
+			attr(estimate,"EL.se") <- EL.se(weights.all,outcome,N=N)
+                }
 	}else{
 		outcome <- as.factor(outcome)
+# 		Make sure the factor labels are alphabetic!
+		outcome=factor(outcome,levels=levels(outcome)[order(levels(outcome))])
 		
 		# Calculate the within group totals of the *inverse* of the weights, again we exclude the seeds. 
 		wtd.degree.totals <- xtabs(weights.all~outcome,
@@ -98,20 +115,20 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 			for(i in seq_along(aaa)){
 				bbb[i] <- EL.se(weights.all,outcome==aaa[i],N=N)
 			}
-			attr(estimate,"se") <- bbb
+			attr(estimate,"EL.se") <- bbb
 		}
 	}
 	
 	
-	if(is.null(attr(estimate,"se"))){
-		result <- rds.weighted.estimate(estimate,weights.all,outcome.variable,weight.type,subset=subset)
+	if(is.null(attr(estimate,"EL.se"))){
+		result <- rds.weighted.estimate(estimate,weights.all,outcome.variable,weight.type,subset=subset,csubset=csubset)
 	}else{ 
 		
 		nsamples <- sum(!is.na(as.vector(outcome)))
 		estimate <- cbind(
 				estimate,
-				estimate-1.96*attr(estimate,"se"),
-				estimate+1.96*attr(estimate,"se")
+				estimate-1.96*attr(estimate,"EL.se"),
+				estimate+1.96*attr(estimate,"EL.se")
 		)
 		colnames(estimate) <- c("point", "lower", "upper")		
 		if(is.numeric(outcome)){
@@ -146,7 +163,7 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 			names(estimate) <- levels(outcome)
 		}
 		result <- rds.interval.estimate(estimate, outcome.variable, 
-				weight.type=weight.type, uncertainty="EL", weights=weights.all,N=N)		
+				weight.type=weight.type, uncertainty="EL", weights=weights.all,N=N,csubset=csubset)		
 	}
 	return(result)
 }

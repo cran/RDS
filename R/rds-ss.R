@@ -27,6 +27,8 @@
 #' is missing it defaults to 5000.
 #' @param number.ss.iterations The number of iterations of the sequential
 #' sampling algorithm. If that is missing it defaults to 5.
+#' @param control A list of control parameters for algorithm
+#' tuning. Constructed using \code{\link{control.rds.estimates}}.
 #' @param hajek logical; Use the standard Hajek-type estimator of Gile (2011)
 #' or the standard Hortitz-Thompson. The default is TRUE.
 #' @param empir.lik If true, and outcome.variable is numeric, standard errors
@@ -78,6 +80,7 @@
 RDS.SS.estimates <-
 		function(rds.data,outcome.variable,N=NULL,subset=NULL,
 				number.ss.samples.per.iteration=500,number.ss.iterations=5,
+				control=control.rds.estimates(),
 				hajek=TRUE,empir.lik=TRUE){
 	se <- substitute(subset)
 	subset <- eval(se,rds.data,parent.frame())
@@ -89,6 +92,7 @@ RDS.SS.estimates <-
 				subset=subset,
 				number.ss.samples.per.iteration=number.ss.samples.per.iteration,
 				number.ss.iterations=number.ss.iterations,
+				control=control,
 				hajek=hajek,
 				empir.lik=empir.lik,
 				weight.type="Gile's SS")
@@ -102,6 +106,7 @@ RDS.SS.estimates <-
 							subset=subset,
 							number.ss.samples.per.iteration=number.ss.samples.per.iteration,
 							number.ss.iterations=number.ss.iterations,
+							control=control,
 							hajek=hajek,
 							empir.lik=empir.lik,
 							weight.type="Gile's SS")

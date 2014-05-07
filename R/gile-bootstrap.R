@@ -2,10 +2,11 @@
 SSBS.estimates <- function(rds.data,trait.variable,
 		number.of.bootstrap.samples=NULL,
 		number.ss.samples.per.iteration=NULL,
-		ties.to.trait=NULL,
+		refs.to.trait=NULL,
 		N=NULL, 
 		confidence.level=NULL,
-		fast=TRUE,
+		fast=TRUE, useC=FALSE,
+		control=control.rds.estimates(),
 		weight.type="Gile's SS", verbose=TRUE)
 {
 	
@@ -46,7 +47,10 @@ SSBS.estimates <- function(rds.data,trait.variable,
 		}else{
 			a=as.vector(rds.data[[trait.variable]])
 			a[!remvalues] <- "NA"
-			rds.data[[trait.variable]] <- factor(a,exclude=NULL)
+			outcome <- factor(a,exclude=NULL)
+# 			Make sure the factor labels are alphabetic!
+			outcome=factor(outcome,levels=levels(outcome)[order(levels(outcome))],exclude=NULL)
+			rds.data[[trait.variable]] <- outcome
 			trait.min.value <- "NA"
 		}
 	}
@@ -55,13 +59,16 @@ SSBS.estimates <- function(rds.data,trait.variable,
 	recruiter.id <- get.rid(rds.data)#as.character(rds.data[[attr(rds.data,"recruiter.id")]])
 	seed.rid <- get.seed.rid(rds.data)
 	outcome <- factor(rds.data[[trait.variable]],exclude=NULL)
+# 	Make sure the factor labels are alphabetic!
+	outcome=factor(outcome,levels=levels(outcome)[order(levels(outcome))])
 	outclasses <- levels(outcome)
 	deg <- rds.data[[network.size]]
+	deg <- as.numeric(as.vector(deg))
 	g <- length(outclasses)
 	
-	if(is.null(ties.to.trait)){
+	if(is.null(refs.to.trait)){
 		# matrix of numbers of referrals to diseased or non-diseased nodes
-		ties.to.trait<-matrix(0,nrow=nrow(rds.data),ncol=g)
+		refs.to.trait<-matrix(0,nrow=nrow(rds.data),ncol=g)
 		for(j in 1:g){
 			# b is the number of referrals for each recruiter to those of group j
 			b <- tapply(outcome==outclasses[j],recruiter.id,sum,na.rm=TRUE)[-1]
@@ -69,15 +76,15 @@ SSBS.estimates <- function(rds.data,trait.variable,
 			#d=match(names(b),as.character(rds.data[[attr(rds.data,"id")]]))
 			d <- match(names(b),get.id(rds.data))
 			# match the names of the recruiters to the id
-			ties.to.trait[d[!is.na(d)],j] <- b[!is.na(d)]
+			refs.to.trait[d[!is.na(d)],j] <- b[!is.na(d)]
 		}
 	}else{
-		if(is.character(ties.to.trait)){
+		if(is.character(refs.to.trait)){
 			TT<-matrix(0,nrow=nrow(rds.data),ncol=g)
 			for(j in 1:g){
-				TT[,j] = as.vector(rds.data[[ties.to.trait[j]]])
+				TT[,j] = as.vector(rds.data[[refs.to.trait[j]]])
 			}
-			ties.to.trait<-TT
+			refs.to.trait<-TT
 			rm(TT)
 		}
 	}
@@ -98,19 +105,24 @@ SSBS.estimates <- function(rds.data,trait.variable,
 						"values were missing and were removed."))
 		deg <- deg[remvalues]
 		outcome <- factor(as.vector(outcome[remvalues]),exclude=NULL)
+# 		Make sure the factor labels are alphabetic!
+		outcome=factor(outcome,levels=levels(outcome)[order(levels(outcome))],exclude=NULL)
 		outclasses <- levels(outcome)
 		g <- length(outclasses)
-		ties.to.trait <- ties.to.trait[remvalues,]
+		refs.to.trait <- refs.to.trait[remvalues,]
 		recruiter.id <- recruiter.id[remvalues]
 		n0 <- sum(recruiter.id==seed.rid, na.rm=TRUE)
 	}
 	
 	if(length(unique(outcome))>1){
 		result<-sppsboot4ppsreal(degs=deg,dis=outcome,n=N, n0=n0,
-				ties.to.trait=ties.to.trait,
+				refs.to.trait=refs.to.trait,
 				nit=number.of.bootstrap.samples,
 				number.ss.samples.per.iteration=number.ss.samples.per.iteration,
-				fast=fast,weight.type=weight.type,verbose=verbose) 
+				fast=fast,useC=useC,
+				weight.type=weight.type,
+				control=control,
+				verbose=verbose) 
 		names(result$point_estimate) <- outclasses
 		names(result$se_estimate) <- outclasses
 		colnames(result$bsests) <- outclasses
@@ -159,9 +171,9 @@ vh.est<-function(degs,dis,wstart=0,wsample=NULL){
 	num/den
 }
 #was spps_est_keep
-spps.est.keep<-function(degs,dis,nguess,wstart=0,wsample=NULL,number.ss.iterations=5,number.ss.samples.per.iteration=2000){
+spps.est.keep<-function(degs,dis,nguess,wstart=0,wsample=NULL,number.ss.iterations=5,number.ss.samples.per.iteration=2000,SS.infinity=0.04){
 	degs[degs==0]<-1 
-	mapping<-getestCstacked(degs,n=nguess,nit=number.ss.iterations,nsampsamp=number.ss.samples.per.iteration,trace=FALSE)
+	mapping<-getestCstacked(degs,n=nguess,nit=number.ss.iterations,nsampsamp=number.ss.samples.per.iteration,trace=FALSE,SS.infinity=SS.infinity)
 	weights=approx(x=mapping$classes,y=1/mapping$probs,xout=degs,rule=2)$y
 	pis <- 1/weights
 	if(is.factor(dis)){
@@ -180,10 +192,10 @@ spps.est.keep<-function(degs,dis,nguess,wstart=0,wsample=NULL,number.ss.iteratio
 }
 
 #was ssps_est
-spps.est<-function(degs,dis,nguess,wstart=0,wsample=NULL,nsampsamp=500,hajek=TRUE, mapping=NULL){
+spps.est<-function(degs,dis,nguess,wstart=0,wsample=NULL,nsampsamp=500,hajek=TRUE, mapping=NULL,SS.infinity=0.04){
 	degs[degs==0]<-1 #added 070708
 	if(is.null(mapping)){
-		mapping<-getestCstacked(degs,n=nguess,nit=3,nsampsamp=nsampsamp,trace=FALSE,hajek=hajek)
+		mapping<-getestCstacked(degs,n=nguess,nit=3,nsampsamp=nsampsamp,trace=FALSE,hajek=hajek,SS.infinity=SS.infinity)
 	}
 	pis=1/approx(x=mapping$classes,y=1/mapping$probs,xout=degs,rule=2)$y
 	vh.est(pis,dis,wstart=wstart,wsample=wsample)
@@ -200,25 +212,28 @@ spps.est<-function(degs,dis,nguess,wstart=0,wsample=NULL,nsampsamp=500,hajek=TRU
 # n = population size,                         
 # n0 = number of seeds, 
 # dis is a nsamp vector with elements 1,...,g 
-# ties.to.trait is a nsamp*g matrix, where ties.to.trait[i,j]=number of referrels from sample i to recruit with z=j.
-sppsboot4ppsreal<-function(degs,dis,n,n0,ties.to.trait,nit,                                   # ignore fullcup
+# refs.to.trait is a nsamp*g matrix, where refs.to.trait[i,j]=number of referrals from respondent i to recruits with z=j.
+sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                                   # ignore fullcup
 		fullcup=rep(TRUE,length(degs)),
 		number.ss.samples.per.iteration=500,
-		fast=TRUE,
-		weight.type="Gile's SS",verbose=TRUE){ 
+		fast=TRUE, useC=FALSE,
+		weight.type="Gile's SS",
+		control=control.rds.estimates(),
+		verbose=TRUE){ 
 	fdis <- dis
 	dis <- as.numeric(dis)
 	outclasses <- levels(fdis)
 	g=length(outclasses)
 	nsamp<-length(degs)
-	nrefs<-apply(ties.to.trait,1,sum)[which(fullcup)]
-	if(n*0.04 > nsamp){n <- round(nsamp/0.04)}  
-	aaa<-spps.est.keep(degs,fdis,n,number.ss.samples.per.iteration=number.ss.samples.per.iteration) 
-	wts<-aaa$samplewts
-	est<-aaa$est         
-	pvec<-aaa$pvec
+	nrefs<-apply(refs.to.trait,1,sum)[which(fullcup)]
+# nrefs[i] is the number of referrals for respondent i (i.e., the number of returned coupons)
+	if(n*control$SS.infinity > nsamp){n <- round(nsamp/control$SS.infinity)}  
+	sek<-spps.est.keep(degs,fdis,n,number.ss.samples.per.iteration=number.ss.samples.per.iteration,SS.infinity=control$SS.infinity) 
+	wts<-sek$samplewts
+	est<-sek$est         
+	pvec<-sek$pvec
 	if(fast){
-		data.mapping<-aaa$mapping
+		data.mapping<-sek$mapping
 	}else{
 		data.mapping<-NULL
 	}
@@ -236,27 +251,34 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,ties.to.trait,nit,                     
 	CC=matrix(0,g,g)
 	for(i in 1:nsamp){
 		for(j in 1:g){
-			CC[dis[i],j]=CC[dis[i],j]+ties.to.trait[i,j]
+			CC[dis[i],j]=CC[dis[i],j]+refs.to.trait[i,j]
 		}
 	}
-	# CC is a g*g matrix, where CC[i,j]=number of referrals from recruiter with z=i to recruit with z=j.
+	# CC is a g*g matrix, where CC[i,j]=number of referrals from a recruiter with z=i to a recruit with z=j.
 	
 	deg=numeric()
 	for(i in 1:g){
 		deg[i]<-vh.est(wts[dis==i],degs[dis==i])
 	}
-	# deg[i] is the estimated mean degrees of nodes with z=i
+	# deg[i] is the estimated population mean degree of nodes with z=i
 	
 	R = sweep(CC,1,apply(CC,1,sum),"/")
 	R[is.na(R)] <- 0
-	# R is a g*g matrix, where R[i,j]=observed rates of referral of nodes with z=i for z=j.
+	# R is a g*g matrix, where R[i,j]=observed proportional rates of referral of nodes with z=i for z=j.
 	
 	tiemtx = sweep(R,1,deg*est*n,"*")
-	# tiemtx is a matrix with the estimated number of edges between each pair of classes
+	# est*n is the vector of counts of nodes with z=i in the population
+	# deg*est*n is the vector of counts of the number ot ties
+        #!!!! tiesnodes with z=i in the population
+	# tiemtx is a matrix with the estimated number of ties (not referrals)
+	# from class i to class j (in the population)
 	
-	classesboth<-classesbotha[samplecountsa>0]
-	samplecounts<-samplecountsa[samplecountsa>0]   
-	wtsboth<-wtsbotha[samplecountsa>0]
+#	classesboth<-classesbotha[samplecountsa>0]
+#	samplecounts<-samplecountsa[samplecountsa>0]   
+#	wtsboth<-wtsbotha[samplecountsa>0]
+	classesboth<-classesbotha
+	samplecounts<-samplecountsa   
+	wtsboth<-wtsbotha
 	
 	manynewests<-matrix(0,nrow=nit,ncol=g)
 	manysamp<-vector("list",length=nit)
@@ -267,33 +289,68 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,ties.to.trait,nit,                     
 		effn <- 10^8
 	}
 	
-	data<-list(n=n, effn=effn,
-			classesboth=classesboth,samplecounts=samplecounts, wtsboth=wtsboth,
-			n0=n0, nsamp=nsamp, tiemtx=tiemtx, nrefs=nrefs,
-			mapping=data.mapping)  
-	
-	bsfn <- function(i, data){
-		newprops<-probtodist(data$classesboth,data$samplecounts, data$wtsboth, data$n)$props
+# moved
+		newprops<-probtodist(classesboth,samplecounts, wtsboth, n)$props
 		props2<-newprops/sum(newprops)
-		nbyclass<-round(data$n*props2)  
-		nbyclass[nbyclass==0]<-1
-		offby<-data$n-sum(nbyclass)
+		nbyclass<-round(n*props2)  
+#		nbyclass[nbyclass==0]<-1
+		offby<-n-sum(nbyclass)
 		if(is.na(offby)){print("Error in getincl: offby"); } 
+ 		tempties <- (tiemtx+t(tiemtx))/2
+#		symetrize the ties so that
+	# tempties is a matrix with the estimated number of ties (not referrals)
+	# from class i to class j (in the population). It is based on extrapolating
+	# the number of referrals 
+# moved
+	pis=1/approx(x=data.mapping$classes,y=1/data.mapping$probs,xout=rep(classes,g),rule=2)$y
+	data<-list(n=n, effn=effn,
+			classesboth=classesboth,
+			n0=n0, nsamp=nsamp, nrefs=nrefs,
+			mapping=data.mapping, K=K, g=g, pis=pis, nit=nit,
+			control=control,
+			number.ss.samples.per.iteration=number.ss.samples.per.iteration,
+			props2=props2,offby=offby,nbyclass=nbyclass,tempties=tempties
+                  )
+	
+	if(useC){
+	  Cret <- .C("bsC",
+			nbyclass=as.integer(data$nbyclass),
+			classesboth=as.integer(data$classesboth),
+			nrefs=as.integer(data$nrefs),
+			props2=as.double(data$props2),
+			tempties=as.double(data$tempties),
+			pis=as.double(data$pis),
+			est=as.double(rep(0,data$g*data$nit)),
+			numsamp=as.integer(data$nit),
+			offby=as.integer(data$offby),
+			K=as.integer(data$K),
+			nc=as.integer(length(data$nbyclass)),
+			g=as.integer(data$g),
+			N=as.integer(data$n),
+			n=as.integer(data$nsamp),
+			n0=as.integer(data$n0),
+			PACKAGE="RDS")
+          manynewests <- matrix(Cret$est,ncol=g,byrow=TRUE)
+          colnames(manynewests) <- outclasses
+	}else{
+	  bsfn <- function(i, data){
+                offby <- data$offby
+                nbyclass <- data$nbyclass
 		
 		if(offby>0){
 			for(ii in 1:offby){
-				dif<-props2-nbyclass/data$n
+				dif<-data$props2-nbyclass/data$n
 				dif[dif<0]<-0
 				tochange<-sample(1:length(dif),1,prob=dif)
 				nbyclass[tochange]<-nbyclass[tochange]+1
 			}
 		}else{if(offby<0){
 				for(ii in 1:abs(offby)){                
-					dif<-nbyclass/data$n - props2
+					dif<-nbyclass/data$n - data$props2
 					dif[dif<0]<-0
 					dif[nbyclass==1]<-0 
 					if(sum(dif==0)){
-						dif<-1-(props2-nbyclass/data$n)
+						dif<-1-(data$props2-nbyclass/data$n)
 						dif[nbyclass==1]<-0
 					}       
 					tochange<-sample(1:length(dif),1,prob=dif)
@@ -301,103 +358,122 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,ties.to.trait,nit,                     
 				}
 			}}   
 		
-		popclass<-rep(data$classesboth,times=nbyclass)    # Create a population of labels (for each (deg, dis) class)
-		newdis<-((popclass-1)%/%K)+1  
-		newdeg<-round(popclass-K*(popclass%/%K))
-		newdeg[newdeg==0]<-K
+#		popclass<-rep(data$classesboth,times=nbyclass)    # Create a population of labels (for each (deg, dis) class)
+		popclass<-data$classesboth
+		nc <- length(popclass)
+		K <- data$K
+		idis<-((popclass-1)%/%K)+1  
+		ideg<-round(popclass-K*(popclass%/%K))
+		ideg[ideg==0]<-K
+		dissample <- rep(0,data$nsamp)
+		degsample <- dissample
 		
-		nsamplea<-sample(1:length(newdeg),data$n0,prob=abs(newdeg),replace=FALSE)
-		todisnew=matrix(0,nrow=data$nsamp,ncol=g)
-		
-		tempties <- (data$tiemtx+t(data$tiemtx))/2
-		
-		nprop <- tabulate(newdis,nbins=g)
-		nprop <- nprop / sum(nprop)
-		for(k in 1:g){
-			if(all(tempties[k,]==0)){
-				tempties[k,] <- nprop
-			}
-			if(all(tempties[,k]==0)){
-				tempties[,k] <- nprop
-			}
+#		newdis<-data$newdis
+#		newdeg<-data$newdeg
+ 		tempties<-data$tempties
+#		nsample0<-sample.int(data$n,size=data$n0,prob=abs(newdeg),replace=FALSE)
+		pclass=ideg*nbyclass
+                for(i in 1:data$n0){
+		 j<-sample.int(nc,size=1,prob=ideg*nbyclass)
+		 pclass[j]<-pclass[j]-ideg[j]
+                 degsample[i] <- ideg[j]
+                 dissample[i] <- idis[j]
 		}
+#		todisnew=matrix(0,nrow=data$nsamp,ncol=g)
+		
+#		tempties <- (data$tiemtx+t(data$tiemtx))/2
+ 		
+# 		nprop <- tabulate(newdis,nbins=g)
+ 		nprop <- tapply(nbyclass,idis)
+ 		nprop <- nprop / sum(nprop)
+ 		for(k in 1:g){
+ 			if(all(tempties[k,]==0)){
+ 				tempties[k,] <- nprop
+ 			}
+ 			if(all(tempties[,k]==0)){
+ 				tempties[,k] <- nprop
+ 			}
+ 		}
 		
 		nrefs<-data$nrefs 
-		i<-sample(1:length(nrefs),1)                  
-		numberfrom<-nrefs[i] 
-		while(numberfrom==0){
-			i<-sample(1:length(nrefs),size=1) 
-			numberfrom<-nrefs[i]
-		} 
-		
-		nsample<-c(nsamplea,rep(0,(data$nsamp-data$n0)))    ### Vector W !!!
+                crefs <- which(nrefs>0)
+                ncrefs <- length(crefs)
+		crefs.rs<-nrefs[crefs[sample.int(ncrefs, nsamp, replace=TRUE)]]
+		icrefs<-1
+		numberfrom<-crefs.rs[icrefs] 
+
+#		nsample<-c(nsample0,rep(0,(data$nsamp-data$n0)))    ### Vector W !!!
 		activnode<-1
 		countrefs<-0
-		temptiess <- apply(tempties,1,sum)
+#		temptiess <- apply(tempties,1,sum)
 		for(mm in (data$n0+1):data$nsamp){                 ### loop begins!!!  mm is not m in the paper!
-			k = newdis[nsample[activnode]]
-			p <- tempties[k,] / temptiess[k]
+			thisdis = dissample[activnode]
+#			thisdis = newdis[nsample[activnode]]
+#			p <- tempties[thisdis,] / temptiess[thisdis]
 #        ## p is the vector of probability
 
-			nextdis<-sample(x=1:g,size=1,replace=FALSE,prob=tempties[k,])
+		        nextdis<-sample.int(g, 1, replace=FALSE, prob=tempties[thisdis,])
 			
-#       numsfrom is the index of the "nextdis" disease status left .
-			numsfrom<-intersect(
-					which(newdis==nextdis),
-					c(1:length(newdeg))[-nsample[1:(mm-1)]]
-			)
+#       numsfrom are the indices of those which have not been sampled
+#       who have the same disease status as "nextdis".
+#			nprob<-pnewdeg*(newdis==nextdis)
+			nprob<-pclass*(idis==nextdis)
 			
-			if(length(numsfrom)==0){
-				numsfrom<-c(1:length(newdeg))[-nsample[1:(mm-1)]] 
-				warning(paste("Ran out of",nextdis))
+			if(all(nprob==0)){
+			       nprob<-pclass
+			       warning(paste("Ran out of",nextdis))
 			}
-			if(length(numsfrom)==1){
-				nsample[mm]<-numsfrom
+			if(sum(nprob>0)==1){
+				nextresp<-which(nprob > 0)
 			}else{     
-				# Draw a node those with newdis left proportional to degree
-				nsample[mm]<-sample(numsfrom,size=1,prob=newdeg[numsfrom])
+				# Draw a node from those with newdis left proportional to degree
+		                nextresp<-sample.int(length(nprob), 1, replace=FALSE, prob=nprob)
 			}
 			
-			totaltmp<-sum(newdeg[numsfrom])  # the sum of degrees left with newdis
+#			totaltmp<-sum(newdeg[numsfrom])  # the sum of degrees left with newdis
+			totaltmp<-sum(nprob)  # the sum of degrees left with newdis
+#                       pnewdeg[nextresp] <- 0
+		 	pclass[nextresp]<-pclass[nextresp]-ideg[nextresp]
 			
-			for(k in 1:g){
-				if(newdis[nsample[mm]]==k){ 
-					todisnew[activnode,k]=todisnew[activnode,k]+1
-					tdeg<-newdeg[nsample[mm]] # the degree of the sample
-					tempties[,k]<-tempties[,k]*(totaltmp-tdeg)/totaltmp       ###??? Shouldn't tempties be symmetric?
-					
-				}
-			}
+			nextdis <- idis[nextresp]
+#			todisnew[activnode,nextdis]=todisnew[activnode,nextdis]+1
+			tdeg<-ideg[nextresp] # the degree of the sample
+			tempties[,nextdis]<-tempties[,nextdis]*(totaltmp-tdeg)/totaltmp       ###??? Shouldn't tempties be symmetric?
+
+#			nsample[mm]<-nextresp
+                 	degsample[mm] <- tdeg
+                 	dissample[mm] <- nextdis
 			countrefs<-countrefs+1
+# numberfrom is the number of recruits to get for the current recruiter
 			if((mm<nsamp)&(countrefs==numberfrom)){
 				activnode<-activnode+1                     ### move to the next seed (or node)!!! i=i+1
+				
 				countrefs<-0 
-				i<-sample(1:length(nrefs),size=1) 
-				numberfrom<-nrefs[i] 
-				while(numberfrom==0){
-					i<-sample(1:length(nrefs),size=1) 
-					numberfrom<-nrefs[i] 
-				}
+		                icrefs<-icrefs+1
+				numberfrom<-crefs.rs[icrefs] 
 			}
 		}                                            ### loop ends!!!
 		
-		degsample<-newdeg[nsample]
-		dissample<-factor(newdis[nsample],
+#		degsample<-newdeg[nsample]
+#		dissample<-factor(newdis[nsample],
+		dissample<-factor(dissample,
 				levels=1:length(outclasses),labels=outclasses,exclude=NULL)
-		manysamp<-list(deg=degsample,dis=dissample,ties.to.trait=todisnew)
+#		manysamp<-list(deg=degsample,dis=dissample,refs.to.trait=todisnew)
 #THE ORIGINAL ONE:
 		manynewests<-spps.est(degsample,
 				dissample,
 				data$effn,nsampsamp=ceiling(number.ss.samples.per.iteration/4), 
-				mapping=data$mapping)
+				mapping=data$mapping,
+				SS.infinity=control$SS.infinity)
   
-		list(samp=manysamp, newests=manynewests)
+#		list(samp=manysamp, newests=manynewests)
+		list(newests=manynewests)
 		
-	}
-	if(verbose)  cat(paste('Computation 0% completed ...\n',sep=""))
-	for(i in 1:nit){
+	  }
+	  if(verbose)  cat(paste('Computation 0% completed ...\n',sep=""))
+	  for(i in 1:nit){
 		out <- bsfn(i,data)
-		manysamp[[i]] <- out[["samp"]]
+#		manysamp[[i]] <- out[["samp"]]
 		manynewests[i,] <- out[["newests"]]
 		
 		if(verbose) {
@@ -405,13 +481,9 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,ties.to.trait,nit,                     
 				cat(paste((100/10)*trunc(i/(nit/10)),'% completed ...\n',sep=""))
 			}
 		}
+	  }
 	}
 
-	list(point_estimate=aaa$est,bsests=manynewests,
-			se_estimate=apply(manynewests,2,sd))
+	list(point_estimate=sek$est,bsests=manynewests,
+		se_estimate=apply(manynewests,2,sd))
 }
-
-
-
-
-

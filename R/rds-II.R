@@ -62,7 +62,7 @@ RDS.II.estimates <- function(rds.data,outcome.variable, N=NULL,subset=NULL,empir
 	se <- substitute(subset)
 	subset <- eval(se,rds.data,parent.frame())
 	if(length(outcome.variable) == 1){
-		result <- RDS.estimates.local(rds.data,outcome.variable,subset,
+		result <- RDS.estimates.local(rds.data,outcome.variable,subset=subset,
 				empir.lik=empir.lik, weight.type="RDS-II", N=N)
 	}
 	else{

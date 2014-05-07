@@ -2,7 +2,8 @@
 
 RDS.bootstrap.intervals.local <- function(rds.data, 
 		outcome.variable, weight.type, uncertainty, N, subset,number.of.bootstrap.samples, 
-		confidence.level=.95, ...) {
+		confidence.level=.95, 
+		control=control.rds.estimates(), fast=FALSE, useC=FALSE, csubset="", ...) {
 	
 	if (is(rds.data, "rds.data.frame")) {
 		if (!(outcome.variable %in% names(rds.data))) {
@@ -64,7 +65,9 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 	}
 	rds.data.nomiss <- rds.data
 	
-	if(is.null(subset)){
+	se <- substitute(subset)
+	subset <- eval(se,rds.data,parent.frame())
+	if(is.null(se)|is.null(subset)){
 		subset <- rep(TRUE,length=nrow(rds.data.nomiss))
 	}else{
 		subset[is.na(subset)] <- FALSE
@@ -83,12 +86,19 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 		rds.data.nomiss <- rds.data.nomiss[subset,,warn=FALSE]
 		
 		#drop 0 count levels
-		if(is.factor(rds.data[[outcome.variable]]))
-			rds.data.nomiss[[outcome.variable]] <- factor(rds.data.nomiss[[outcome.variable]])
+		if(is.factor(rds.data[[outcome.variable]])){
+			outcome <- factor(rds.data.nomiss[[outcome.variable]])
+# 			Make sure the factor labels are alphabetic!
+			outcome=factor(outcome,levels=levels(outcome)[order(levels(outcome))])
+			rds.data.nomiss[[outcome.variable]] <- outcome
+		}
 	}
 	
 	#only categorical estimates are supported
-	outcome <- rds.data.nomiss[[outcome.variable]] <- factor(rds.data.nomiss[[outcome.variable]])
+	outcome <- factor(rds.data.nomiss[[outcome.variable]])
+#       Make sure the factor labels are alphabetic!
+	outcome <- factor(outcome,levels=levels(outcome)[order(levels(outcome))])
+	rds.data.nomiss[[outcome.variable]] <- outcome
 	outclasses <- levels(outcome)
 	g <- length(outclasses)
 	if(g==1){
@@ -103,12 +113,30 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 			outcome.variable=outcome.variable,
 			N=N,
 			weight.type=weight.type,
-			empir.lik=FALSE,
+			control=control,
+			empir.lik=TRUE, useC=useC,
 			...)
 	
-	observed.estimate <- rds@estimate
-	weights.all <- rds@weights
+        if(is.rds.interval.estimate(rds)){
+	  observed.estimate <- rds$estimate
+	  weights.all <- rds$weights
+        }else{
+	  observed.estimate <- rds@estimate
+	  weights.all <- rds@weights
+        }
 	
+        if(is.null(number.of.bootstrap.samples) | number.of.bootstrap.samples < 10){
+          if(is.rds.interval.estimate(rds)){
+            EL.se <- matrix(rds$interval, ncol = 6, byrow = FALSE)[1,5]
+          }else{
+            EL.se <- sqrt(observed.estimate*(1-observed.estimate)/length(weights.all))
+          }
+          number.of.bootstrap.samples <- min(500,max(20,ceiling(0.5*(EL.se/0.002)^2+1)))
+          if(!is.numeric(number.of.bootstrap.samples)){
+            number.of.bootstrap.samples <- 500
+          }
+	  cat(sprintf("Using %d bootstrap samples.\n", number.of.bootstrap.samples))
+        }
 	#
 	#  Confidence intervals
 	#
@@ -135,24 +163,13 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 				observed.estimate + crit * sqrt(varsrs))
 		colnames(estimate) <- c("point", "lower", "upper")
 	} else if(uncertainty == "Gile"){
-		ties.to.trait <- matrix(0, nrow = nrow(rds.data), ncol = g)
-		recruiter.id <- get.rid(rds.data.nomiss)
-		id <- get.id(rds.data)
-		for (j in 1:g) {
-			# b is the number of referrals for each recruiter to those of group j
-			b = tapply(outcome == outclasses[j], recruiter.id, 
-					sum, na.rm = TRUE)[-1]
-			# match the names of the recruiters to the id
-			d = match(names(b), id)
-			# match the names of the recruiters to the id
-			ties.to.trait[d[!is.na(d)], j] <- b[!is.na(d)]
-		}
 		bs <- SSBS.estimates(rds.data.nomiss, 
 				outcome.variable,  
 				confidence.level = confidence.level, 
 				N = N,
 				weight.type=weight.type, 
 				number.of.bootstrap.samples = number.of.bootstrap.samples,
+				control=control, fast=fast, useC=useC,
 				...)
 
 		estimate <- bs
@@ -189,6 +206,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 			uncertainty, 
 			weights.all,
 			N=N,
+			csubset=csubset,
 			conf.level=confidence.level)
 	attr(result,"bsresult") <- attr(estimate,"bsresult")
 	
@@ -235,12 +253,15 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 #' The default is 0.95 for 95\%.
 #' @param number.of.bootstrap.samples The number of bootstrap samples to take
 #' in estimating the uncertainty of the estimator. If \code{NULL} it defaults
-#' to 500.
-#' @param ties.to.trait A vector of strings giving the names of the variables
-#' in the \code{rds.data} that contains the respondent's report of the number
-#' of ties they have to population members in each of the trait values. If
-#' missing, it is computed from the sample as the number of ties to recruitees who
-#' have each of the trait values.
+#' to the number necessary to compute the standard error to accuracy 0.001.
+#' @param fast Use a fast bootstrap where the weights are reused from the
+#' estimator rather than being recomputed for each bootstrap sample.
+#' @param useC Use a C-level implementation of Gile's bootstrap (rather than
+#' the R level). The implementations should be computational 
+#' equivalent (except for speed).
+#' estimator rather than being recomputed for each bootstrap sample.
+#' @param control A list of control parameters for algorithm
+#' tuning. Constructed using \code{\link{control.rds.estimates}}.
 #' @param ... Additional arguments for RDS.*.estimates.
 #' @return An object of class \code{rds.interval.estimate} summarizing the inference.
 #' The confidence interval and standard error are based on the bootstrap procedure.
@@ -271,20 +292,28 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 #' @export
 RDS.bootstrap.intervals <- function(rds.data, outcome.variable, 
 		weight.type = NULL, uncertainty = NULL, N = NULL, subset = NULL, 
-		confidence.level = .95, ties.to.trait = NULL, number.of.bootstrap.samples = 500, 
+		confidence.level = .95, number.of.bootstrap.samples = NULL, fast=TRUE, useC=TRUE,
+		control=control.rds.estimates(),
 		...) {
 	se <- substitute(subset)
+	if(is.null(se)){
+	  csubset <- ""
+	}else{
+	  csubset <- as.character(enquote(substitute(subset)))[2]
+	}
 	subset <- eval(se,rds.data,parent.frame())
 	if (length(outcome.variable) == 1) {
 		result <- RDS.bootstrap.intervals.local(rds.data, outcome.variable, 
 				weight.type, uncertainty, N, subset, confidence.level, 
-				ties.to.trait = ties.to.trait, number.of.bootstrap.samples=number.of.bootstrap.samples,... )
+				number.of.bootstrap.samples=number.of.bootstrap.samples,
+				control=control,fast=fast,useC=useC, csubset=csubset )
 	}
 	else {
 		result <- lapply(X = outcome.variable, FUN = function(g) {
 					RDS.bootstrap.intervals.local(rds.data, g, weight.type, 
-							uncertainty, N, subset, confidence.level, ties.to.trait = ties.to.trait, 
-							number.of.bootstrap.samples=number.of.bootstrap.samples, ...)
+							uncertainty, N, subset, confidence.level,
+							number.of.bootstrap.samples=number.of.bootstrap.samples, 
+							control=control,fast=fast, useC=useC, csubset=csubset, ...)
 				})
 		names(result) <- outcome.variable
 	}

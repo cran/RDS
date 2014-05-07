@@ -15,6 +15,8 @@
 #' the \code{rds.data} frame. If that is missing, the weights will sum to 1. Note that
 #' this parameter is required for Gile's SS.
 #' @param subset A logical expression subsetting rds.data.
+#' @param control A list of control parameters for algorithm
+#' tuning. Constructed using \code{\link{control.rds.estimates}}.
 #' @param ... Additional parameters passed to the individual weighting algorithms.
 #' @return A vector of weighte for each of the respondents. It is of the same
 #' size as the number of rows in \code{rds.data}.
@@ -22,7 +24,7 @@
 #' @export
 compute.weights <- function(rds.data,
 		weight.type = c("Gile's SS","RDS-I","RDS-I (DS)","RDS-II","Arithmetic Mean"),
-		N = NULL, subset=NULL, ...){
+		N = NULL, subset=NULL, control=control.rds.estimates(), ...){
 	if(!is.null(N) && N < nrow(rds.data)){
 		stop(sprintf("The population size, %d, is less than the sample
 								size, %d. The population size must be at least as large as the
@@ -57,10 +59,12 @@ compute.weights <- function(rds.data,
 			`RDS-I (DS)` = rds.I.weights(rds.data,N=N,smoothed=TRUE,...),
 			`RDS-II` = vh.weights(degs = deg, N=N),
 			`Arithmetic Mean` = rep(ifelse(is.null(N),1,N)/n, n),
-			`Gile's SS` = gile.ss.weights(degs = deg, N = N, ...)
+			`Gile's SS` = gile.ss.weights(degs = deg, N = N,
+SS.infinity=control$SS.infinity, ...)
 	)
-	if(!is.null(subset)){
-		subset <- eval(subset, rds.data, parent.frame())
+	se <- substitute(subset)
+	if(!is.null(se)){
+		if(class(se)!="name") subset <- eval(subset, rds.data, parent.frame())
 		subset[is.na(subset)] <- FALSE
 		a <- weights[subset]
 		if(weight.type=="Gile's SS"){
@@ -149,11 +153,12 @@ vh.weights<-function(degs, N=NULL){
 #' in a probability proportional to size without replacement design.
 #' @param number.ss.iterations number of iterations to use in giles SS algorithm.
 #' @param hajek Should the hajek estiamtor be used. If false, the HT estimator is used.
+#' @param SS.infinity The sample proportion, \code{n/N}, below which the computation of the SS weights should simplify to that of the \code{RDS-II} weights.
 #' @param se Should covariances be included.
 #' @param ... unused
 #' @export
 gile.ss.weights<-function(degs,N,number.ss.samples.per.iteration=500,number.ss.iterations=5,
-		hajek=TRUE,se=FALSE,...){
+		hajek=TRUE,SS.infinity=0.04,se=FALSE,...){
 	if(is.null(degs)){
 		return(NULL)
 	}
@@ -169,7 +174,7 @@ gile.ss.weights<-function(degs,N,number.ss.samples.per.iteration=500,number.ss.i
 		return(weights)
 	}
 	mapping<-getestCstacked(samp=degs[!isnadegs],n=N,nit=number.ss.iterations,
-			nsampsamp=number.ss.samples.per.iteration,trace=FALSE,hajek=hajek)
+			nsampsamp=number.ss.samples.per.iteration,trace=FALSE,hajek=hajek,SS.infinity=SS.infinity)
 	if(!hajek){
 		sprintf("The estimated population size is %d.\n",mapping$n)
 	}

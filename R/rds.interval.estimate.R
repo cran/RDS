@@ -28,6 +28,8 @@
 #' the \code{rds.data} frame. If that is missing it defaults to 1000.
 #' @param conf.level The confidence level for the confidence intervals. The
 #' default is 0.95 for 95\%.
+#' @param csubset A character string representing text to add to the output label. Typically
+#' this will be the expression used it define the subset of the data used  for the estimate.
 #' @return An object of class \code{rds.interval.estimate} is returned. This is
 #' a list with components \itemize{ \item\code{estimate}: The numerical point
 #' estimate of proportion of the \code{trait.variable}.  \item\code{interval}:
@@ -62,7 +64,7 @@
 #' 
 
 rds.interval.estimate <- function(estimate, outcome.variable, 
-		weight.type, uncertainty, weights, N=NULL,conf.level=.95) {
+		weight.type, uncertainty, weights, N=NULL,conf.level=.95,csubset="") {
 	
 	.Object <- list()
 	
@@ -74,6 +76,7 @@ rds.interval.estimate <- function(estimate, outcome.variable,
 	.Object$weights <- weights
 	.Object$N <- N
 	.Object$conf.level <- conf.level
+	.Object$csubset <- csubset
 	class(.Object) <- "rds.interval.estimate"
 	return(.Object)
 }
@@ -117,7 +120,8 @@ print.rds.interval.estimate <- function(x, ...) {
 		
 		get("print_to_html")(fmatest, caption.placement = "top", digits = c(8, 
 						5, 5, 5, 1, 5, 0), caption = paste(x$weight.type, 
-						"Estimate for", x$outcome.variable))
+						"Estimate for", x$outcome.variable,
+	switch(((x$csubset=="")|(x$csubset=="NULL"))+1,paste("[",x$csubset,"]",sep=""),NULL)))
 	}
 	else {
 		tmp <- as.data.frame(fmatest,stringsAsFactors=FALSE)
@@ -127,7 +131,8 @@ print.rds.interval.estimate <- function(x, ...) {
 				"Design Effect", 
 				"Std. Error", "N")
 		cat(paste(c(x$weight.type, "Estimate for", 
-								x$outcome.variable,"\n")))
+								x$outcome.variable,
+	switch(((x$csubset=="")|(x$csubset=="NULL"))+1,paste("[",x$csubset,"]",sep=""),NULL),"\n")))
 		print(tmp)
 		if(!is.null(x$N))
 			cat("* Using population size estimate:",x$N,"\n")
@@ -135,6 +140,16 @@ print.rds.interval.estimate <- function(x, ...) {
 	}
 }
 
+#' Is an instance of rds.interval.estimate
+#' @param x An object to be tested.
+#' @export
+is.rds.interval.estimate <- function(x) inherits(x,"rds.interval.estimate")
+
+#' Is an instance of rds.interval.estimate.list
+#' This is a (typically time ordered) sequence of RDS estimates of a comparable quantity
+#' @param x An object to be tested.
+#' @export
+is.rds.interval.estimate.list <- function(x) inherits(x,"rds.interval.estimate.list")
 
 
 

@@ -16,8 +16,12 @@ differential.activity.estimates.local <- function(rds.data,
 		stop("rds.data must be of type rds.data.frame")
 	}
 	
-	if(weight.type %in% c("RDS-I","RDS-I (DS)"))
-		rds.data[[outcome.variable]] <- factor(rds.data[[outcome.variable]])
+	if(weight.type %in% c("RDS-I","RDS-I (DS)")){
+		outcome <- factor(rds.data[[outcome.variable]])
+# 		Make sure the factor labels are alphabetic!
+		outcome=factor(outcome,levels=levels(outcome)[order(levels(outcome))])
+		rds.data[[outcome.variable]] <- outcome
+	}
 	
 	
 	if(is.null(N)){
@@ -44,7 +48,9 @@ differential.activity.estimates.local <- function(rds.data,
 	# the RDS estimates.   The cases for numeric and categorical outcomes are handled 
 	# separately.
 	
-	if(is.null(subset)){
+	se <- substitute(subset)
+	subset <- eval(se,rds.data,parent.frame())
+        if(is.null(se)|is.null(subset)){
 		subset <- rep(TRUE,length=nrow(rds.data.nomiss))
 	}else{
 		subset[is.na(subset)] <- FALSE
@@ -63,8 +69,12 @@ differential.activity.estimates.local <- function(rds.data,
 		rds.data.nomiss <- rds.data.nomiss[subset,,warn=FALSE]
 		
 		#drop 0 count levels
-		if(is.factor(rds.data[[outcome.variable]]))
-			rds.data.nomiss[[outcome.variable]] <- factor(rds.data.nomiss[[outcome.variable]])
+		if(is.factor(rds.data[[outcome.variable]])){
+			outcome <- factor(rds.data.nomiss[[outcome.variable]])
+# 			Make sure the factor labels are alphabetic!
+			outcome=factor(outcome,levels=levels(outcome)[order(levels(outcome))])
+			rds.data.nomiss[[outcome.variable]] <- outcome
+		}
 	}
 	weights.nomiss <- compute.weights(rds.data.nomiss,
 			weight.type=weight.type,outcome.variable=outcome.variable, N=N, ...)
@@ -100,8 +110,8 @@ differential.activity.estimates.local <- function(rds.data,
 #' @param N The population size.
 #' @param subset An expression defining a subset of rds.data.
 #' @param ... Additional parameters passed to compute.weights.
-#' @details This function estimates the ratio of the average degree of one group divided by the
-#' average degree of those in another.
+#' @details This function estimates the ratio of the average degree of one population
+#' group divided by the average degree of those in another population group.
 #' @examples 
 #' data(faux)
 #' differential.activity.estimates(faux,"X",weight.type="RDS-II")
@@ -110,6 +120,11 @@ differential.activity.estimates <- function(rds.data,
 		outcome.variable, weight.type = "Gile's SS", 
 		N = NULL, subset = NULL, ...) {
 	se <- substitute(subset)
+	if(is.null(se)){
+	  csubset <- ""
+	}else{
+	  csubset <- as.character(enquote(substitute(subset)))[2]
+	}
 	subset <- eval(se,rds.data,parent.frame())
 	if (length(outcome.variable) == 1) {
 		result <- differential.activity.estimates.local(rds.data=rds.data, 
