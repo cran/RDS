@@ -40,6 +40,7 @@
 #' Effect}: The design effect of the RDS.  \item\code{s.e.}: Standard error.
 #' \item\code{n}: Count of the number of sample values with that value of the
 #' trait.  } }
+#' @export
 #' @author Mark S. Handcock
 #' \itemize{ 
 #' 		\item{RDS.II.estimates}{\code{\link{RDS.II.estimates}}}

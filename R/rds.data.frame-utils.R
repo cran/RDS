@@ -12,7 +12,8 @@
 #' @examples
 #' fpath <- system.file("extdata", "nyjazz.csv", package="RDS")
 #' dat <- read.csv(fpath)
-#' dat$recruiter.id <- rid.from.coupons(dat,"own.coupon",paste0("coupon.",1:7),"id")
+#' dat$recruiter.id <- rid.from.coupons(dat,"own.coupon",
+#'                       paste0("coupon.",1:7),"id")
 #' 
 #' #create and rds.data.frame
 #' rds <- as.rds.data.frame(dat,network.size="network.size")
@@ -122,5 +123,23 @@ get.wave <- function(data){
 
 
 
+#' Calculates the number of (direct) recuits for each respondent.
+#' @param data An rds.data.frame
+#' @export
+#' @examples
+#' data(fauxmadrona)
+#' nr <- get.number.of.recruits(fauxmadrona)
+#' #frequency of number recruited by each id
+#' barplot(table(nr))
+get.number.of.recruits <- function(data)
+    {
+    if(!is(data,"rds.data.frame"))
+              stop("data must be of type rds.data.frame")
+
+    # Make sure that we can compute the number of recruits for each respondent's respondents.
+  
+    number.of.recruits <- sapply(as.character(data[[attr(data,"id")]]),function(i){length(which(as.character(data[[attr(data,"recruiter.id")]]) == i))})
+    as.integer(number.of.recruits)
+    }
 
 

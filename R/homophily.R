@@ -329,13 +329,15 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
 #' a categorical variable.
 #' @param rds.data An \code{rds.data.frame} that indicates recruitment patterns by a pair of attributes named ``id'' and ``recruiter.id''.
 #' @param outcome.variable A string giving the name of the variable in the \code{rds.data} that contains a categorical or numeric variable to be analyzed.
-#' @param weight.type A string giving the type of estimator to use. The options are \code{"Gile's SS"}, \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, and \code{"Arithemic Mean"}. If \code{NULL} it defaults to \code{"Gile's SS"}.
+#' @param weight.type A string giving the type of estimator to use. The options are\cr
+#' \code{"Gile's SS"}, \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, and \code{"Arithemic Mean"}. If \code{NULL} it defaults to \code{"Gile's SS"}.
 #' @param uncertainty A string giving the type of uncertainty estimator to use. The options are \code{"Gile's SS"} and \code{"Salganik"}. This is usually determined by \code{weight.type} to be consistent with the estimator's origins (e.g., for \code{"Gile's SS"}, \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, and \code{"Arithemic Mean"}). Hence it's current functionality is limited. If \code{NULL} it defaults to \code{"Gile's SS"}.
 #' @param recruitment A logical indicating if the homophily in the recruitment chains should be computed also. The default is FALSE.
 #' @param N An estimate of  the number of members of the population being sampled. If \code{NULL} it is read as the \code{population.size.mid} attribute of the \code{rds.data} frame. If that is missing it defaults to 1000.
 #' @param to.group0.variable The number in the network of each survey respondent who have group variable value 0. Usually this is not available. The default is to not use this variable.
 #' @param to.group1.variable The number in the network of each survey respondent who have group variable value 1. Usually this is not available. The default is to not use this variable.
-#' @param number.ss.samples.per.iteration The number of samples to take in estimating the inclusion probabilites in each iteration of the sequential sampling algorithm. If \code{NULL} it is read as the \code{number.ss.samples.per.iteration} attribute of \code{rds.data}. If that is missing it defaults to 5000.
+#' @param number.ss.samples.per.iteration The number of samples to take in estimating the inclusion probabilites in each iteration of the sequential sampling algorithm. If \code{NULL} it is read as the\cr
+#' \code{number.ss.samples.per.iteration} attribute of \code{rds.data}. If that is missing it defaults to 5000.
 #' @param confidence.level The confidence level for the confidence intervals. The default is 0.95 for 95\%.
 #' @return If \code{outcome.variable} is binary then the homophily estimate of
 #' 0 verses 1 is returned, otherwise a vector of differential homophily
@@ -376,6 +378,7 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
 #' \emph{Respondent-driven Sampling: An Assessment of Current Methodology}.
 #' Sociological Methodology 40, 285-327.
 #' @examples 
+#' \donttest{
 #' data(fauxmadrona)
 #' names(fauxmadrona)
 #' #
@@ -392,7 +395,7 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
 #' 	p=mean(dis)
 #' 	N=1000
 #' 	# True homophily
-#' 	true.homophily <- p*(1-p)*mean(deg0)*mean(deg1)*N/(mean(deg)*sum(a[dis==1,dis==0]))
+#' 	p*(1-p)*mean(deg0)*mean(deg1)*N/(mean(deg)*sum(a[dis==1,dis==0]))
 #' }
 #' # HT based estimators using the to.group information
 #' data(fauxmadrona)
@@ -402,6 +405,7 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
 #' # HT based estimators not using the to.group information
 #' homophily.estimates(fauxmadrona,outcome.variable="disease",
 #'   N=1000,weight.type="RDS-II")
+#' }
 #'@export
 homophily.estimates <- function(rds.data,outcome.variable,weight.type=NULL,uncertainty=NULL,
 		recruitment=FALSE,N=NULL,to.group0.variable=NULL, to.group1.variable=NULL,

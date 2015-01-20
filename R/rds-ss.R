@@ -23,12 +23,13 @@
 #' @param number.ss.samples.per.iteration The number of samples to take in
 #' estimating the inclusion probabilites in each iteration of the sequential
 #' sampling algorithm. If \code{NULL} it is read as the
-#' \code{number.ss.samples.per.iteration} attribute of \code{rds.data}. If that
+#' eponymous attribute of \code{rds.data}. If that
 #' is missing it defaults to 5000.
 #' @param number.ss.iterations The number of iterations of the sequential
 #' sampling algorithm. If that is missing it defaults to 5.
 #' @param control A list of control parameters for algorithm
-#' tuning. Constructed using \code{\link{control.rds.estimates}}.
+#' tuning. Constructed using\cr
+#' \code{\link{control.rds.estimates}}.
 #' @param hajek logical; Use the standard Hajek-type estimator of Gile (2011)
 #' or the standard Hortitz-Thompson. The default is TRUE.
 #' @param empir.lik If true, and outcome.variable is numeric, standard errors

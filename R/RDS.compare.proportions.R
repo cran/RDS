@@ -6,6 +6,7 @@
 #' @details This function preforms a bootstrap test comparing the 
 #' the rates of two variables against one another.
 #' @examples
+#' \donttest{
 #' data(faux)
 #' int1 <- RDS.bootstrap.intervals(faux, outcome.variable=c("X"), 
 #'	weight.type="RDS-II", uncertainty="Salganik", N=1000,
@@ -16,6 +17,7 @@
 #'	number.ss.samples.per.iteration=1000,
 #'	confidence.level=0.95, number.of.bootstrap.samples=100)
 #' RDS.compare.proportions(int1,int2)
+#' }
 #' @export
 RDS.compare.proportions <- function(first.interval,second.interval,M=10000){
 	
@@ -54,7 +56,9 @@ RDS.compare.proportions <- function(first.interval,second.interval,M=10000){
 
 
 #' Compares the rates of two variables against one another.
-#' @param data An object of class \code{rds.interval.estimates.list} with attribute \code{variables} containing a character vector of names of objects of class \code{rds.interval.estimate}.
+#' @param data An object of class \code{rds.interval.estimates.list} with attribute \cr
+#' \code{variables} containing a character vector of names of objects of class\cr
+#' \code{rds.interval.estimate}.
 #' @param variables A character vector of column names to select from \code{data}.
 #' @param confidence.level The confidence level for the confidence intervals. The default is 0.95 for 95\%.
 #' @param number.of.bootstrap.samples The number of Monte Carlo draws to determine the null distribution of the likelihood
@@ -68,18 +72,18 @@ RDS.compare.proportions <- function(first.interval,second.interval,M=10000){
 RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
    number.of.bootstrap.samples=5000,plot=FALSE,seed=1){
  	vars <- attr(data,"variables")
-        vars <- vars[match(variables,colnames(data),nomatch=NULL)]
-	first.interval <- get(vars[1])
-	bsresult1 <- attr(first.interval,"bsresult") 
+    vars <- vars[match(variables,colnames(data),nomatch=NULL)]
+	first.interval <- vars[1][[1]]
+	bsresult1 <- attr(first.interval,"bsresult")
 	boots1 <- if(is.matrix(bsresult1)) bsresult1 else bsresult1$bsests
 	levs1 <- colnames(boots1)
 	nlev1 <- length(levs1)
-	bs1 <- boots1[sample(1:nrow(boots1),replace=TRUE,size=number.of.bootstrap.samples),]
+	bs1 <-boots1[sample(1:nrow(boots1),replace=TRUE,size=number.of.bootstrap.samples),]
 	tmp <- first.interval$estimate
 	obs <- tmp[match(names(tmp),levs1)]
 	bs1 <- sweep(bs1,2,colMeans(bs1)-obs)
 
-	second.interval <- get(vars[2])
+	second.interval <- vars[2][[1]]
 	bsresult2 <- attr(second.interval,"bsresult") 
 	boots2 <- if(is.matrix(bsresult2)) bsresult2 else bsresult2$bsests
 	levs2 <- colnames(boots2)
@@ -102,25 +106,14 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
 	res <- as.data.frame(res)
 	class(res) <- c("pvalue.table","data.frame")
 #
-   x <- as.numeric(sapply(vars,function(x){get(x)$interval[2]}))
-   sigma <- as.numeric(sapply(vars,function(x){get(x)$interval[10]}))
-   if(plot){
-#    require(Hmisc)
-     yminus <- x - 1.96*sigma
-     yplus  <- x + 1.96*sigma
-     Hmisc::errbar(x=seq_along(x),y=x,yminus=yminus,
-      yplus=yplus,xlab="sequence",ylab="estimate",
-      main="Trend of estimates")
-   }
-#  obsL <- diff(x)
-   obsL <- 0
-  cat(sprintf("The p-value of a difference between the proportions is %s\n",format.pval(res[2,2])))
-  if(res[2,2] < (1-confidence.level)){
-    cat(sprintf("The hypothesis of equal proportions is rejected (at the %s%% level).\n",format(100*(1-confidence.level))))
-  }else{
-    cat(sprintf("The hypothesis of equal proportions is not rejected (at the %s%% level).\n",format(100*(1-confidence.level))))
-  }
-  if(plot){
+    x <- as.numeric( sapply(vars,function(x) {x$interval[2]}) )
+    sigma <- as.numeric( sapply(vars,function(x) {x$interval[10]}) )
+    if ('par' %in% plot) {par(mfrow = c(1,2))} else {par(mfrow = c(1,1))}
+
+    #  obsL <- diff(x)
+    obsL <- 0
+    
+    if("distributions" %in% plot){
     binn <- 500
     maxl <- 1.1*max(obsL,quantile(bs2[,2]-bs1[,2],0.99))
     minl <- (1/1.1)*min(obsL,quantile(bs2[,2]-bs1[,2],0.01))
@@ -129,12 +122,28 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
     gpdf <- predict(yl, newdata=r)
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
-#   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-   plot(x=r,y=gpdf,xlim=c(minl,maxl), type="l",
-     ylab="Density",
-     xlab="Difference in Proportions",main="Distribution of the Difference in Proportions",sub="The vertical line is the hypothesis of no difference in proportions")
-   abline(v=obsL,lty=2)
+    #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
+    plot(x=r,y=gpdf,xlim=c(minl,maxl), type="l", ylab="Density", xlab="Difference in Proportions",main="Distribution of the Difference in Proportions",sub="The vertical line is the hypothesis of no difference in proportions")
+    abline(v=obsL,lty=2)
+    }
+    
+    if("estimates" %in% plot){
+#    require(Hmisc)
+     yminus <- x - 1.96*sigma
+     yplus  <- x + 1.96*sigma
+     Hmisc::errbar(x=seq_along(x),y=x,yminus=yminus, yplus=yplus,xlab="sequence",ylab="estimate", main="Trend of Estimates")
+     title(main="Trend of Estimates") #bug in errbar?
+    }
+    
+
+    
+  cat(sprintf("The p-value of a difference between the proportions is %s\n",format.pval(res[2,2])))
+  if(res[2,2] < (1-confidence.level)){
+    cat(sprintf("The hypothesis of equal proportions is rejected (at the %s%% level).\n",format(100*(1-confidence.level))))
+  }else{
+    cat(sprintf("The hypothesis of equal proportions is not rejected (at the %s%% level).\n",format(100*(1-confidence.level))))
   }
+  
    invisible(res)
 }
 

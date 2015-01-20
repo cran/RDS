@@ -16,11 +16,13 @@
 #' @return Either nothing, or a ggplot2 object for plotting.
 #' @method plot rds.data.frame
 #' @examples 
+#' \donttest{
 #' data(fauxmadrona)
 #' plot(fauxmadrona)
 #' plot(fauxmadrona, plot.type='Recruits by wave')
 #' plot(fauxmadrona, plot.type='Recruits per seed')
 #' plot(fauxmadrona, plot.type='Recruits per subject')
+#' }
 plot.rds.data.frame <- function(x,
 		plot.type=c("Recruitment tree",
 				"Network size by wave",					
@@ -32,6 +34,7 @@ plot.rds.data.frame <- function(x,
 	
 	#for R CMD check
 	wave <- network <- ..n.. <- ..y.. <- seed <- color <- NULL
+	ggplotGrob <- function(x) {ggplot2::ggplot_gtable(ggplot2::ggplot_build(x))}
 	
 	x <- as.rds.data.frame(x)
 	plot.type <- plot.type[1]
@@ -130,10 +133,12 @@ plot.rds.data.frame <- function(x,
 #' @return A two-column vector of the positions of the nodes in the recruitment tree.
 #' @export
 #' @examples 
+#' \donttest{
 #' data(fauxmadrona)
 #' data(faux)
 #' reingold.tilford.plot(faux)
 #' reingold.tilford.plot(fauxmadrona,vertex.color="disease")
+#' }
 reingold.tilford.plot <-function(x, 
 		vertex.color=NULL,
 		vertex.color.scale = hue_pal(),
@@ -342,6 +347,3 @@ reingold.tilford.plot <-function(x,
 	}
 	invisible(t)
 }
-
-
-

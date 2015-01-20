@@ -93,7 +93,9 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 	if(is.numeric(outcome)){
 		estimate <- HT.estimate(weights=weights.all,outcome=outcome)
 		if(empir.lik){
-			attr(estimate,"EL.se") <- EL.se(weights.all,outcome,N=N)
+#		estimate <- EL.est(weights=weights.all,outcome=outcome,N=N)
+		  h.est <- homophily.estimates(rds.data,outcome.variable,N=N,weight.type=weight.type,recruitment=FALSE)
+ 		  attr(estimate,"EL.se") <- EL.se(weights.all,outcome,N=N,homophily=h.est@estimate)
                 }
 	}else{
 		outcome <- as.factor(outcome)

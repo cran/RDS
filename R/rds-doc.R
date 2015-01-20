@@ -3,7 +3,7 @@
 #'     with data collected using Respondent-Driven Sampling. This includes
 #'     Heckathorn's RDS-I and RDS-II estimators as well as Gile's Sequential
 #'     Sampler estimator.
-#' @import ggplot2 scales reshape2 gridExtra rgexf methods
+#' @import ggplot2 scales reshape2 gridExtra methods
 #' @docType package
 #' @name RDS
 #' @useDynLib RDS
@@ -50,16 +50,13 @@ NULL
 #' 
 #' \tabular{rlllllll}{ \bold{Name} \tab \bold{City} \tab \bold{Type} \tab
 #' \bold{Mean} \tab \bold{RDS I (SH)} \tab \bold{RDS II (VH)} \tab \bold{SS}
-#' \tab \bold{MA}\cr fauxsycamore \tab Oxford\tab seed dependency, 70\% \tab
-#' 0.2408 \tab 0.1087 \tab 0.1372 \tab 0.1814 \tab 0.1843\cr fauxmadrona \tab
+#' \cr fauxsycamore \tab Oxford\tab seed dependency, 70\% \tab
+#' 0.2408 \tab 0.1087 \tab 0.1372 \tab 0.1814\cr fauxmadrona \tab
 #' Seattle\tab no seed dependency, 50\% \tab 0.2592 \tab 0.1592 \tab 0.1644
-#' \tab 0.1941 \tab 0.1978\cr fauxbanksia \tab Perth\tab ? \tab ? \tab ? \tab ?
-#' \tab ? \tab ?  }
+#' \tab 0.1941}
 #' 
-#' Even with only 50\% sample, the VH is substantially biased , and the SS and
-#' MA do much better.  We expect the MA to perform about as well as the SS (and
-#' it does).
-#' 
+#' Even with only 50\% sample, the VH is substantially biased , and the SS
+#' does much better.
 #' 
 #' @name fauxmadrona
 #' @aliases fauxmadrona fauxmadrona.network
@@ -69,12 +66,7 @@ NULL
 #' @references Gile, Krista J., Handcock, Mark S., 2010 \emph{Respondent-driven
 #' Sampling: An Assessment of Current Methodology}, \emph{Sociological
 #' Methodology}, 40, 285-327.
-#' @source It is
-#' \code{/net/proj/rdsworkinggroup/kgile/sims/rdsnetsamps/rdssamp1000_5_2__-1.RData}
-#' \cr With networks at: \cr
-#' \code{/net/proj/rdsworkinggroup/kgile/sims/rdsnetsims/nets1000_5_21.RData}
-#' \cr It is network 1 and the extraction code is in the directory for YesYes
-#' on mosix. Look for "extract1.R" \cr The original network is included as
+#' @source The original network is included as
 #' \code{fauxmadrona.network} as a \code{network} object.  \cr The data set
 #' also includes the \code{data.frame} of the RDS data set as
 #' \code{fauxmadrona}.  \cr Use \code{data(package="RDS")} to get a full list

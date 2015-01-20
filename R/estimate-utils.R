@@ -1,15 +1,12 @@
-
-
-
-
 #TODO what is this function???
 #Is it the empirical likelihood standard error? What assumptions?
 #was EL_se
-EL.se<-function(weights,outcome,N=NULL, use.second.order=TRUE){
+EL.se<-function(weights,outcome,N=NULL, use.second.order=TRUE, homophily=1){
   nas <- is.na(weights)|is.na(outcome)
   nas <- nas | is.infinite(weights)|is.infinite(outcome)
   if(use.second.order){
       wij <- outer(weights[!nas],weights[!nas],"*")
+      wij <- wij * (1+(homophily-1)*outer(outcome[!nas],outcome[!nas],"!="))
 #
       wij[wij > 10*median(wij)] <- 10*median(wij)
 #     Compute the EL standard error (if available)
@@ -36,6 +33,41 @@ EL.se<-function(weights,outcome,N=NULL, use.second.order=TRUE){
 }
 
 
+
+
+EL.est<-function(weights,outcome,N=NULL, use.second.order=TRUE, homophily=1.35){
+  nas <- is.na(weights)|is.na(outcome)
+  nas <- nas | is.infinite(weights)|is.infinite(outcome)
+  if(use.second.order){
+      wij <- outer(weights[!nas],weights[!nas],"*")
+      wij <- wij / (1+(homophily-1)*outer(outcome[!nas],outcome[!nas],"=="))
+#
+#     wij[wij > 10*median(wij)] <- 10*median(wij)
+#     Compute the EL standard error (if available)
+      iLj <- row(wij)>col(wij)
+      oij <- 0.5*outer(outcome[!nas],outcome[!nas],"+")
+      estij <- sum(oij*wij*iLj)/sum(wij*iLj)
+      Gi <- apply((wij*wij*(oij-estij))*iLj,1,sum)
+      wvi <- apply((wij*wij)*iLj,1,sum)
+      varest <- 4*sum(Gi^2)/(sum(wvi)^2)
+      est <- estij
+  }else{
+      wi <- weights[!nas]
+      oi <- outcome[!nas]
+#
+      wi[wi > 10*median(wi)] <- 10*median(wi)
+#     Compute the EL standard error (if available)
+      esti  <- sum(oi*wi)/sum(wi)
+      varest <- sum(((oi-esti)*wi*wi)^2)/(sum(wi*wi)^2)
+      est <- esti
+  }
+  if(is.null(N) | !is.numeric(N)){
+    attr(est,"EL.se") <- sqrt( varest )
+  }else{
+    attr(est,"EL.se") <- sqrt( (N-length(outcome))*varest/(N-1) )
+  }
+  est
+}
 
 #' Get Horvitz-Thompson estimator assuming inclusion probability proportional
 #' to the inverse of network.var (i.e. degree).
@@ -116,6 +148,9 @@ count.transitions <- function(rds.data, group.variable)
 	ri <- match(recruiter.id,id)
 	rgrp <- grp[ri]
 	res <- table(rgrp,grp)
+	for(i in 1:nrow(res)){
+	  if(sum(res[i,])==0){res[i,] <- 0.1}
+	}
 	class(res) <- "matrix"
 	res
 }
@@ -129,7 +164,7 @@ count.transitions <- function(rds.data, group.variable)
 # IF 7/12/13: not sure what the point of this function is, I simplified the
 # code, but why not just use prop.table
 
-#' calculates the mle. ie.e the row proportions of the transition matrix
+#' calculates the mle. i.e. the row proportions of the transition matrix
 #' @param transition.counts a matrix or table of transition counts
 #' @details depreicated. just use prop.table(transition.counts,1)
 transition.counts.to.Markov.mle <- function(transition.counts){

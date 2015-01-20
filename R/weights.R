@@ -16,7 +16,8 @@
 #' this parameter is required for Gile's SS.
 #' @param subset A logical expression subsetting rds.data.
 #' @param control A list of control parameters for algorithm
-#' tuning. Constructed using \code{\link{control.rds.estimates}}.
+#' tuning. Constructed using\cr
+#' \code{\link{control.rds.estimates}}.
 #' @param ... Additional parameters passed to the individual weighting algorithms.
 #' @return A vector of weighte for each of the respondents. It is of the same
 #' size as the number of rows in \code{rds.data}.
@@ -98,14 +99,16 @@ rds.I.weights<-function(rds.data, outcome.variable, N=NULL,smoothed=FALSE,...){
 		rds.data[[network.size]][!remvalues] <- max(rds.data[[network.size]],na.rm=TRUE)+1
 	}
 	if(ncol(tij)>1){
-		if(smoothed){
-			smoothed.tij <- 0.5 * (tij + t(tij))
-			markov.mle <- transition.counts.to.Markov.mle(smoothed.tij)
-		}else{
-			smoothed.tij <- matrix(nrow=0,ncol=0)
-			markov.mle <- transition.counts.to.Markov.mle(tij)
-		}
+		smoothed.tij <- matrix(nrow=0,ncol=0)
+		markov.mle <- prop.table(tij, margin=1)
 		q.hat <- get.stationary.distribution(markov.mle)
+		if(smoothed){
+#			Demographic adjustment of raw transition counts
+			smoothed.tij <- sum(tij)*q.hat*markov.mle
+			smoothed.tij <- 0.5 * (smoothed.tij + t(smoothed.tij))
+			markov.mle <- prop.table(smoothed.tij, margin=1)
+			q.hat <- get.stationary.distribution(markov.mle)
+		}
 		h.hat <- get.h.hat(rds.data,outcome.variable,network.size)    
 		est <- as.list((q.hat/h.hat)/sum(q.hat/h.hat))
 		

@@ -134,7 +134,8 @@ summary.svyglm<-function (object, correlation = FALSE, df.resid=NULL,...)
 #' reports odds-ratios in place of coefficients in the summary table. 
 #' This only applies for the \code{binomial} family. Otherwise it is identical to
 #' \code{print.summary.svyglm}.
-#' The default in \code{print.summary.svyglm} is to display the log-odds-ratios 
+#' The default in\cr
+#' \code{print.summary.svyglm} is to display the log-odds-ratios 
 #' and this displays the exponetiated from
 #' and a 95% confidence interval in place of the standard errors and \code{z ratio} columns. The
 #' p-values are still displayed.
@@ -191,7 +192,7 @@ print.summary.svyglm.RDS<-function (x, digits = max(3, getOption("digits") - 3),
             coefs[!aliased, ] <- x$coefficients
         }
         if(x$family$family == "binomial"){
-	  coefs <- exp(coefs)
+	  coefs[,1:3] <- exp(coefs[,1:3])
 	}
         printCoefmat(coefs, digits = digits, signif.stars = signif.stars, 
             na.print = "NA", ...)
@@ -215,6 +216,7 @@ print.summary.svyglm.RDS<-function (x, digits = max(3, getOption("digits") - 3),
             }
         }
     }
+    cat("\n Warning: The model fit currently only adjusts for the first-order RDS weights, and not other complexities of the sampling.\n  The numerical summaries should be interpreted with caution.\n")
     cat("\n")
     invisible(x)
 }
