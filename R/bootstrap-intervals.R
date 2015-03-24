@@ -359,7 +359,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 #' @keywords survey manip
 #' @examples
 #' 
-#' \donttest{
+#' \dontrun{
 #' data(fauxmadrona)
 #' RDS.bootstrap.intervals(rds.data=fauxmadrona,weight.type="RDS-II",
 #'      uncertainty="Salganik",

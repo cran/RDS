@@ -79,7 +79,7 @@ heterophily on HIV in the population. If the population homophily on sex is
 there is modest homophily on sex.
 }
 \examples{
-\donttest{
+\dontrun{
 data(fauxmadrona)
 names(fauxmadrona)
 #

@@ -32,7 +32,7 @@ Several types of diagnostics are supported by the plot.type argument.
 'Recruits per subject' shows counts of how many subjects are recruited by each subject who ws non-terminal.
 }
 \examples{
-\donttest{
+\dontrun{
 data(fauxmadrona)
 plot(fauxmadrona)
 plot(fauxmadrona, plot.type='Recruits by wave')

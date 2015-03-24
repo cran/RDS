@@ -21,7 +21,7 @@ This function preforms a bootstrap test comparing the
 the rates of two variables against one another.
 }
 \examples{
-\donttest{
+\dontrun{
 data(faux)
 int1 <- RDS.bootstrap.intervals(faux, outcome.variable=c("X"),
 	weight.type="RDS-II", uncertainty="Salganik", N=1000,

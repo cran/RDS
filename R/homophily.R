@@ -378,7 +378,7 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
 #' \emph{Respondent-driven Sampling: An Assessment of Current Methodology}.
 #' Sociological Methodology 40, 285-327.
 #' @examples 
-#' \donttest{
+#' \dontrun{
 #' data(fauxmadrona)
 #' names(fauxmadrona)
 #' #

@@ -8,8 +8,9 @@
 \usage{
 \method{impute}{degree}(rds.data, max.coupons = NULL,
   type.impute = c("distribution", "mode", "median", "mean"),
-  recruit.time = NULL, reflect.time = TRUE, unit.scale = NULL,
-  unit.model = c("nbinom", "cmp"), guess = NULL, verbose = FALSE)
+  recruit.time = NULL, include.tree = FALSE, unit.scale = NULL,
+  unit.model = c("nbinom", "cmp"), optimism = FALSE, guess = NULL,
+  reflect.time = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame}
@@ -22,26 +23,42 @@ enrolled subject (i.e. the maximum number of recruitees for any subject).
 It can be of type \code{distribution},\code{mode},\code{median}, or \code{mean}
 with the first , the default, being a random draw from the conditional distribution.}
 
-\item{recruit.time}{vector; A numerical value for the data/time that the person was interviewed.}
+\item{recruit.time}{vector; An optional value for the data/time that the person was interviewed.
+It needs to resolve as a numeric vector with number of elements the number
+of rows of the data with non-missing values of the network variable. If it
+is a character name of a variable in the data then that variable is used.
+If it is NULL then the sequence number of the recruit in the data is used.
+If it is NA then the recruitment is not used in the model.
+Otherwise, the recruitment time is used in the model to better predict the degree of the person.}
 
-\item{reflect.time}{logical; If \code{FALSE} then the \code{recruit.time} is the time before the
-end of the study (instead of the time since the survey started or chronological time).}
+\item{include.tree}{logical; If \code{TRUE},
+augment the reported network size by the number of recruits and one for the recruiter (if any).
+This reflects a more accurate value for the degree, but is not the self-reported degree.
+In particular, it typically make the reported degree positive.}
 
-\item{unit.scale}{numeric; If not \code{NULL} it sets the numeric value of the scale parameter of the
-distribution of the unit sizes.
-For the negative bionimial, it is the multiplier on the variance of the negative binomial
+\item{unit.scale}{numeric; If not \code{NULL} it sets the numeric value of the scale parameter
+of the distribution of the unit sizes.
+For the negative binomial, it is the multiplier on the variance of the negative binomial
 compared to a Poisson (via the Poisson-Gamma mixture representation). Sometimes the scale is
-unnaturally large (e.g. 40) so this give the option of fixing it (rather than use the MLE of it). The
-model is fit with the parameter fixed at this passed value.}
+unnaturally large (e.g. 40) so this give the option of fixing it (rather than use
+the MLE of it). The model is fit with the parameter fixed at this passed value.}
 
 \item{unit.model}{The type of distribution for the unit sizes.
- It can be of \code{nbinom}, meaning a negative binomial. In this case \code{unit.scale} is the multiplier
+It can be of \code{nbinom}, meaning a negative binomial.
+In this case, \code{unit.scale} is the multiplier
 on the variance of the negative binomial compared to a Poisson of the same mean.
-The alernative is \code{cmp}, meaning a Conway-Maxwell-Poisson distribution. In this case \code{ unit.scale}
+The alternative is \code{cmp}, meaning a Conway-Maxwell-Poisson distribution.
+In this case, \code{unit.scale}
 is the scale parameter compared to a Poisson of the same mean (values less than one mean
 under-dispersed and values over one mean over-dispersed).}
 
+\item{optimism}{logical; If \code{TRUE} then add a term to the model indicating the
+measures the (proportional) inflation of the self-reported degrees relative to the unit sizes.}
+
 \item{guess}{vector; if not \code{NULL}, the initial parameter values for the MLE fitting.}
+
+\item{reflect.time}{logical; If \code{FALSE} then the \code{recruit.time} is the time before the
+end of the study (instead of the time since the survey started or chronological time).}
 
 \item{verbose}{logical; if this is \code{TRUE}, the program will print out additional}
 }

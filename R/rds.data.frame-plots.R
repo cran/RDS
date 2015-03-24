@@ -16,7 +16,7 @@
 #' @return Either nothing, or a ggplot2 object for plotting.
 #' @method plot rds.data.frame
 #' @examples 
-#' \donttest{
+#' \dontrun{
 #' data(fauxmadrona)
 #' plot(fauxmadrona)
 #' plot(fauxmadrona, plot.type='Recruits by wave')
@@ -133,7 +133,7 @@ plot.rds.data.frame <- function(x,
 #' @return A two-column vector of the positions of the nodes in the recruitment tree.
 #' @export
 #' @examples 
-#' \donttest{
+#' \dontrun{
 #' data(fauxmadrona)
 #' data(faux)
 #' reingold.tilford.plot(faux)

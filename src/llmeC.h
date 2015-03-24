@@ -3,7 +3,7 @@
 
 void gllnbmeC (double *v,
             int *n, 
-            double *srd, 
+            int *srd, 
             double *numrec, 
             double *rectime,
 	    int *maxcoupons,
@@ -15,7 +15,7 @@ void gllnbmeC (double *v,
 
 void gnbmepdfC (double *v,
             int *n, 
-            double *srd, 
+            int *srd, 
             double *numrec, 
             double *rectime,
 	    int *maxcoupons,
@@ -27,7 +27,7 @@ void gnbmepdfC (double *v,
 
 void gllcmpmeC (double *v,
             int *n, 
-            double *srd, 
+            int *srd, 
             double *numrec, 
             double *rectime,
 	    int *maxcoupons,
@@ -39,7 +39,7 @@ void gllcmpmeC (double *v,
 
 void gcmpmepdfC (double *v,
             int *n, 
-            double *srd, 
+            int *srd, 
             double *numrec, 
             double *rectime,
 	    int *maxcoupons,
@@ -49,4 +49,5 @@ void gcmpmepdfC (double *v,
 	    int *verbose
 			 );
 
+double poilog(int x, double mu, double sig);
 #endif /* LLMEC_H */

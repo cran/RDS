@@ -12,22 +12,36 @@
 #' @param type.impute The type of imputation based on the conditional distribution. 
 #'     It can be of type \code{distribution},\code{mode},\code{median}, or \code{mean} 
 #'     with the first , the default, being a random draw from the conditional distribution.
-#' @param recruit.time vector; A numerical value for the data/time that the person was interviewed.
-#' @param reflect.time logical; If \code{FALSE} then the \code{recruit.time} is the time before the 
-#' end of the study (instead of the time since the survey started or chronological time).
-#' @param unit.scale numeric; If not \code{NULL} it sets the numeric value of the scale parameter of the
-#' distribution of the unit sizes.
-#' For the negative bionimial, it is the multiplier on the variance of the negative binomial 
+#' @param recruit.time vector; An optional value for the data/time that the person was interviewed.
+#' It needs to resolve as a numeric vector with number of elements the number
+#' of rows of the data with non-missing values of the network variable. If it
+#' is a character name of a variable in the data then that variable is used.
+#' If it is NULL then the sequence number of the recruit in the data is used.
+#' If it is NA then the recruitment is not used in the model.
+#' Otherwise, the recruitment time is used in the model to better predict the degree of the person.
+#' @param include.tree logical; If \code{TRUE}, 
+#' augment the reported network size by the number of recruits and one for the recruiter (if any).
+#' This reflects a more accurate value for the degree, but is not the self-reported degree.
+#' In particular, it typically make the reported degree positive.
+#' @param unit.scale numeric; If not \code{NULL} it sets the numeric value of the scale parameter
+#' of the distribution of the unit sizes.
+#' For the negative binomial, it is the multiplier on the variance of the negative binomial 
 #' compared to a Poisson (via the Poisson-Gamma mixture representation). Sometimes the scale is 
-#' unnaturally large (e.g. 40) so this give the option of fixing it (rather than use the MLE of it). The
-#' model is fit with the parameter fixed at this passed value.
+#' unnaturally large (e.g. 40) so this give the option of fixing it (rather than use
+#' the MLE of it). The model is fit with the parameter fixed at this passed value.
 #' @param unit.model The type of distribution for the unit sizes.
-#'  It can be of \code{nbinom}, meaning a negative binomial. In this case \code{unit.scale} is the multiplier 
+#' It can be of \code{nbinom}, meaning a negative binomial. 
+#' In this case, \code{unit.scale} is the multiplier 
 #' on the variance of the negative binomial compared to a Poisson of the same mean.
-#' The alernative is \code{cmp}, meaning a Conway-Maxwell-Poisson distribution. In this case \code{ unit.scale}
+#' The alternative is \code{cmp}, meaning a Conway-Maxwell-Poisson distribution.
+#' In this case, \code{unit.scale}
 #' is the scale parameter compared to a Poisson of the same mean (values less than one mean 
 #' under-dispersed and values over one mean over-dispersed).
 #' @param guess vector; if not \code{NULL}, the initial parameter values for the MLE fitting. 
+#' @param reflect.time logical; If \code{FALSE} then the \code{recruit.time} is the time before the 
+#' end of the study (instead of the time since the survey started or chronological time).
+#' @param optimism logical; If \code{TRUE} then add a term to the model indicating the 
+#' measures the (proportional) inflation of the self-reported degrees relative to the unit sizes.
 #' @param verbose logical; if this is \code{TRUE}, the program will print out additional
 #   information about the fitting process.
 #' @export
@@ -43,9 +57,11 @@
 #' }
 impute.degree <-function(rds.data,max.coupons=NULL,
 	type.impute = c("distribution","mode","median","mean"),
-        recruit.time=NULL,reflect.time=TRUE, unit.scale=NULL, 
+        recruit.time=NULL,include.tree=FALSE, unit.scale=NULL, 
 	unit.model = c("nbinom","cmp"),
+	optimism = FALSE,
 	guess=NULL,
+        reflect.time=TRUE,
         verbose=FALSE){
  	if(!is(rds.data,"rds.data.frame"))
  		stop("rds.data must be of type rds.data.frame")   
@@ -58,20 +74,44 @@ impute.degree <-function(rds.data,max.coupons=NULL,
  	if(is.null(attr(rds.data,"network.size.variable")))
  		stop("rds.data must have a network.size attribute.")
         nr <- get.number.of.recruits(rds.data)
+        nw <- get.wave(rds.data)
+        ns <- get.seed.id(rds.data)
+        is.seed <- (get.rid(rds.data)=="seed")
+
  	if(is.null(max.coupons)){
  	  max.coupons <- attr(rds.data,"max.coupons")
  	  if(is.null(max.coupons)){
  		max.coupons <- max(nr,na.rm=TRUE)
           }
         }
-        if(is.null(recruit.time)){
-	 recruit.time <- 1:n
-        }
-        if(is.character(recruit.time)){
-	 recruit.time <- as.numeric(rds.data[[recruit.time]])
+        if(length(recruit.time)==1){
+         if(is.character(recruit.time)){
+          if(recruit.time=="wave"){
+	   recruit.times <- nw
+	  }else{
+	   recruit.times <- as.numeric(rds.data[[recruit.time]])
+          }
+	  recruit.time <- TRUE
+	 }else{
+	  if(is.na(recruit.time)){
+	   recruit.times <- rep(0,n)
+	   recruit.time <- FALSE
+	  }else{
+	   stop("The recruitment time should be a variable in the RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
+	  }
+	 }
+	}else{
+         if(length(recruit.time)==0 & is.null(recruit.time)){
+	  recruit.times <- 1:n
+         }else{
+          if(length(recruit.time)!=n | !is.numeric(recruit.time)){
+	   stop("The recruitment time should be a variable in the RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
+	 }}
+	 recruit.times <- recruit.time
+	 recruit.time <- TRUE
         }
         if(reflect.time){
-	 recruit.time <- max(recruit.time)-recruit.time
+	 recruit.times <- max(recruit.times)-recruit.times
         }
 	network.size <- as.numeric(rds.data[[attr(rds.data,"network.size.variable")]])
 	remvalues <- is.na(network.size)
@@ -86,30 +126,42 @@ impute.degree <-function(rds.data,max.coupons=NULL,
           stop(paste('You must specify a valid type.impute. The valid types are "distribution","mode","median", and "mean"'), call.=FALSE)
         }
 
-        nw <- get.wave(rds.data)
-        ns <- get.seed.id(rds.data)
-        is.seed <- (get.rid(rds.data)=="seed")
-        nsize <- pmax(network.size,nr+!is.seed)
+	#Augment the reported network size by the number of recruits and the recruiter (if any).
+	if(include.tree){
+          nsize <- pmax(network.size,nr+!is.seed)
+	}else{
+          nsize <- network.size
+	}
+
+#     names(fit$par) <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "Neg.Bin scale","Optimism")
+
         if(is.null(guess)){
+	 gmean <- HT.estimate(vh.weights(nsize),nsize)
+	 gsd <- sqrt(HT.estimate(vh.weights(nsize),(nsize-gmean)^2))
+         if(is.na(gmean)) gmean <- 38
          if(is.null(unit.scale)){
           if(unit.model=="cmp"){
-            guess <- c(38,-5,0,0.14,1.5,2)
+            guess <- c(gmean,-5,0,0.14,gsd,1)
           }else{
-            guess <- c(38,-5,0,0.14,1.5,2)
+            guess <- c(gmean,-5,0,0.14,gsd,1)
           }
          }else{
           if(unit.model=="cmp"){
-            guess <- c(38,-5,0,0.14,2)
+            guess <- c(gmean,-5,0,0.14,1)
           }else{
-            guess <- c(38,-5,0,0.14,2)
+            guess <- c(gmean,-5,0,0.14,1)
           }
          }
+         if(!recruit.time){guess <- guess[-3]}
+         if(!optimism){guess <- guess[-length(guess)]}
         }
-        fit <- memle(guess=guess,network.size=nsize[!remvalues],num.recruits=nr[!remvalues],recruit.time=recruit.time[!remvalues],max.coupons=max.coupons,unit.scale=unit.scale,unit.model=unit.model)
+        fit <- memle(guess=guess,network.size=nsize[!remvalues],num.recruits=nr[!remvalues],
+		     recruit.time=recruit.time,recruit.times=recruit.times[!remvalues],max.coupons=max.coupons,
+		     unit.scale=unit.scale,unit.model=unit.model,optimism=optimism)
         if(verbose){
          print(summary(fit))
         }
-        a=dmepdf(fit$coef,nsize,nr,recruit.time,unit.scale=unit.scale,unit.model=unit.model)
+        a=dmepdf(fit$coef,nsize,nr,fit$recruit.time,recruit.times,unit.scale=unit.scale,unit.model=unit.model,optimism=optimism)
 
 	is <- switch(type.impute, 
 		`distribution` = {
@@ -161,67 +213,13 @@ llmeall <- function(v,x,network.size,num.recruits,recruit.time,max.coupons=3,cut
  names(aaa) <- c("np","log-lik","AICC","BIC")
  aaa
 }
-dmepdfR <- function(v,network.size,num.recruits,recruit.time,max.coupons=3,K=100,nb.scale=NULL){
- g <- 1:K
- mean = v[1]
- beta0 = v[2]
- beta1 = v[3]
- ln.sd=v[4]
- if(is.null(nb.scale)){
-   scale=v[5]
-   opt=v[6]
- }else{
-   scale=nb.scale
-   opt=v[5]
- }
-#
- n <- length(network.size)
- g <- 1:K
- rt <- sort(unique(recruit.time))
- rtprob <- beta0 + beta1*rt
- rtprob <- exp(rtprob)/(1+exp(rtprob))
-#
- rx <- sort(unique(num.recruits))
- tr <- sort(unique(network.size))
- m.recruit.time <- match(recruit.time,rt)
- m.num.recruits <- match(num.recruits,rx)
- m.network.size <- match(network.size,tr)
- pdf <- dnbinom(x=g,mu=mean,size=scale)
- b1=array(0,dim=c(length(rx),length(g),length(rt)))
- for(x1 in seq_along(rx)){for(x2 in seq_along(g)){for(x3 in seq_along(rt)){
-   if((g[x2]<=max.coupons)|(rx[x1]<max.coupons)){
-    b1[x1,x2,x3] <- dbinom(x=rx[x1],size=g[x2],prob=rtprob[x3])
-   }else{
-    b1[x1,x2,x3] <- 1-pbinom(q=max.coupons-1,size=g[x2],prob=rtprob[x3])
-   }
- }}}
- b2=outer(log(tr),log(g),function(x1,x2){dnorm(x=x1-x2+log(opt),sd=ln.sd,log=FALSE)})
- b=matrix(0,ncol=length(num.recruits),nrow=length(g))
- for(x1 in seq_along(network.size)){
-  if(is.na(m.network.size[x1])){
-   a = b1[m.num.recruits[x1],,m.recruit.time[x1]]*pdf
-  }else{
-   a = (b2[m.network.size[x1],]*b1[m.num.recruits[x1],,m.recruit.time[x1]])*pdf
-  }
-  b[,x1] = a/sum(a)
- }
- b
-}
-#  File R/summary.ergm.R in package ergm, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
-#
-#  This software is distributed under the GPL-3 license.  It is free,
-#  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
-#
-#  Copyright 2003-2013 Statnet Commons
-#######################################################################
+#' @method summary me
 ###############################################################################
-# The <summary.ergm> function prints a 'summary of model fit' table and returns
+# The <summary.me> function prints a 'summary of model fit' table and returns
 # the components of this table and several others listed below
 #
 # --PARAMETERS--
-#   object     : an ergm object
+#   object     : an me object
 #
 #
 # --IGNORED PARAMETERS--
@@ -237,14 +235,12 @@ dmepdfR <- function(v,network.size,num.recruits,recruit.time,max.coupons=3,K=100
 #                default=.0001
 #
 # --RETURNED--
-#   ans: a "summary.ergm" object as a list containing the following
+#   ans: a "summary.me" object as a list containing the following
 #      formula         : object$formula
-#      randomeffects   : object$re
-#      digits          : the 'digits' inputted to <summary.ergm> or the default
+#      digits          : the 'digits' inputted to <summary.me> or the default
 #                        value (despite the fact the digits will be 5)
-#      correlation     : the 'correlation' passed to <summary.ergm>
-#      degeneracy.value: object$degenarcy.value
-#      covariance      : the 'covariance' passed to <summary.ergm>
+#      correlation     : the 'correlation' passed to <summary.me>
+#      covariance      : the 'covariance' passed to <summary.me>
 #      iterations      : object$iterations
 #      samplesize      : NA if 'pseudolikelihood'=TRUE, object$samplesize otherwise
 #      message         : a message regarding the validity of the standard error
@@ -335,21 +331,12 @@ summary.me <- function (object, ...,
   ans
 }
 
-#  File R/print.summary.ergm.R in package ergm, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
-#
-#  This software is distributed under the GPL-3 license.  It is free,
-#  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
-#
-#  Copyright 2003-2013 Statnet Commons
-#######################################################################
-###############################################################################
-# The <print.summary.ergm> function prints a subset of the information given
-# by <summary.ergm>
+#' @method print.summary me
+# The <print.summary.me> function prints a subset of the information given
+# by <summary.me>
 #
 # --PARAMETERS--
-#   x           : a "summary.ergm" object, as returned by <summary.ergm>
+#   x           : a "summary.me" object, as returned by <summary.me>
 #   digits      : the number of significant digits for the coefficients;
 #                 default=max(3, getOption("digits")-3)
 #   correlation : whether the correlation matrix of the estimated parameters

@@ -9,7 +9,7 @@
 
 void gllcmpmeC (double *v,
             int *n, 
-            double *srd, 
+            int *srd, 
             double *numrec, 
             double *rectime,
 	    int *maxcoupons,
@@ -21,8 +21,8 @@ void gllcmpmeC (double *v,
   int i, iu, ni, Ki, maxc;
   double dmean,beta0,beta1,lnsd,scale,opt;
   int give_log0=0;
-  double temp, loglik, sint, u;
-  double zero=0.0;
+  double temp, loglik, sint, u, maxpdf;
+  double zero=0.0, eps=0.00001;
 
   Ki=(*K);
   ni=(*n);
@@ -59,20 +59,19 @@ void gllcmpmeC (double *v,
   pdf[0]=0.0;
   pdf[1]=1.0;
   temp=1.0;
-  for (iu=2; iu<=Ki; iu++){
+  maxpdf=1.0;
+  loglik=1.0;
+  iu=2;
+  while ((loglik > eps*maxpdf) & (iu <= Ki) ){
     u=iu-1.0;
     loglik=exp(u*log(dmean)-scale*lgamma(u+1.0));
     pdf[iu]=loglik;
+    if(loglik>maxpdf) maxpdf=loglik;
     temp+=loglik;
+    iu++;
 //Rprintf("u %d pdf %f\n",iu,pdf[iu]);
   }
-  for (iu=(1+Ki); iu<=(2*Ki); iu++){
-    u=iu-1.0;
-    loglik=exp(u*log(dmean)-scale*lgamma(u+1.0));
-    pdf[Ki]+=loglik;
-//Rprintf("u %d pdf Ki %f\n",iu,pdf[Ki]);
-    temp+=loglik;
-  }
+  Ki=iu-1;
 //Rprintf("%f %f %f %f %f\n",dmean,scale,beta0,beta1,temp);
   for (iu=1; iu<=Ki; iu++){
     pdf[iu]/=temp;
@@ -92,7 +91,8 @@ void gllcmpmeC (double *v,
      temp *= 1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0);
 //  Rprintf("< %f\n",1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0));
     }
-    temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
+//  temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
+    temp *= poilog(srd[i],log(u)-log(opt),lnsd);
 //  Rprintf("dn %f\n", dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0));
     sint += temp; 
    }
@@ -105,7 +105,7 @@ void gllcmpmeC (double *v,
 
 void gcmpmepdfC (double *v,
             int *n, 
-            double *srd, 
+            int *srd, 
             double *numrec, 
             double *rectime,
 	    int *maxcoupons,
@@ -117,8 +117,8 @@ void gcmpmepdfC (double *v,
   int i, iu, ni, Ki, maxc;
   double dmean,beta0,beta1,lnsd,scale,opt;
   int give_log0=0;
-  double temp, sint, u;
-  double zero=0.0;
+  double temp, sint, u, loglik, maxpdf;
+  double zero=0.0, eps=0.00001;
 
   Ki=(*K);
   ni=(*n);
@@ -147,18 +147,19 @@ void gcmpmepdfC (double *v,
   temp=1.0;
   pdf[0]=0.0;
   pdf[1]=1.0;
-  for (iu=2; iu<=Ki; iu++){
+  maxpdf=1.0;
+  loglik=1.0;
+  iu=2;
+  while ((loglik > eps*maxpdf) & (iu <= Ki) ){
     u=iu-1.0;
-    pdf[iu]=exp(u*log(dmean)-scale*lgamma(u+1.0));
-    temp+=pdf[iu];
+    loglik=exp(u*log(dmean)-scale*lgamma(u+1.0));
+    pdf[iu]=loglik;
+    if(loglik>maxpdf) maxpdf=loglik;
+    temp+=loglik;
+    iu++;
+//Rprintf("u %d pdf %f\n",iu,pdf[iu]);
   }
-  for (iu=(1+Ki); iu<=(2*Ki); iu++){
-//  u=(double)iu;
-    u=iu-1.0;
-    sint=exp(u*log(dmean)-scale*lgamma(u+1.0));
-    pdf[Ki]+=sint;
-    temp+=sint;
-  }
+  Ki=iu-1;
   for (iu=1; iu<=Ki; iu++){
     pdf[iu]/=temp;
   }
@@ -175,9 +176,10 @@ void gcmpmepdfC (double *v,
      temp *= 1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0);
 //  Rprintf("< %f\n",1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0));
     }
-    if(srd[i]>0.0){
-     temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
-    }
+//  if(srd[i]>0.0){
+//   temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
+     temp *= poilog(srd[i],log(u)-log(opt),lnsd);
+//  }
 //  Rprintf("dn %f\n", dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0));
     sint += temp; 
     dpdf[i*Ki+iu-1] = temp; 
@@ -186,13 +188,14 @@ void gcmpmepdfC (double *v,
     dpdf[i*Ki+iu-1] /= sint; 
    }
   }
+  *K=Ki;
   free(rtprob);
   free(pdf);
 }
 
 void gllnbmeC (double *v,
             int *n, 
-            double *srd, 
+            int *srd, 
             double *numrec, 
             double *rectime,
 	    int *maxcoupons,
@@ -202,10 +205,10 @@ void gllnbmeC (double *v,
 	    int *verbose
 			 ) {
   int i, iu, ni, Ki, maxc;
-  double dmean,beta0,beta1,lnsd,scale,opt;
+  double dmean,beta0,beta1,lnsd,shape,opt;
   int give_log0=0;
   double temp, loglik, sint, u;
-  double zero=0.0;
+  double zero=0.0, eps=0.00001;
 
   Ki=(*K);
   ni=(*n);
@@ -219,10 +222,10 @@ void gllnbmeC (double *v,
   beta1=v[2];
   lnsd=exp(v[3]);
   if((*nbscale)<0.0){
-    scale=dmean / exp(v[4]);
+    shape=dmean / exp(v[4]);
     opt=exp(v[5]);
   }else{
-    scale=(*nbscale);
+    shape=(*nbscale);
     opt=exp(v[4]);
   }
   for (i=0; i<ni; i++){
@@ -232,15 +235,19 @@ void gllnbmeC (double *v,
   }
   pdf[0]=0.0;
   temp=0.0;
-  for (iu=1; iu<=Ki; iu++){
+  iu=1;
+  while ((temp < 1.0 - eps) & (iu <= Ki) ){
     u=((double)iu)-1.0;
-    loglik = dnbinom_mu(u,scale,dmean,give_log0);
+    loglik = dnbinom_mu(u,shape,dmean,give_log0);
     temp+=loglik;
     pdf[iu] = loglik;
+    iu++;
   }
+  Ki=iu-1;
+  *K=iu-1;
   pdf[Ki]+=1.0-temp;
-//pdf[Ki]+=1.0-temp-dnbinom_mu(0.0,scale,dmean,give_log0);
-//temp=1.0-dnbinom_mu(0.0,scale,dmean,give_log0);
+//pdf[Ki]+=1.0-temp-dnbinom_mu(0.0,shape,dmean,give_log0);
+//temp=1.0-dnbinom_mu(0.0,shape,dmean,give_log0);
 //for (iu=1; iu<=Ki; iu++){
 //  pdf[iu]/=temp;
 //}
@@ -258,7 +265,9 @@ void gllnbmeC (double *v,
      temp *= 1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0);
 //  Rprintf("< %f\n",1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0));
     }
-    temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
+//  temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
+    temp *= poilog(srd[i],log(u)-log(opt),lnsd);
+//  Rprintf("pln srd %d %f\n", srd[i], poilog(srd[i],log(u)-log(opt),lnsd));
 //  Rprintf("dn %f\n", dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0));
     sint += temp; 
    }
@@ -271,7 +280,7 @@ void gllnbmeC (double *v,
 
 void gnbmepdfC (double *v,
             int *n, 
-            double *srd, 
+            int *srd, 
             double *numrec, 
             double *rectime,
 	    int *maxcoupons,
@@ -281,10 +290,10 @@ void gnbmepdfC (double *v,
 	    int *verbose
 			 ) {
   int i, iu, ni, Ki, maxc;
-  double dmean,beta0,beta1,lnsd,scale,opt;
+  double dmean,beta0,beta1,lnsd,shape,opt;
   int give_log0=0;
   double temp, sint, u;
-  double zero=0.0;
+  double zero=0.0, eps=0.00001;
 
   Ki=(*K);
   ni=(*n);
@@ -298,10 +307,10 @@ void gnbmepdfC (double *v,
   beta1=v[2];
   lnsd=v[3];
   if((*nbscale)<zero){
-    scale=dmean / (v[4]-1.0);
+    shape=dmean / (v[4]-1.0);
     opt=v[5];
   }else{
-    scale=(*nbscale);
+    shape=(*nbscale);
     opt=v[4];
   }
   for (i=0; i<ni; i++){
@@ -310,15 +319,19 @@ void gnbmepdfC (double *v,
   }
   pdf[0]=zero;
   temp=zero;
-  for (iu=1; iu<=Ki; iu++){
+  iu=1;
+  while ((temp < 1.0 - eps) & (iu <= Ki) ){
     u=((double)iu)-1.0;
-    sint = dnbinom_mu(u,scale,dmean,give_log0);
+    sint = dnbinom_mu(u,shape,dmean,give_log0);
     temp+=sint;
     pdf[iu] = sint;
+    iu++;
   }
+  Ki=iu-1;
+  *K=iu-1;
   pdf[Ki]+=1.0-temp;
-//pdf[Ki]+=1.0-temp-dnbinom_mu(0.0,scale,dmean,give_log0);
-//temp=1.0-dnbinom_mu(0.0,scale,dmean,give_log0);
+//pdf[Ki]+=1.0-temp-dnbinom_mu(0.0,shape,dmean,give_log0);
+//temp=1.0-dnbinom_mu(0.0,shape,dmean,give_log0);
 //for (iu=1; iu<=Ki; iu++){
 //  pdf[iu]/=temp;
 //}
@@ -335,9 +348,10 @@ void gnbmepdfC (double *v,
      temp *= 1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0);
 //  Rprintf("< %f\n",1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0));
     }
-    if(srd[i]>zero){
-     temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
-    }
+//  if(srd[i]>zero){
+//   temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
+     temp *= poilog(srd[i],log(u)-log(opt),lnsd);
+//  }
 //  Rprintf("dn %f\n", dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0));
     sint += temp; 
     dpdf[i*Ki+iu-1] = temp; 

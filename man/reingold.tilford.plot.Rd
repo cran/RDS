@@ -46,7 +46,7 @@ A two-column vector of the positions of the nodes in the recruitment tree.
 Plots the recruitment network uing the reingold tilford algorithm.
 }
 \examples{
-\donttest{
+\dontrun{
 data(fauxmadrona)
 data(faux)
 reingold.tilford.plot(faux)

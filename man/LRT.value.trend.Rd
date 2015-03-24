@@ -38,7 +38,7 @@ but can be determined by a simple Monte Carlo.\cr
 The function requires the isotone library.
 }
 \examples{
-\donttest{
+\dontrun{
 x <- c(0.16,0.15,0.3)
 sigma <- c(0.04,0.04,0.1)
 LRT.value.trend(x,sigma)

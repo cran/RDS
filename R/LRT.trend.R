@@ -112,8 +112,10 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
     binn <- 500
     maxl <- max(1.1*obsL[3],quantile(L[,3],0.95))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-    yl <- locfit::locfit.raw(locfit::lp(L[,3],nn=0.1,h=0.8), xlim=c(0,maxl))
-    gpdf <- predict(yl, newdata=r)
+#   yl <- locfit::locfit.raw(locfit::lp(L[,3],nn=0.1,h=0.8), xlim=c(0,maxl))
+#   gpdf <- predict(yl, newdata=r)
+    gpdf=bgk_kde(L[,3],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
+    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
@@ -124,8 +126,10 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
    abline(v=obsL[3],lty=2)
     maxl <- max(1.1*obsL[1],quantile(L[,1],0.95))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-    yl <- locfit::locfit.raw(locfit::lp(L[,1],nn=0.1,h=0.8), xlim=c(0,maxl))
-    gpdf <- predict(yl, newdata=r)
+#   yl <- locfit::locfit.raw(locfit::lp(L[,1],nn=0.1,h=0.8), xlim=c(0,maxl))
+#   gpdf <- predict(yl, newdata=r)
+    gpdf=bgk_kde(L[,1],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
+    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
@@ -136,8 +140,10 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
    abline(v=obsL[1],lty=2)
     maxl <- max(1.1*obsL[2],quantile(L[,2],0.95))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-    yl <- locfit::locfit.raw(locfit::lp(L[,2],nn=0.1,h=0.8), xlim=c(0,maxl))
-    gpdf <- predict(yl, newdata=r)
+#   yl <- locfit::locfit.raw(locfit::lp(L[,2],nn=0.1,h=0.8), xlim=c(0,maxl))
+#   gpdf <- predict(yl, newdata=r)
+    gpdf=bgk_kde(L[,2],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
+    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
@@ -148,8 +154,10 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
    abline(v=obsL[2],lty=2)
     maxl <- max(1.1*obsL[4],quantile(L[,4],0.95))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-    yl <- locfit::locfit.raw(locfit::lp(L[,4],nn=0.1,h=0.8), xlim=c(0,maxl))
-    gpdf <- predict(yl, newdata=r)
+#   yl <- locfit::locfit.raw(locfit::lp(L[,4],nn=0.1,h=0.8), xlim=c(0,maxl))
+#   gpdf <- predict(yl, newdata=r)
+    gpdf=bgk_kde(L[,4],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
+    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
@@ -199,7 +207,7 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
 #' @keywords survey manip
 #' @examples
 #' 
-#' \donttest{
+#' \dontrun{
 #' x <- c(0.16,0.15,0.3)
 #' sigma <- c(0.04,0.04,0.1)
 #' LRT.value.trend(x,sigma)
@@ -288,8 +296,10 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
     binn <- 500
     maxl <- max(1.1*obsL[6],quantile(L[,3],0.99))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-    yl <- locfit::locfit.raw(locfit::lp(L[,6],nn=0.1,h=0.8), xlim=c(0,maxl))
-    gpdf <- predict(yl, newdata=r)
+#   yl <- locfit::locfit.raw(locfit::lp(L[,6],nn=0.1,h=0.8), xlim=c(0,maxl))
+#   gpdf <- predict(yl, newdata=r)
+    gpdf=bgk_kde(L[,6],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
+    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
@@ -300,8 +310,10 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
    abline(v=obsL[6],lty=2)
     maxl <- max(1.1*obsL[4],quantile(L[,4],0.99))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-    yl <- locfit::locfit.raw(locfit::lp(L[,4],nn=0.1,h=0.8), xlim=c(0,maxl))
-    gpdf <- predict(yl, newdata=r)
+#   yl <- locfit::locfit.raw(locfit::lp(L[,4],nn=0.1,h=0.8), xlim=c(0,maxl))
+#   gpdf <- predict(yl, newdata=r)
+    gpdf=bgk_kde(L[,4],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
+    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
@@ -312,8 +324,10 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
    abline(v=obsL[4],lty=2)
     maxl <- max(1.1*obsL[5],quantile(L[,5],0.99))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-    yl <- locfit::locfit.raw(locfit::lp(L[,5],nn=0.1,h=0.8), xlim=c(0,maxl))
-    gpdf <- predict(yl, newdata=r)
+#   yl <- locfit::locfit.raw(locfit::lp(L[,5],nn=0.1,h=0.8), xlim=c(0,maxl))
+#   gpdf <- predict(yl, newdata=r)
+    gpdf=bgk_kde(L[,5],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
+    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]

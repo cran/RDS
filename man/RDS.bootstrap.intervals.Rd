@@ -87,7 +87,7 @@ variables. It optionally uses attributes of the RDS data set to determine
 the type of estimator and type of uncertainty estimate to use.
 }
 \examples{
-\donttest{
+\dontrun{
 data(fauxmadrona)
 RDS.bootstrap.intervals(rds.data=fauxmadrona,weight.type="RDS-II",
      uncertainty="Salganik",

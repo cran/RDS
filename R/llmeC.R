@@ -1,436 +1,280 @@
-memle <-function(network.size,num.recruits,recruit.time,max.coupons=3,unit.scale=NULL,
-
+memle <-function(network.size,num.recruits,recruit.time=FALSE,recruit.times=rep(0,length(network.size)),
+	  max.coupons=3,unit.scale=NULL,
           unit.model="nbinom",
-
           cutoff=0,cutabove=1000,
-
-          guess=c(3,0,0,0.6,1.5,0),
-
-          method="BFGS", hessian=TRUE, K=max(100,network.size), verbose=FALSE){
-
+          guess=c(3,0,-0.00001,0.6,1.5,0),
+          method="BFGS", hessian=TRUE, K=max(1000,network.size), optimism=TRUE, verbose=FALSE){
  logit <- function(p){log(p/(1-p))}
-
- if(is.null(unit.scale)){
-
-   unit.scale <- -1
-
-   vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]),exp(l[5])+1,exp(l[6]))}
-
-   ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]),log(v[5]-1),log(v[6]))}
-
-   gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]),exp(l[5]),exp(l[6]))}
-
+ if(is.null(unit.scale) | !is.numeric(unit.scale)){
+  unit.scale <- -1
+  if(!recruit.time){
+   if(optimism) {
+    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4])+1,exp(l[5]))}
+    ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]-1),log(v[5]))}
+    gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]),exp(l[5]))}
+   }else{
+    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4])+1)}
+    ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]-1))}
+    gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]))}
+   }
+  }else{
+   if(optimism) {
+    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]),exp(l[5])+1,exp(l[6]))}
+    ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]),log(v[5]-1),log(v[6]))}
+    gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]),exp(l[5]),exp(l[6]))}
+   }else{
+    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]),exp(l[5])+1)}
+    ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]),log(v[5]-1))}
+    gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]),exp(l[5]))}
+   }
+  }
  }else{
-
-   unit.scale <- 1
-
-   vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]),exp(l[5]))}
-
-   ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]),log(v[5]))}
-
-   gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]),exp(l[5]))}
-
+# unit.scale <- 1
+  if(!recruit.time){
+   if(optimism) {
+    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4]))}
+    ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]))}
+    gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]))}
+   }else{
+    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]))}
+    ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]))}
+    gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]))}
+   }
+  }else{
+   if(optimism) {
+    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]),exp(l[5]))}
+    ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]),log(v[5]))}
+    gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]),exp(l[5]))}
+   }else{
+    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]))}
+    ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]))}
+    gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]))}
+   }
+  }
  }
-
  n <- length(network.size)
-
 #
-
  llme <- switch(unit.model,
-
   "cmp"=llcmpme, "nbinom"=llnbme)
-
  if(sum(network.size>=cutoff & network.size <= cutabove) > 0){
-
-  aaa <- optim(par=ltrans(guess),fn=llme,
-
+  fit <- optim(par=ltrans(guess),fn=llme,
    method=method,
-
-   hessian=hessian,control=list(fnscale=-10),
-
+   hessian=hessian,control=list(fnscale=-10, trace=6),
    n=n,
-
    recruit.time=recruit.time,
-
+   recruit.times=recruit.times,
    num.recruits=num.recruits,network.size=network.size,
-
    max.coupons=max.coupons,K=K,
-
-   unit.scale=unit.scale, verbose=verbose)
-
-   if(unit.scale<0){
-
-    if(unit.model=="cmp"){
-
-     names(aaa$par) <- c("CMP mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "CMP skew","Optimism")
-
-    }else{
-
-     names(aaa$par) <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "Neg.Bin scale","Optimism")
-
-    }
-
-   }else{
-
+   unit.scale=unit.scale, optimism=optimism, verbose=verbose)
+  if(recruit.time & fit$par[3] > 0.0001){
+    recruit.time <- FALSE
     if(unit.scale<0){
-
-     names(aaa$par) <- c("CMP mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.","Optimism")
-
+     if(optimism) {
+      vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4])+1,exp(l[5]))}
+      ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]-1),log(v[5]))}
+      gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]),exp(l[5]))}
+     }else{
+      vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4])+1)}
+      ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]-1))}
+      gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]))}
+     }
     }else{
-
-     names(aaa$par) <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.","Optimism")
-
+     if(optimism) {
+      vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4]))}
+      ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]))}
+      gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]))}
+     }else{
+      vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]))}
+      ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]))}
+      gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]))}
+     }
     }
-
-   }
-
-   v=vtrans(aaa$par)
-
-# if(is.psd(-aaa$hessian)){
-
-  if(TRUE){
-
-   g=gtrans(aaa$par)
-
-   asycov = diag(g) %*% robust.inverse(-aaa$hessian) %*% diag(g)
-
-   dimnames(asycov) <- list(names(aaa$par),names(aaa$par))
-
-   asyse <- sqrt(diag(asycov))
-
-   asycor <- diag(1/asyse) %*% asycov %*% diag(1/asyse)
-
-   dimnames(asycor) <- dimnames(asycov)
-
-   names(asyse) <- names(aaa$par)
-
-   ccc <- list(coef=v,iterations=as.numeric(aaa$counts[1]),
-
-               covar=asycov,se=asyse,asycor=asycor,
-
-               df=length(network.size),loglik=aaa$value,
-
-               loglik.null=-length(network.size)*(log(max(network.size))+log(max.coupons+1)))
-
-  }else{
-
-   ccc <- list(theta=vtrans(aaa$par))
-
+    guess <- guess[-3]
+    fit <- optim(par=ltrans(guess),fn=llme,
+     method=method,
+     hessian=hessian,control=list(fnscale=-1,trace=6),
+     n=n,
+     recruit.time=recruit.time,
+     recruit.times=recruit.times,
+     num.recruits=num.recruits,network.size=network.size,
+     max.coupons=max.coupons,K=K,
+     unit.scale=unit.scale, optimism=optimism,
+     verbose=verbose)
   }
-
- }else{
-
-  ccc <- list(theta=rep(NA,length=6))
-
- }
-
- class(ccc) <- "me"
-
- ccc
-
-}
-
-memle.nb <-function(network.size,num.recruits,recruit.time,max.coupons=3,nb.scale=NULL,cutoff=0,cutabove=1000,
-
-          guess=c(3,0,0,0.6,1,0),
-
-          method="BFGS", hessian=TRUE, K=max(100,network.size), verbose=FALSE){
-
- logit <- function(p){log(p/(1-p))}
-
- if(is.null(nb.scale)){
-
-   nb.scale <- -1
-
-   vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]),exp(l[5])+1,exp(l[6]))}
-
-   ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]),log(v[5]-1),log(v[6]))}
-
-   gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]),exp(l[5]),exp(l[6]))}
-
- }else{
-
-   nb.scale <- 1
-
-   vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]),exp(l[5]))}
-
-   ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]),log(v[5]))}
-
-   gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]),exp(l[5]))}
-
- }
-
- n <- length(network.size)
-
-#
-
- if(sum(network.size>=cutoff & network.size <= cutabove) > 0){
-
-  aaa <- optim(par=ltrans(guess),fn=llnbme,
-
-   method=method,
-
-   hessian=hessian,control=list(fnscale=-10),
-
-   n=n,
-
-   recruit.time=recruit.time,
-
-   num.recruits=num.recruits,network.size=network.size,
-
-   max.coupons=max.coupons,K=K,
-
-   nb.scale=nb.scale, verbose=verbose)
-
-   if(nb.scale<0){
-
-     names(aaa$par) <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "Neg.Bin scale","Optimism")
-
+  if(unit.scale<0){
+   if(unit.model=="cmp"){
+    if(!recruit.time){
+     namesf <- c("CMP mean","Recruitment Odds","Error log-s.d.", "CMP skew","Optimism")
+    }else{
+     namesf <- c("CMP mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "CMP skew","Optimism")
+    }
    }else{
-
-     names(aaa$par) <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.","Optimism")
-
+    if(!recruit.time){
+     namesf <- c("Neg.Bin. mean","Recruitment Odds","Error log-s.d.", "Neg.Bin scale","Optimism")
+    }else{
+     namesf <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "Neg.Bin scale","Optimism")
+    }
    }
-
-   v=vtrans(aaa$par)
-
-# if(is.psd(-aaa$hessian)){
-
-  if(TRUE){
-
-   g=gtrans(aaa$par)
-
-   asycov = diag(g) %*% robust.inverse(-aaa$hessian) %*% diag(g)
-
-   dimnames(asycov) <- list(names(aaa$par),names(aaa$par))
-
-   asyse <- sqrt(diag(asycov))
-
-   asycor <- diag(1/asyse) %*% asycov %*% diag(1/asyse)
-
-   dimnames(asycor) <- dimnames(asycov)
-
-   names(asyse) <- names(aaa$par)
-
-   ccc <- list(coef=v,iterations=as.numeric(aaa$counts[1]),
-
-               covar=asycov,se=asyse,asycor=asycor,
-
-               df=length(network.size),loglik=aaa$value,
-
-               loglik.null=-length(network.size)*(log(max(network.size))+log(max.coupons+1)))
-
   }else{
-
-   ccc <- list(theta=vtrans(aaa$par))
-
+   if(unit.model=="cmp"){
+    if(!recruit.time){
+     namesf <- c("CMP mean","Recruitment Odds","Error log-s.d.","Optimism")
+    }else{
+     namesf <- c("CMP mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.","Optimism")
+    }
+   }else{
+    if(!recruit.time){
+     namesf <- c("Neg.Bin. mean","Recruitment Odds","Error log-s.d.","Optimism")
+    }else{
+     namesf <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.","Optimism")
+    }
+   }
   }
-
+  if(!optimism) namesf <- namesf[-length(namesf)]
+  names(fit$par) <- namesf
+  v=vtrans(fit$par)
+# if(is.psd(-fit$hessian)){
+  if(TRUE){
+   g=gtrans(fit$par)
+   asycov = diag(g) %*% robust.inverse(-fit$hessian) %*% diag(g)
+   dimnames(asycov) <- list(names(fit$par),names(fit$par))
+   asyse <- sqrt(diag(asycov))
+   asycor <- diag(1/asyse) %*% asycov %*% diag(1/asyse)
+   dimnames(asycor) <- dimnames(asycov)
+   names(asyse) <- names(fit$par)
+   out <- list(coef=v,iterations=as.numeric(fit$counts[1]),
+               covar=asycov,se=asyse,asycor=asycor,
+               df=length(network.size),loglik=fit$value, recruit.time=recruit.time,
+               loglik.null=-length(network.size)*(log(max(network.size))+log(max.coupons+1)))
+  }else{
+   out <- list(theta=vtrans(fit$par), recruit.time=recruit.time)
+  }
  }else{
-
-  ccc <- list(theta=rep(NA,length=6))
-
+  out <- list(theta=rep(NA,length=6))
  }
-
- class(ccc) <- "me"
-
- ccc
-
-}
-
-llnbme <- function(v,n,network.size,num.recruits,recruit.time,
-
-                  max.coupons,K=100,unit.scale=-1,verbose=FALSE){
-
- Cret <- .C("gllnbmeC",
-
-           v=as.double(v),
-
-           n=as.integer(n),
-
-           srd=as.double(network.size),
-
-           numrec=as.double(num.recruits),
-
-           rectime=as.double(recruit.time),
-
-           maxcoupons=as.integer(max.coupons),
-
-           K=as.integer(K),
-
-           nb.scale=as.double(unit.scale),
-
-           llik=as.double(0),
-
-           verbose=as.integer(verbose), PACKAGE="RDS")
-
- out=Cret$llik
-
- if(verbose){cat(sprintf("llik=%f\n", out))}
-
- if(is.infinite(out)){out <- -10^10}
-
- if(is.na(out)){out <- -10^10}
-
+ class(out) <- "me"
  out
-
 }
-
-
-
-dnbmepdf <- function(v,network.size,num.recruits,recruit.time,max.coupons=3,K=100,nb.scale=NULL,verbose=FALSE){
-
- if(is.null(nb.scale)){
-
-   nb.scale <- -1
-
- }else{
-
-   nb.scale <- 1
-
+llcmpme <- function(v,n,network.size,num.recruits,recruit.time, recruit.times,
+                  max.coupons,K=1000,unit.scale=-1,optimism=TRUE,verbose=FALSE){
+ if(!recruit.time){
+    v <- c(v[1:2],0,v[-c(1:2)])
+    recruit.times <- rep(0,n)
  }
-
- n <- length(network.size)
-
- network.size[is.na(network.size)] <- -1
-
- Cret <- .C("gnbmepdfC",
-
-           v=as.double(v),
-
-           n=as.integer(n),
-
-           srd=as.double(network.size),
-
-           numrec=as.double(num.recruits),
-
-           rectime=as.double(recruit.time),
-
-           maxcoupons=as.integer(max.coupons),
-
-           K=as.integer(K),
-
-           nb.scale=as.double(nb.scale),
-
-           pdf=double(n*K),
-
-           verbose=as.integer(verbose), PACKAGE="RDS")
-
-
-
-  return(matrix(Cret$pdf,ncol=n,nrow=K))
-
-}
-
-llcmpme <- function(v,n,network.size,num.recruits,recruit.time,
-
-                  max.coupons,K=100,unit.scale=-1,verbose=FALSE){
-
+ if(!optimism){
+    v <- c(v,1)
+ }
  Cret <- .C("gllcmpmeC",
-
            v=as.double(v),
-
            n=as.integer(n),
-
-           srd=as.double(network.size),
-
+           srd=as.integer(network.size),
            numrec=as.double(num.recruits),
-
-           rectime=as.double(recruit.time),
-
+           rectime=as.double(recruit.times),
            maxcoupons=as.integer(max.coupons),
-
            K=as.integer(K),
-
            cmp.scale=as.double(unit.scale),
-
            llik=as.double(0),
-
            verbose=as.integer(verbose), PACKAGE="RDS")
-
  out=Cret$llik
-
- if(verbose){cat(sprintf("llik=%f\n", out))}
-
+ if(verbose){cat(sprintf("llik=%f mean=%f\n", out,v[1]))}
  if(is.infinite(out)){out <- -10^10}
-
  if(is.na(out)){out <- -10^10}
-
  out
-
 }
-
-
-
-dmepdf <- function(v,network.size,num.recruits,recruit.time,max.coupons=3,K=100,unit.scale=NULL,unit.model="nbinom",verbose=FALSE){
-
- if(is.null(unit.scale)){
-
-   unit.scale <- -1
-
- }else{
-
-   unit.scale <- 1
-
+llnbme <- function(v,n,network.size,num.recruits,recruit.time,recruit.times,
+                  max.coupons,K=1000,unit.scale=-1,optimism=TRUE,verbose=FALSE){
+ if(!recruit.time){
+    v <- c(v[1:2],0,v[-c(1:2)])
+    recruit.times <- rep(0,n)
  }
-
+ if(!optimism){
+    v <- c(v,1)
+ }
+ Cret <- .C("gllnbmeC",
+           v=as.double(v),
+           n=as.integer(n),
+           srd=as.integer(network.size),
+           numrec=as.double(num.recruits),
+           rectime=as.double(recruit.times),
+           maxcoupons=as.integer(max.coupons),
+           K=as.integer(K),
+           nb.scale=as.double(unit.scale),
+           llik=as.double(0),
+           verbose=as.integer(verbose), PACKAGE="RDS")
+ out=Cret$llik
+ if(verbose){cat(sprintf("llik=%f mean=%f\n", out,v[1]))}
+ if(is.infinite(out)){out <- -10^10}
+ if(is.na(out)){out <- -10^10}
+ out
+}
+dnbmepdf <- function(v,network.size,num.recruits,recruit.time,recruit.times,max.coupons=3,K=1000,
+		     nb.scale=NULL,optimism=TRUE,verbose=FALSE){
+ if(is.null(nb.scale)){
+   nb.scale <- -1
+ }else{
+   nb.scale <- 1
+ }
  n <- length(network.size)
-
- network.size[is.na(network.size)] <- -1
-
- if(unit.model=="cmp"){
-
-   Cret <- .C("gcmpmepdfC",
-
-             v=as.double(v),
-
-             n=as.integer(n),
-
-             srd=as.double(network.size),
-
-             numrec=as.double(num.recruits),
-
-             rectime=as.double(recruit.time),
-
-             maxcoupons=as.integer(max.coupons),
-
-             K=as.integer(K),
-
-             cmp.scale=as.double(unit.scale),
-
-             pdf=double(n*K),
-
-             verbose=as.integer(verbose), PACKAGE="RDS")
-
- }else{
-
-   Cret <- .C("gnbmepdfC",
-
-             v=as.double(v),
-
-             n=as.integer(n),
-
-             srd=as.double(network.size),
-
-             numrec=as.double(num.recruits),
-
-             rectime=as.double(recruit.time),
-
-             maxcoupons=as.integer(max.coupons),
-
-             K=as.integer(K),
-
-             nb.scale=as.double(unit.scale),
-
-             pdf=double(n*K),
-
-             verbose=as.integer(verbose), PACKAGE="RDS")
-
+ if(!recruit.time){
+    v <- c(v[1:2],0,v[-c(1:2)])
+    recruit.times <- rep(0,n)
  }
-
-
-
-  return(matrix(Cret$pdf,ncol=n,nrow=K))
-
+ if(!optimism){
+    v <- c(v,1)
+ }
+ network.size[is.na(network.size)] <- -1
+ Cret <- .C("gnbmepdfC",
+           v=as.double(v),
+           n=as.integer(n),
+           srd=as.integer(network.size),
+           numrec=as.double(num.recruits),
+           rectime=as.double(recruit.times),
+           maxcoupons=as.integer(max.coupons),
+           K=as.integer(K),
+           nb.scale=as.double(nb.scale),
+           pdf=double(n*K),
+           verbose=as.integer(verbose), PACKAGE="RDS")
+  return(matrix(Cret$pdf[1:(n*Cret$K)],ncol=n,nrow=Cret$K))
 }
 
+dmepdf <- function(v,network.size,num.recruits,recruit.time,recruit.times,max.coupons=3,K=1000,
+		   unit.scale=NULL,unit.model="nbinom",optimism=TRUE,verbose=FALSE){
+ if(is.null(unit.scale) | !is.numeric(unit.scale)){
+   unit.scale <- -1
+ }
+ n <- length(network.size)
+ if(!recruit.time){
+    v <- c(v[1:2],0,v[-c(1:2)])
+    recruit.times <- rep(0,n)
+ }
+ if(!optimism){
+    v <- c(v,1)
+ }
+ network.size[is.na(network.size)] <- -1
+ if(unit.model=="cmp"){
+   Cret <- .C("gcmpmepdfC",
+             v=as.double(v),
+             n=as.integer(n),
+             srd=as.integer(network.size),
+             numrec=as.double(num.recruits),
+             rectime=as.double(recruit.times),
+             maxcoupons=as.integer(max.coupons),
+             K=as.integer(K),
+             cmp.scale=as.double(unit.scale),
+             pdf=double(n*K),
+             verbose=as.integer(verbose), PACKAGE="RDS")
+ }else{
+   Cret <- .C("gnbmepdfC",
+             v=as.double(v),
+             n=as.integer(n),
+             srd=as.integer(network.size),
+             numrec=as.double(num.recruits),
+             rectime=as.double(recruit.times),
+             maxcoupons=as.integer(max.coupons),
+             K=as.integer(K),
+             nb.scale=as.double(unit.scale),
+             pdf=double(n*K),
+             verbose=as.integer(verbose), PACKAGE="RDS")
+ }
+  return(matrix(Cret$pdf[1:(n*Cret$K)],ncol=n,nrow=Cret$K))
+}

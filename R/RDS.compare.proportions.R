@@ -6,7 +6,7 @@
 #' @details This function preforms a bootstrap test comparing the 
 #' the rates of two variables against one another.
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' data(faux)
 #' int1 <- RDS.bootstrap.intervals(faux, outcome.variable=c("X"), 
 #'	weight.type="RDS-II", uncertainty="Salganik", N=1000,
@@ -118,8 +118,13 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
     maxl <- 1.1*max(obsL,quantile(bs2[,2]-bs1[,2],0.99))
     minl <- (1/1.1)*min(obsL,quantile(bs2[,2]-bs1[,2],0.01))
     r <- seq(minl, maxl, length = binn + 1)[-1] - 0.5*(maxl-minl)/binn
-    yl <- locfit::locfit.raw(locfit::lp(bs2[,2]-bs1[,2],nn=0.1,h=0.8), xlim=c(minl,maxl))
-    gpdf <- predict(yl, newdata=r)
+#   yl <- locfit::locfit.raw(locfit::lp(bs2[,2]-bs1[,2],nn=0.1,h=0.8), xlim=c(minl,maxl))
+#   gpdf <- predict(yl, newdata=r)
+    Range=range(bs2[,2]-bs1[,2])
+    a=bgk_kde(bs2[,2]-bs1[,2],n=2^(ceiling(log(maxl-minl)/log(2))),
+	        MIN=1.1*Range[1]-0.1*Range[2],
+	        MAX=1.1*Range[2]-0.1*Range[1])
+    gpdf <- spline(x=a[1,],y=a[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
     #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
