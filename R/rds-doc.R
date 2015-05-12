@@ -12,6 +12,7 @@ NULL
 
 #' A Simulated RDS Data Set
 #' @description This is a faux set used to demonstrate RDS functions and analysis.
+#' It is used is some simple examples and has categorical variables "X", "Y" and "Z".
 #' @docType data
 #' @keywords datasets
 #' @format An rds.data.frame object

@@ -29,17 +29,18 @@
 
 robust.inverse <- function (H, tol = sqrt(.Machine$double.eps)) 
 {
-    iH <- try(solve(H), silent=TRUE)
-    if(inherits(iH,"try-error")){
+    iH <- .catchToList(solve(H))
+    if(!is.null(iH$error)){
      if (length(dim(H)) > 2 || !(is.numeric(H) || is.complex(H))) 
         stop("H must be a numeric or complex matrix")
      if (!is.matrix(H)) 
         H <- as.matrix(H)
-     Hsvd <- try(svd(H), silent=TRUE)
-     if(inherits(Hsvd,"try-error")){
-        warning("ergm did not compute all the standard errrors.")
+     Hsvd <- .catchToList(svd(H))
+     if(!is.null(Hsvd$error)){
+        warning("RDS did not compute all the standard errrors.")
         return(H)
      }
+     Hsvd <- Hsvd$value
      if (is.complex(H)) 
         Hsvd$u <- Conj(Hsvd$u)
      Positive <- Hsvd$d > max(tol * Hsvd$d[1], 0)
@@ -50,6 +51,6 @@ robust.inverse <- function (H, tol = sqrt(.Machine$double.eps))
      else Hsvd$v[, Positive, drop = FALSE] %*% ((1/Hsvd$d[Positive]) * 
          t(Hsvd$u[, Positive, drop = FALSE]))
     }else{
-     iH
+     iH$value
     }
 }

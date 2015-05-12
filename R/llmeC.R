@@ -3,7 +3,7 @@ memle <-function(network.size,num.recruits,recruit.time=FALSE,recruit.times=rep(
           unit.model="nbinom",
           cutoff=0,cutabove=1000,
           guess=c(3,0,-0.00001,0.6,1.5,0),
-          method="BFGS", hessian=TRUE, K=max(1000,network.size), optimism=TRUE, verbose=FALSE){
+          method="BFGS", hessian=TRUE, K=max(1000,network.size), optimism=TRUE, maxit=100, verbose=FALSE){
  logit <- function(p){log(p/(1-p))}
  if(is.null(unit.scale) | !is.numeric(unit.scale)){
   unit.scale <- -1
@@ -59,7 +59,7 @@ memle <-function(network.size,num.recruits,recruit.time=FALSE,recruit.times=rep(
  if(sum(network.size>=cutoff & network.size <= cutabove) > 0){
   fit <- optim(par=ltrans(guess),fn=llme,
    method=method,
-   hessian=hessian,control=list(fnscale=-10, trace=6),
+   hessian=hessian,control=list(fnscale=-10, trace=6, maxit=maxit),
    n=n,
    recruit.time=recruit.time,
    recruit.times=recruit.times,
@@ -92,7 +92,7 @@ memle <-function(network.size,num.recruits,recruit.time=FALSE,recruit.times=rep(
     guess <- guess[-3]
     fit <- optim(par=ltrans(guess),fn=llme,
      method=method,
-     hessian=hessian,control=list(fnscale=-1,trace=6),
+     hessian=hessian,control=list(fnscale=-1,trace=6, maxit=maxit),
      n=n,
      recruit.time=recruit.time,
      recruit.times=recruit.times,

@@ -22,7 +22,7 @@ void gllcmpmeC (double *v,
   double dmean,beta0,beta1,lnsd,scale,opt;
   int give_log0=0;
   double temp, loglik, sint, u, maxpdf;
-  double zero=0.0, eps=0.00001;
+  double eps=0.00001;
 
   Ki=(*K);
   ni=(*n);
@@ -118,7 +118,7 @@ void gcmpmepdfC (double *v,
   double dmean,beta0,beta1,lnsd,scale,opt;
   int give_log0=0;
   double temp, sint, u, loglik, maxpdf;
-  double zero=0.0, eps=0.00001;
+  double eps=0.00001;
 
   Ki=(*K);
   ni=(*n);
@@ -208,7 +208,7 @@ void gllnbmeC (double *v,
   double dmean,beta0,beta1,lnsd,shape,opt;
   int give_log0=0;
   double temp, loglik, sint, u;
-  double zero=0.0, eps=0.00001;
+  double eps=0.00001;
 
   Ki=(*K);
   ni=(*n);

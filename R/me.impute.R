@@ -40,10 +40,11 @@
 #' @param guess vector; if not \code{NULL}, the initial parameter values for the MLE fitting. 
 #' @param reflect.time logical; If \code{FALSE} then the \code{recruit.time} is the time before the 
 #' end of the study (instead of the time since the survey started or chronological time).
-#' @param optimism logical; If \code{TRUE} then add a term to the model indicating the 
-#' measures the (proportional) inflation of the self-reported degrees relative to the unit sizes.
+#' @param optimism logical; If \code{TRUE} then add a term to the model allowing
+#' the (proportional) inflation of the self-reported degrees relative to the unit sizes.
+#' @param maxit integer; The maximum number of iterations in the likelihood maximization. By default it is 100.
 #' @param verbose logical; if this is \code{TRUE}, the program will print out additional
-#   information about the fitting process.
+#  information about the fitting process.
 #' @export
 #' @examples
 #' \dontrun{
@@ -62,7 +63,8 @@ impute.degree <-function(rds.data,max.coupons=NULL,
 	optimism = FALSE,
 	guess=NULL,
         reflect.time=TRUE,
-        verbose=FALSE){
+	maxit=100,
+        verbose=TRUE){
  	if(!is(rds.data,"rds.data.frame"))
  		stop("rds.data must be of type rds.data.frame")   
 	
@@ -102,7 +104,7 @@ impute.degree <-function(rds.data,max.coupons=NULL,
 	 }
 	}else{
          if(length(recruit.time)==0 & is.null(recruit.time)){
-	  recruit.times <- 1:n
+	  recruit.time <- 1:n
          }else{
           if(length(recruit.time)!=n | !is.numeric(recruit.time)){
 	   stop("The recruitment time should be a variable in the RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
@@ -110,6 +112,13 @@ impute.degree <-function(rds.data,max.coupons=NULL,
 	 recruit.times <- recruit.time
 	 recruit.time <- TRUE
         }
+	if(any(is.na(recruit.times))){
+         med.index <- cbind(c(2,1:(n-1)),c(3,3:n,n))
+         moving.median=function(i){median(recruit.times[med.index[i,]],na.rm=TRUE)}
+	 while(any(is.na(recruit.times))){
+          for(i in which(is.na(recruit.times))){recruit.times[i] <- moving.median(i)}
+	 }
+	}
         if(reflect.time){
 	 recruit.times <- max(recruit.times)-recruit.times
         }
@@ -157,7 +166,7 @@ impute.degree <-function(rds.data,max.coupons=NULL,
         }
         fit <- memle(guess=guess,network.size=nsize[!remvalues],num.recruits=nr[!remvalues],
 		     recruit.time=recruit.time,recruit.times=recruit.times[!remvalues],max.coupons=max.coupons,
-		     unit.scale=unit.scale,unit.model=unit.model,optimism=optimism)
+		     unit.scale=unit.scale,unit.model=unit.model,optimism=optimism,maxit=maxit)
         if(verbose){
          print(summary(fit))
         }
@@ -248,7 +257,7 @@ llmeall <- function(v,x,network.size,num.recruits,recruit.time,max.coupons=3,cut
 #      aic             : the AIC goodness of fit measure
 #      bic             : the BIC goodness of fit measure
 #      coefs           : the dataframe of parameter coefficients and their
-#                        standard erros and p-values
+#                        standard errors and p-values
 #      asycov          : the asymptotic covariance matrix
 #      asyse           : the asymptotic standard error matrix
 #
@@ -267,9 +276,11 @@ summary.me <- function (object, ...,
   }
   
   if(is.null(object$covar)){
-    asycov <- try(robust.inverse(-object$hessian), silent=TRUE)
-    if(inherits(asycov,"try-error")){
+    asycov <- .catchToList(robust.inverse(-object$hessian))
+    if(!is.null(asycov$error)){
       asycov <- diag(1/diag(-object$hessian))
+    }else{
+      asycov <- asycov$value
     }
   }else{
     asycov <- object$covar

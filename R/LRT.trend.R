@@ -104,7 +104,7 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
   if("estimates" %in% plot){
     yminus <- x - 1.96*sigma
     yplus  <- x + 1.96*sigma
-    Hmisc::errbar(x=seq_along(x),y=x,yminus=yminus,
+    errorbar(x=seq_along(x),y=x,yminus=yminus,
      yplus=yplus,xlab="sequence",ylab="estimate",
      main="Trend of estimates")
   }
@@ -288,7 +288,7 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
   if("estimates" %in% plot){
     yminus <- x - 1.96*sigma
     yplus  <- x + 1.96*sigma
-    Hmisc::errbar(x=seq_along(x),y=x,yminus=yminus,
+    errorbar(x=seq_along(x),y=x,yminus=yminus,
      yplus=yplus,xlab="sequence",ylab="estimate",
      main="Trend of estimates")
   }

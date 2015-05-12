@@ -71,7 +71,7 @@ RDS.compare.proportions <- function(first.interval,second.interval,M=10000){
 #' @export
 RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
    number.of.bootstrap.samples=5000,plot=FALSE,seed=1){
- 	vars <- attr(data,"variables")
+    vars <- attr(data,"variables")
     vars <- vars[match(variables,colnames(data),nomatch=NULL)]
 	first.interval <- vars[1][[1]]
 	bsresult1 <- attr(first.interval,"bsresult")
@@ -133,11 +133,9 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
     }
     
     if("estimates" %in% plot){
-#    require(Hmisc)
      yminus <- x - 1.96*sigma
      yplus  <- x + 1.96*sigma
-     Hmisc::errbar(x=seq_along(x),y=x,yminus=yminus, yplus=yplus,xlab="sequence",ylab="estimate", main="Trend of Estimates")
-     title(main="Trend of Estimates") #bug in errbar?
+     errorbar(x=seq_along(x),y=x,yminus=yminus, yplus=yplus,xlab="sequence",ylab="estimate", main="Trend of Estimates")
     }
     
 
