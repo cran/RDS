@@ -115,8 +115,8 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
     
     if("distributions" %in% plot){
     binn <- 500
-    maxl <- 1.1*max(obsL,quantile(bs2[,2]-bs1[,2],0.99))
-    minl <- (1/1.1)*min(obsL,quantile(bs2[,2]-bs1[,2],0.01))
+    maxl <- 1.1*max(obsL,stats::quantile(bs2[,2]-bs1[,2],0.99))
+    minl <- (1/1.1)*min(obsL,stats::quantile(bs2[,2]-bs1[,2],0.01))
     r <- seq(minl, maxl, length = binn + 1)[-1] - 0.5*(maxl-minl)/binn
 #   yl <- locfit::locfit.raw(locfit::lp(bs2[,2]-bs1[,2],nn=0.1,h=0.8), xlim=c(minl,maxl))
 #   gpdf <- predict(yl, newdata=r)
@@ -124,7 +124,7 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
     a=bgk_kde(bs2[,2]-bs1[,2],n=2^(ceiling(log(maxl-minl)/log(2))),
 	        MIN=1.1*Range[1]-0.1*Range[2],
 	        MAX=1.1*Range[2]-0.1*Range[1])
-    gpdf <- spline(x=a[1,],y=a[2,],xout=r)$y
+    gpdf <- stats::spline(x=a[1,],y=a[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
     #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]

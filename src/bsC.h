@@ -9,6 +9,7 @@ void bsC (
             double *tempties,
             double *pis, 
             double *est,
+            double *nm,
             int *numsamp,
             int *offby,
             int *K, 

@@ -230,6 +230,7 @@ bottleneck.plot <- function(rds.data, outcome.variable, est.func=RDS.II.estimate
     grid::grid.draw(.arrangeGrob_RDS(...,as.table=as.table, clip=clip,
        main=main, sub=sub, left=left, legend=legend))
 }
+#' @importFrom grDevices n2mfrow
 .arrangeGrob_RDS <- function(..., as.table=FALSE, clip=TRUE,
                         main=NULL, sub=NULL, left=NULL,
                         legend=NULL) {
@@ -261,7 +262,7 @@ bottleneck.plot <- function(rds.data, outcome.variable, est.func=RDS.II.estimate
   
   n <- length(grobs)
   
-  nm <- n2mfrow(n)
+  nm <- grDevices::n2mfrow(n)
   
   if(is.null(params.layout$nrow) & is.null(params.layout$ncol)) 
     {
@@ -300,7 +301,7 @@ bottleneck.plot <- function(rds.data, outcome.variable, est.func=RDS.II.estimate
       
       g.tmp <- switch(ct,
                       ggplot = ggplot2::ggplotGrob(grobs[[ii.table]]),
-                      trellis = gridExtra::latticeGrob(grobs[[ii.table]]),
+                      trellis = grid::grob(p=grobs[[ii.table]], cl="lattice"),
                       grob = grobs[[ii.table]], 
                       stop("input must be grobs!"))
       

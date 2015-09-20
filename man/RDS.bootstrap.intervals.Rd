@@ -6,8 +6,8 @@
 \usage{
 RDS.bootstrap.intervals(rds.data, outcome.variable, weight.type = NULL,
   uncertainty = NULL, N = NULL, subset = NULL, confidence.level = 0.95,
-  number.of.bootstrap.samples = NULL, fast = TRUE, useC = TRUE,
-  ci.type = "t", control = control.rds.estimates(), ...)
+  number.of.bootstrap.samples = NULL, continuous = NA, fast = TRUE,
+  useC = TRUE, ci.type = "t", control = control.rds.estimates(), ...)
 }
 \arguments{
 \item{rds.data}{An \code{rds.data.frame} that indicates recruitment patterns
@@ -45,6 +45,11 @@ The default is 0.95 for 95\%.}
 \item{number.of.bootstrap.samples}{The number of bootstrap samples to take
 in estimating the uncertainty of the estimator. If \code{NULL} it defaults
 to the number necessary to compute the standard error to accuracy 0.001.}
+
+\item{continuous}{A numerical value between 0 and 1 or the character value \code{"mean"} or \code{NA}.
+If \code{"mean"} it will estimate the population mean of the \code{outcome.variable}.
+If it is a numeric value betwern zero and one, estimate this quantile of the population distribution of the
+\code{outcome.variable}. Otherwise it will compute the population frequencies of each value of the \code{outcome.variable}.}
 
 \item{fast}{Use a fast bootstrap where the weights are reused from the
 estimator rather than being recomputed for each bootstrap sample.}

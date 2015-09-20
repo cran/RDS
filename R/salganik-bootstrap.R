@@ -153,9 +153,9 @@ salganik.bootstrap.se <- function(rds.data,group.variable,
 	
 	result <- result[apply(!is.nan(result),1,all),]
 	if(nrow(result)>1){
-		a=(sqrt(diag(var(result))))	
+		a=(sqrt(diag(stats::var(result))))	
 	}else{
-		a=(sqrt(var(as.numeric(result))))	
+		a=(sqrt(stats::var(as.numeric(result))))	
 	}
 	attr(a,"bsresult") <- result
 	return(a)

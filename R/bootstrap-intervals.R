@@ -3,7 +3,7 @@
 RDS.bootstrap.intervals.local <- function(rds.data, 
 		outcome.variable, weight.type, uncertainty, N, subset,number.of.bootstrap.samples, 
 		confidence.level=.95, 
-		control=control.rds.estimates(), fast=FALSE, useC=FALSE, csubset="", ci.type="t", ...) {
+		control=control.rds.estimates(), continuous=NA, fast=FALSE, useC=FALSE, csubset="", ci.type="t", ...) {
 	
 	if (is(rds.data, "rds.data.frame")) {
 		if (!(outcome.variable %in% names(rds.data))) {
@@ -13,8 +13,17 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 		network.size <- attr(rds.data, "network.size.variable")
 		if(!(network.size %in% names(rds.data)))
 			stop("invalid network size variable")
-		else
-			rds.data[[network.size]] <- as.numeric(rds.data[[network.size]])
+		else{
+	         is.cts <- FALSE
+	         is.quantile <- FALSE
+#	         if( storage.mode(rds.data[[outcome.variable]])=="double"  |
+#	             (!is.na(continuous) && length(continuous)==1 && continuous < 1 && continuous > 0) ){is.cts <- TRUE}
+ 	         if( !is.na(continuous) && length(continuous)==1 ){
+		   if( is.character(continuous) && continuous == "mean" ){is.cts <- TRUE}
+ 	           if( is.numeric(continuous)   && continuous < 1 && continuous > 0 ){is.cts <- TRUE;is.quantile <- TRUE}
+		 }
+		 rds.data[[network.size]] <- as.numeric(rds.data[[network.size]])
+		}
 	}
 	else {
 		stop("rds.data must be of type rds.data.frame")
@@ -24,14 +33,14 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 		weight.type <- "Gile's SS"
 	}
 	weight.type <- match.arg(weight.type,
-			c("Gile's SS","RDS-I", "RDS-II", "RDS-I (DS)","Arithmetic Mean"))
+			c("Gile's SS","RDS-I", "RDS-II", "RDS-I (DS)","Good-Fellows","Arithmetic Mean"))
 	if(is.na(weight.type)) { 
 		# User typed an unrecognizable name
-		stop(paste('You must specify a valid weight.type. The valid types are "Gile\'s SS","RDS-I", "RDS-II", "RDS-I (DS)", and "Arithmetic Mean"'), call.=FALSE)
+		stop(paste('You must specify a valid weight.type. The valid types are "Gile\'s SS","RDS-I", "RDS-II", "RDS-I (DS)", "Good-Fellows", and "Arithmetic Mean"'), call.=FALSE)
 	}
 	
 	if (is.null(uncertainty)) {
-		if(weight.type=="Gile's SS"){
+		if(weight.type %in% c("Gile's SS","Good-Fellows")){
 			uncertainty <- "Gile"
 		}else if(weight.type %in% c("RDS-I","RDS-I (DS)","RDS-II")){
 			uncertainty <- "Salganik"
@@ -49,8 +58,6 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 			cat("\nNote: Using the data's mid population size estimate: N =", 
 				N, "\n")
 	}
-	
-
 	
 	###########################################################################################
 	# Check for missing values and warn the user if any are removed.   This should really taken
@@ -93,6 +100,8 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 			rds.data.nomiss[[outcome.variable]] <- outcome
 		}
 	}
+
+	if( mean(duplicated(rds.data.nomiss[[outcome.variable]],na.rm=TRUE)) < control$discrete.cutoff ){is.cts <- TRUE}
 	
 	#only categorical estimates are supported
 	outcome <- factor(rds.data.nomiss[[outcome.variable]])
@@ -114,6 +123,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 			N=N,
 			weight.type=weight.type,
 			control=control,
+			continuous=continuous, is.cts=is.cts, is.quantile=is.quantile,
 			empir.lik=TRUE, useC=useC,
 			...)
 	
@@ -125,7 +135,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 	  weights.all <- rds@weights
         }
 	
-        if(is.null(number.of.bootstrap.samples) | number.of.bootstrap.samples < 10){
+        if(is.null(number.of.bootstrap.samples) || number.of.bootstrap.samples < 10){
           if(is.rds.interval.estimate(rds)){
             EL.se <- matrix(rds$interval, ncol = 6, byrow = FALSE)[1,5]
           }else{
@@ -158,7 +168,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 		"pivotal"={
 		  bsests <- attr(bs,"bsresult")
 		  bsests <- bsests[,match(names(bs),outclasses)]
-		  qcrit <- t(apply(bsests,2,quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
+		  qcrit <- t(apply(bsests,2,stats::quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
  		  estimate[,2:3] <- 2*observed.estimate - qcrit
 #	  	  estimate[, 1] <- 2*observed.estimate-apply(bsests,2,mean,na.rm=TRUE)
 		  estimate[, 1] <- observed.estimate
@@ -166,7 +176,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 		"quantile"={
 		  bsests <- attr(bs,"bsresult")
 		  bsests <- bsests[,match(names(bs),outclasses)]
-		  qcrit <- t(apply(bsests,2,quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
+		  qcrit <- t(apply(bsests,2,stats::quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
 		  estimate[,2:3] <- qcrit[,2:1]
 		  estimate[, 1] <- observed.estimate
 		  estimate},
@@ -174,7 +184,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 		  if(all(observed.estimate >= 0) & (any(observed.estimate < 0.15) | any(estimate[,2:3]<0|estimate[,2:3]>1))){
 		    bsests <- attr(bs,"bsresult")
 		    bsests <- bsests[,match(names(bs),outclasses)]
-		    qcrit <- t(apply(bsests,2,quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
+		    qcrit <- t(apply(bsests,2,stats::quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
 		    estimate[,2:3] <- qcrit[,2:1]
 		  }
 		  estimate[estimate[,2]<0,2] <- 0
@@ -202,32 +212,34 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 				N = N,
 				weight.type=weight.type, 
 				number.of.bootstrap.samples = number.of.bootstrap.samples,
-				control=control, fast=fast, useC=useC,
+				control=control, continuous=continuous, is.cts=is.cts, is.quantile=is.quantile, fast=fast, useC=useC,
 				...)
 
-		estimate <- bs[match(rownames(bs),outclasses),]
+		if(attr(bs,"is.cts")){
+			observed.estimate <- bs[1]
+			outclasses <- outcome.variable
+                        nsamplesbyoutcome <- nrow(rds.data.nomiss)
+		}
+
+		estimate <- bs[match(rownames(bs),outclasses),,drop=FALSE]
 		colnames(estimate) <- c("point", "lower", "upper")
+		bsests <- attr(bs,"bsresult")$bsests
+		bsests <- bsests[,match(rownames(bs),outclasses)]
 		estimate=switch(ci.type,
 		"pivotal"={
-		  bsests <- attr(bs,"bsresult")$bsests
-		  bsests <- bsests[,match(rownames(bs),outclasses)]
-		  qcrit <- t(apply(bsests,2,quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
+		  qcrit <- t(apply(bsests,2,stats::quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
  		  estimate[,2:3] <- 2*observed.estimate - qcrit
 #	  	  estimate[, 1] <- 2*observed.estimate-apply(bsests,2,mean,na.rm=TRUE)
 		  estimate[, 1] <- observed.estimate
 		  estimate},
 		"quantile"={
-		  bsests <- attr(bs,"bsresult")$bsests
-		  bsests <- bsests[,match(rownames(bs),outclasses)]
-		  qcrit <- t(apply(bsests,2,quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
+		  qcrit <- t(apply(bsests,2,stats::quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
 		  estimate[,2:3] <- qcrit[,2:1]
 		  estimate[, 1] <- observed.estimate
 		  estimate},
 		"proportion"={
 		  if(all(observed.estimate >= 0) & (any(observed.estimate < 0.15) | any(estimate[,2:3]<0|estimate[,2:3]>1))){
-		    bsests <- attr(bs,"bsresult")$bsests
-		    bsests <- bsests[,match(rownames(bs),outclasses)]
-		    qcrit <- t(apply(bsests,2,quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
+		    qcrit <- t(apply(bsests,2,stats::quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
 		    estimate[,2:3] <- qcrit[,2:1]
 #	  	    estimate[, 1] <- 2*observed.estimate-apply(bsests,2,mean,na.rm=TRUE)
 		  }
@@ -235,6 +247,38 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 		  estimate[estimate[,3]<0,3] <- 0
 		  estimate[estimate[,2]>1,2] <- 1
 		  estimate[estimate[,3]>1,3] <- 1
+		  estimate[, 1] <- observed.estimate
+		  estimate},
+		"hmg"={
+                  nobs <- min(as.vector(nsamplesbyoutcome))
+                  dae <- as.vector(differential.activity.estimates(rds.data = rds.data.nomiss,
+                                   outcome.variable=outcome.variable, N=N, weight.type=weight.type))[1]
+		  if(nobs == as.vector(nsamplesbyoutcome)[1]){dae <- 1/dae}
+                  if(nobs+control$lowprevalence[1]*dae < control$lowprevalence[2]){
+#                  Apply the combined Agresti-Coull and the bootstrap-t interval of Mantalos and Zografos (2008)
+		   wbse <- (attr(bs,"bsresult")$bsnm*bsests+2)/(attr(bs,"bsresult")$bsnm+4)
+		   nm <- sum(weights.all,na.rm=TRUE)^2/sum(weights.all^2,na.rm=TRUE)
+	  	   woe <- (nm*observed.estimate+2)/(nm+4)
+		   sigmamb <- sqrt(wbse*(1-wbse)/attr(bs,"bsresult")$bsnm)
+		   tstarn <- sweep(wbse,2,woe,"-")/sigmamb
+	  	   tstarn[is.infinite(tstarn)] <- NA
+	  	   qcrit <- t(apply(tstarn,2,stats::quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
+	  	   estimate[,2:3] <- woe-qcrit*sqrt(woe*(1-woe)/(nm+4))
+		  }
+		  #
+		  estimate[, 1] <- observed.estimate
+		  estimate},
+		"acbt"={
+#                 Apply the combined Agresti-Coull and the bootstrap-t interval of Mantalos and Zografos (2008)
+		  wbse <- (attr(bs,"bsresult")$bsnm*bsests+2)/(attr(bs,"bsresult")$bsnm+4)
+		  nm <- sum(weights.all,na.rm=TRUE)^2/sum(weights.all^2,na.rm=TRUE)
+	  	  woe <- (nm*observed.estimate+2)/(nm+4)
+		  sigmamb <- sqrt(wbse*(1-wbse)/attr(bs,"bsresult")$bsnm)
+		  tstarn <- sweep(wbse,2,woe,"-")/sigmamb
+	  	  tstarn[is.infinite(tstarn)] <- NA
+	  	  qcrit <- t(apply(tstarn,2,stats::quantile,c((confidence.level+1)/2,(1-confidence.level)/2),na.rm=TRUE))
+	  	  estimate[,2:3] <- woe-qcrit*sqrt(woe*(1-woe)/(nm+4))
+		  #
 		  estimate[, 1] <- observed.estimate
 		  estimate},
 		{# t (normal;the default)
@@ -246,7 +290,15 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 	#
 	# Design effect (for factor outcomes)
 	#
-	varoutcome <- estimate[, 1] * (1 - estimate[, 1])
+	if(attr(bs,"is.cts")){
+	 if(attr(bs,"is.quantile")){
+	  varoutcome <- continuous*(1-continuous)/(stats::dnorm(observed.estimate,mean=attr(bs,"mu"),sd=sqrt(attr(bs,"sigma2"))))^2
+	 }else{
+	  varoutcome <- attr(bs,"sigma2")
+	 }
+	}else{
+	  varoutcome <- estimate[, 1] * (1 - estimate[, 1])
+	}
 	#       Note the finite sample correction factor
 	if(!is.null(N)){
 		varsrs <- (((N - nsamples)/(N - 1)) * varoutcome/nsamples)
@@ -257,12 +309,15 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 	de <- ((estimate[, 3] - estimate[, 2])/(crit * 2))^2/varsrs
 	estimate <- cbind(estimate, de, (estimate[, 3] - estimate[, 2])/(crit * 2), nsamplesbyoutcome)
 	colnames(estimate)[c(4, 5, 6)] <- c("Design Effect", "s.e.", "n")
-	outclasses <- sort(unique(as.vector(rds.data.nomiss[[outcome.variable]])))
-	outclasses[outclasses=="NA.NA"] <- "NA"
-	
-	rownames(estimate) <- outclasses[1:nrow(estimate)]
-	estimate <- as.numeric(estimate)
-	names(estimate)[1:g] <- outclasses[1:g]
+	if(attr(bs,"is.cts")){
+	  rownames(estimate) <- outcome.variable
+	}else{
+	  outclasses <- sort(unique(as.vector(rds.data.nomiss[[outcome.variable]])))
+	  outclasses[outclasses=="NA.NA"] <- "NA"
+	  rownames(estimate) <- outclasses[1:nrow(estimate)]
+	  estimate <- as.numeric(estimate)
+	  names(estimate)[1:g] <- outclasses[1:g]
+	}
 	if(exists("bs"))
 		attr(estimate,"bsresult") <- attr(bs,"bsresult")
 	
@@ -320,6 +375,10 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 #' @param number.of.bootstrap.samples The number of bootstrap samples to take
 #' in estimating the uncertainty of the estimator. If \code{NULL} it defaults
 #' to the number necessary to compute the standard error to accuracy 0.001.
+#' @param continuous A numerical value between 0 and 1 or the character value \code{"mean"} or \code{NA}. 
+#' If \code{"mean"} it will estimate the population mean of the \code{outcome.variable}.
+#' If it is a numeric value betwern zero and one, estimate this quantile of the population distribution of the
+#' \code{outcome.variable}. Otherwise it will compute the population frequencies of each value of the \code{outcome.variable}.
 #' @param fast Use a fast bootstrap where the weights are reused from the
 #' estimator rather than being recomputed for each bootstrap sample.
 #' @param useC Use a C-level implementation of Gile's bootstrap (rather than
@@ -369,7 +428,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 #' @export
 RDS.bootstrap.intervals <- function(rds.data, outcome.variable, 
 		weight.type = NULL, uncertainty = NULL, N = NULL, subset = NULL, 
-		confidence.level = .95, number.of.bootstrap.samples = NULL, fast=TRUE, useC=TRUE,
+		confidence.level = .95, number.of.bootstrap.samples = NULL, continuous=NA, fast=TRUE, useC=TRUE,
 		ci.type="t", control=control.rds.estimates(),
 		...) {
 	se <- substitute(subset)
@@ -383,14 +442,14 @@ RDS.bootstrap.intervals <- function(rds.data, outcome.variable,
 		result <- RDS.bootstrap.intervals.local(rds.data, outcome.variable, 
 				weight.type, uncertainty, N, subset, confidence.level, 
 				number.of.bootstrap.samples=number.of.bootstrap.samples,
-				control=control,fast=fast,useC=useC,ci.type=ci.type,csubset=csubset )
+				control=control,continuous=continuous,fast=fast,useC=useC,ci.type=ci.type,csubset=csubset )
 	}
 	else {
 		result <- lapply(X = outcome.variable, FUN = function(g) {
 					RDS.bootstrap.intervals.local(rds.data, g, weight.type, 
 							uncertainty, N, subset, confidence.level,
 							number.of.bootstrap.samples=number.of.bootstrap.samples, 
-							control=control,fast=fast, useC=useC, ci.type=ci.type,							   csubset=csubset, ...)
+							control=control,continuous=continuous,fast=fast, useC=useC, ci.type=ci.type,							   csubset=csubset, ...)
 				})
 		names(result) <- outcome.variable
 	}

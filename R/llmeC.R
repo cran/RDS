@@ -57,7 +57,7 @@ memle <-function(network.size,num.recruits,recruit.time=FALSE,recruit.times=rep(
  llme <- switch(unit.model,
   "cmp"=llcmpme, "nbinom"=llnbme)
  if(sum(network.size>=cutoff & network.size <= cutabove) > 0){
-  fit <- optim(par=ltrans(guess),fn=llme,
+  fit <- stats::optim(par=ltrans(guess),fn=llme,
    method=method,
    hessian=hessian,control=list(fnscale=-10, trace=6, maxit=maxit),
    n=n,
@@ -90,7 +90,7 @@ memle <-function(network.size,num.recruits,recruit.time=FALSE,recruit.times=rep(
      }
     }
     guess <- guess[-3]
-    fit <- optim(par=ltrans(guess),fn=llme,
+    fit <- stats::optim(par=ltrans(guess),fn=llme,
      method=method,
      hessian=hessian,control=list(fnscale=-1,trace=6, maxit=maxit),
      n=n,

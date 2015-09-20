@@ -6,7 +6,7 @@
 based on various estimators}
 \usage{
 compute.weights(rds.data, weight.type = c("Gile's SS", "RDS-I", "RDS-I (DS)",
-  "RDS-II", "Arithmetic Mean"), N = NULL, subset = NULL,
+  "RDS-II", "Arithmetic Mean", "Good-Fellows"), N = NULL, subset = NULL,
   control = control.rds.estimates(), ...)
 }
 \arguments{
@@ -32,7 +32,7 @@ tuning. Constructed using\cr
 \item{...}{Additional parameters passed to the individual weighting algorithms.}
 }
 \value{
-A vector of weighte for each of the respondents. It is of the same
+A vector of weights for each of the respondents. It is of the same
 size as the number of rows in \code{rds.data}.
 }
 \description{

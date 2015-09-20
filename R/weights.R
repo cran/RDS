@@ -19,12 +19,12 @@
 #' tuning. Constructed using\cr
 #' \code{\link{control.rds.estimates}}.
 #' @param ... Additional parameters passed to the individual weighting algorithms.
-#' @return A vector of weighte for each of the respondents. It is of the same
+#' @return A vector of weights for each of the respondents. It is of the same
 #' size as the number of rows in \code{rds.data}.
 #' @seealso \code{\link{rds.I.weights}}, \code{\link{gile.ss.weights}}, \code{\link{vh.weights}}
 #' @export
 compute.weights <- function(rds.data,
-		weight.type = c("Gile's SS","RDS-I","RDS-I (DS)","RDS-II","Arithmetic Mean"),
+		weight.type = c("Gile's SS","RDS-I","RDS-I (DS)","RDS-II","Arithmetic Mean","Good-Fellows"),
 		N = NULL, subset=NULL, control=control.rds.estimates(), ...){
 	if(!is.null(N) && N < nrow(rds.data)){
 		stop(sprintf("The population size, %d, is less than the sample
@@ -47,12 +47,12 @@ compute.weights <- function(rds.data,
 		weight.type <- "Gile's SS"
 	}
 	weight.type <- match.arg(weight.type,
-			c("Gile's SS","RDS-I", "RDS-II", "RDS-I (DS)","Arithmetic Mean"))
+			c("Gile's SS","RDS-I", "RDS-II", "RDS-I (DS)","Arithmetic Mean","Good-Fellows"))
 	if(is.na(weight.type)) { # User typed an unrecognizable name
-		stop(paste('You must specify a valid weight.type. The valid types are "Gile\'s SS","RDS-I", "RDS-II", "RDS-I (DS)",  and "Arithmetic Mean"'), call.=FALSE)
+		stop(paste('You must specify a valid weight.type. The valid types are "Gile\'s SS","RDS-I", "RDS-II", "RDS-I (DS)", "Good-Fellows" and "Arithmetic Mean"'), call.=FALSE)
 	}
-	if(weight.type=="Gile's SS" && is.null(N)){
-		stop("Gile's SS estimator requires an estimated population size (N)")
+	if(weight.type %in% c("Gile's SS","Good-Fellows") && is.null(N)){
+		stop(paste(weight.type,"estimator requires an estimated population size (N)"))
 	}
 	
 	weights <- switch(weight.type, 
@@ -60,8 +60,7 @@ compute.weights <- function(rds.data,
 			`RDS-I (DS)` = rds.I.weights(rds.data,N=N,smoothed=TRUE,...),
 			`RDS-II` = vh.weights(degs = deg, N=N),
 			`Arithmetic Mean` = rep(ifelse(is.null(N),1,N)/n, n),
-			`Gile's SS` = gile.ss.weights(degs = deg, N = N,
-SS.infinity=control$SS.infinity, ...)
+			`Gile's SS` = gile.ss.weights(degs = deg, N = N, SS.infinity=control$SS.infinity, ...)
 	)
 	se <- substitute(subset)
 	if(!is.null(se)){
@@ -182,7 +181,7 @@ gile.ss.weights<-function(degs,N,number.ss.samples.per.iteration=500,number.ss.i
 		sprintf("The estimated population size is %d.\n",mapping$n)
 	}
 	weights <- degs
-	pis=approx(x=mapping$classes,y=1/mapping$probs,xout=degs[!isnadegs],rule=2)$y
+	pis=stats::approx(x=mapping$classes,y=1/mapping$probs,xout=degs[!isnadegs],rule=2)$y
 	weights[!isnadegs] <- pis
 	weights[is.na(weights)] <- 0
 	weights <- mapping$n*weights/sum(weights,na.rm=TRUE)

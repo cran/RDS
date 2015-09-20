@@ -133,7 +133,7 @@ if(by.seed){
 		rd1 <- cbind(ID=id,rds.data)[seed.id == seeds[seed],]
 		cat("*node data\n",file=ADL.file,append=FALSE,fill=FALSE)
 		suppressWarnings(
-				write.table(rd1,file=ADL.file,append=TRUE,row.names=FALSE,
+				utils::write.table(rd1,file=ADL.file,append=TRUE,row.names=FALSE,
 						eol="\r\n",sep="\t")
 		)
 	}
@@ -155,7 +155,7 @@ if(by.seed){
 
 	cat("*node data\n",file=ADL.file,append=FALSE,fill=FALSE)
 	suppressWarnings(
-			write.table(rd1,file=ADL.file,append=TRUE,row.names=FALSE,
+			utils::write.table(rd1,file=ADL.file,append=TRUE,row.names=FALSE,
 					eol="\r\n",sep="\t")
 	)
 }
@@ -213,7 +213,7 @@ header.to.RDSAT <- paste(
 RDSAT.file <- file(sprintf("%s.rdsat",file.base),"wt")
 cat(header.to.RDSAT,file=RDSAT.file,append=FALSE,fill=FALSE)
 
-write.table(full.rds,
+utils::write.table(full.rds,
 	file=RDSAT.file,quote=FALSE,append=TRUE,row.names=FALSE,col.names=FALSE)
 close(RDSAT.file)
 

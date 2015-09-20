@@ -2,7 +2,7 @@
 # Calculate the Measurement error model MLE
 #
 #
-#' Estimates each person's personal network size (degree) based on their self-reported degree and the 
+#' Estimates each person's personal visibility based on their self-reported degree and the 
 #'  number of their (direct) recruits. It uses the time the person was recruited as a factor in 
 #'  determining the number of recruits they produce.
 #' @param rds.data An rds.data.frame
@@ -18,11 +18,11 @@
 #' is a character name of a variable in the data then that variable is used.
 #' If it is NULL then the sequence number of the recruit in the data is used.
 #' If it is NA then the recruitment is not used in the model.
-#' Otherwise, the recruitment time is used in the model to better predict the degree of the person.
+#' Otherwise, the recruitment time is used in the model to better predict the visibility of the person.
 #' @param include.tree logical; If \code{TRUE}, 
 #' augment the reported network size by the number of recruits and one for the recruiter (if any).
-#' This reflects a more accurate value for the degree, but is not the self-reported degree.
-#' In particular, it typically make the reported degree positive.
+#' This reflects a more accurate value for the visibility, but is not the self-reported degree.
+#' In particular, it typically produces a positive visibility (compared to a possibility zero self-reported degree). 
 #' @param unit.scale numeric; If not \code{NULL} it sets the numeric value of the scale parameter
 #' of the distribution of the unit sizes.
 #' For the negative binomial, it is the multiplier on the variance of the negative binomial 
@@ -52,11 +52,11 @@
 #' # The next line fits the model for the self-reported personal
 #' # network sizes and imputes the personal network sizes 
 #' # It may take up to 60 seconds.
-#' idegree <- impute.degree(fauxmadrona)
-#' # frequency of estimated personal network sizes
-#' table(idegree)
+#' visibility <- impute.visibility(fauxmadrona)
+#' # frequency of estimated personal visibility
+#' table(visibility)
 #' }
-impute.degree <-function(rds.data,max.coupons=NULL,
+impute.visibility <-function(rds.data,max.coupons=NULL,
 	type.impute = c("distribution","mode","median","mean"),
         recruit.time=NULL,include.tree=FALSE, unit.scale=NULL, 
 	unit.model = c("nbinom","cmp"),
@@ -106,19 +106,25 @@ impute.degree <-function(rds.data,max.coupons=NULL,
          if(length(recruit.time)==0 & is.null(recruit.time)){
 	  recruit.time <- 1:n
          }else{
-          if(length(recruit.time)!=n | !is.numeric(recruit.time)){
+          if(length(recruit.time)!=n | (!is.numeric(recruit.time) & !is(recruit.time,"POSIXt") & !is(recruit.time,"Date"))){
 	   stop("The recruitment time should be a variable in the RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
-	 }}
-	 recruit.times <- recruit.time
+	  }
+	 }
+         if(length(recruit.time)==n & (is(recruit.time,"POSIXt") | is(recruit.time,"Date"))){
+	  recruit.times <- as.numeric(recruit.time)
+	 }else{
+	  recruit.times <- recruit.time
+         }
 	 recruit.time <- TRUE
         }
 	if(any(is.na(recruit.times))){
          med.index <- cbind(c(2,1:(n-1)),c(3,3:n,n))
-         moving.median=function(i){median(recruit.times[med.index[i,]],na.rm=TRUE)}
+         moving.median=function(i){stats::median(recruit.times[med.index[i,]],na.rm=TRUE)}
 	 while(any(is.na(recruit.times))){
           for(i in which(is.na(recruit.times))){recruit.times[i] <- moving.median(i)}
 	 }
 	}
+	recruit.times <- recruit.times - min(recruit.times)
         if(reflect.time){
 	 recruit.times <- max(recruit.times)-recruit.times
         }
@@ -306,7 +312,7 @@ summary.me <- function (object, ...,
 
   rdf <- dyads - df
   tval <- object$coef / asyse
-  pval <- 2 * pt(q=abs(tval), df=rdf, lower.tail=FALSE)
+  pval <- 2 * stats::pt(q=abs(tval), df=rdf, lower.tail=FALSE)
 
   count <- 1
   templist <- NULL
@@ -392,7 +398,7 @@ print.summary.me <- function (x,
   }
 
   if(print.coefmat){
-    printCoefmat(x$coefs, digits=digits, signif.stars=signif.stars,
+	  stats::printCoefmat(x$coefs, digits=digits, signif.stars=signif.stars,
                  P.values=TRUE, has.Pvalue=TRUE, na.print="NA",
                  eps.Pvalue=eps.Pvalue, ...)
   }

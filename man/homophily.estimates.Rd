@@ -16,7 +16,7 @@ homophily.estimates(rds.data, outcome.variable, weight.type = NULL,
 \item{outcome.variable}{A string giving the name of the variable in the \code{rds.data} that contains a categorical or numeric variable to be analyzed.}
 
 \item{weight.type}{A string giving the type of estimator to use. The options are\cr
-\code{"Gile's SS"}, \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, and \code{"Arithemic Mean"}. If \code{NULL} it defaults to \code{"Gile's SS"}.}
+\code{"Gile's SS"}, \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, \code{"Good-Fellows"} and \code{"Arithemic Mean"}. If \code{NULL} it defaults to \code{"Gile's SS"}.}
 
 \item{uncertainty}{A string giving the type of uncertainty estimator to use. The options are \code{"Gile's SS"} and \code{"Salganik"}. This is usually determined by \code{weight.type} to be consistent with the estimator's origins (e.g., for \code{"Gile's SS"}, \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, and \code{"Arithemic Mean"}). Hence it's current functionality is limited. If \code{NULL} it defaults to \code{"Gile's SS"}.}
 

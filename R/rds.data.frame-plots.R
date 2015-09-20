@@ -1,9 +1,7 @@
-
-
 # was plot.rds.diagnostics
-#' Diagnostic plots for the RDS recruitment proccess
+#' Diagnostic plots for the RDS recruitment process
 #' @param x An rds.data.frame object.
-#' @param plot.type the type of diagnoistic.
+#' @param plot.type the type of diagnostic.
 #' @param stratify.by A factor used to color or stratify the plot elements.
 #' @param ... Additional arguments for the underlying plot function if applicable.
 #' @export
@@ -12,7 +10,7 @@
 #' 'Network size by wave' monitors systematic changes is network size based on how far subjects are from the seed
 #' 'Recruits by wave' displays counts of subjects based on how far they rare from their seed.
 #' 'Recruit per seed' shows the total tree size for each seed.
-#' 'Recruits per subject' shows counts of how many subjects are recruited by each subject who ws non-terminal.
+#' 'Recruits per subject' shows counts of how many subjects are recruited by each subject who are non-terminal.
 #' @return Either nothing, or a ggplot2 object for plotting.
 #' @method plot rds.data.frame
 #' @examples 
@@ -23,6 +21,7 @@
 #' plot(fauxmadrona, plot.type='Recruits per seed')
 #' plot(fauxmadrona, plot.type='Recruits per subject')
 #' }
+#' @importFrom graphics abline axis hist legend lines par plot points segments strwidth symbols
 plot.rds.data.frame <- function(x,
 		plot.type=c("Recruitment tree",
 				"Network size by wave",					
@@ -113,10 +112,10 @@ plot.rds.data.frame <- function(x,
 	p
 }
 
-#' Plots the recruitment network uing the reingold tilford algorithm.
+#' Plots the recruitment network using the Reingold Tilford algorithm.
 #' @param x An rds.data.frame
 #' @param vertex.color The name of the categorical variable in x to color the points with.
-#' @param vertex.color.scale The scale to create the color pallette.
+#' @param vertex.color.scale The scale to create the color palette.
 #' @param vertex.size The size of the vertex points. either a number or the name of a 
 #' column of x.
 #' @param vertex.size.range If vertex.size represents a variable, vertex.size.range is a 
@@ -272,7 +271,7 @@ reingold.tilford.plot <-function(x,
 	for(ind in 1:length(xyl)){
 		i <- ord[ind]
 		r <-0
-		theta <- runif(1,0,2*pi)
+		theta <- stats::runif(1,0,2*pi)
 		x1 <- xo <- 0
 		y1 <- yo <- 0
 		wid <- diff(range(xyl[[i]][,1], na.rm=TRUE)) * 1.1
@@ -332,17 +331,17 @@ reingold.tilford.plot <-function(x,
 				vertex.label=vlab,
 				...)	
 		if(show.legend)
-			legend("bottomleft",legend=levs,col=cols,pch=16,
+			graphics::legend("bottomleft",legend=levs,col=cols,pch=16,
 				title=color.name,horiz=TRUE,box.col=NA)
 	}
 	if(length(vsize)>1 && show.legend){
 		levs <- paste(vrange," ")
 		s <- vertex.size.range
-		lg <- legend("bottomright",legend=levs,pt.cex=c(0,0),pch=16,
+		lg <- graphics::legend("bottomright",legend=levs,pt.cex=c(0,0),pch=16,
 				title=vertex.size.name,horiz=TRUE,box.col=NA, x.intersp = 2)		
 		t <- lg$text
 		s <- s/200
-		symbols(x=t$x-.075,y=t$y,circles=s,add=TRUE,inches=FALSE,bg="SkyBlue2")
+		graphics::symbols(x=t$x-.075,y=t$y,circles=s,add=TRUE,inches=FALSE,bg="SkyBlue2")
 	}
 	}
 	invisible(t)

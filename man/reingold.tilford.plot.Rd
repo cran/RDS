@@ -2,7 +2,7 @@
 % Please edit documentation in R/rds.data.frame-plots.R
 \name{reingold.tilford.plot}
 \alias{reingold.tilford.plot}
-\title{Plots the recruitment network uing the reingold tilford algorithm.}
+\title{Plots the recruitment network using the Reingold Tilford algorithm.}
 \usage{
 reingold.tilford.plot(x, vertex.color = NULL,
   vertex.color.scale = hue_pal(), vertex.size = 2,
@@ -15,7 +15,7 @@ reingold.tilford.plot(x, vertex.color = NULL,
 
 \item{vertex.color}{The name of the categorical variable in x to color the points with.}
 
-\item{vertex.color.scale}{The scale to create the color pallette.}
+\item{vertex.color.scale}{The scale to create the color palette.}
 
 \item{vertex.size}{The size of the vertex points. either a number or the name of a
 column of x.}
@@ -43,7 +43,7 @@ ratio statistic with the observed statistics plotted as a vertical dashed line.}
 A two-column vector of the positions of the nodes in the recruitment tree.
 }
 \description{
-Plots the recruitment network uing the reingold tilford algorithm.
+Plots the recruitment network using the Reingold Tilford algorithm.
 }
 \examples{
 \dontrun{

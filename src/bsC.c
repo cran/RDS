@@ -15,6 +15,7 @@ void bsC (
             double *tempties,
             double *pis, 
             double *est,
+            double *nm,
             int *numsamp,
             int *offby,
             int *K, 
@@ -29,7 +30,7 @@ void bsC (
 	int numberfrom, nextdis, nextresp, tdeg, thisdis;
 	int activnode, countrefs, mm;
 	int offbi, Ni, ni, n0i, Ki, gi, ci;
-	double rU, temp, totaltmp, den;
+	double rU, temp, totaltmp, den, den2;
 	// nbyclass = the number of members of class k=1,...,K
 	// size = the size (i.e., degree) of the kth class k=1,...,K
 	// K = number of classes (of degrees)
@@ -70,6 +71,9 @@ void bsC (
 //
 	for (j=0; j<(gi*nsamples); j++){
 	 est[j]=0.0;
+	}
+	for (j=0; j<nsamples; j++){
+	 nm[j]=0.0;
 	}
 	for (i=0; i<ci; i++){
 	  idis[i]=((classesboth[i]-1)/Ki);
@@ -300,9 +304,11 @@ void bsC (
 //	if(est[0]==1017){Rprintf("est %f\n",est[0]);}
 
 	den=0.0;
+	den2=0.0;
 	for (i=0; i<ni; i++){
 	 temp=1.0/pis[csample[i]];
 	 den+=temp;
+	 den2+=(temp*temp);
 	 est[idis[csample[i]]+gi*isamp]+=temp;
 //	Rprintf("csample %d pix %d pis %f\n",csample[i], csample[i]-UKi*(csample[i]/UKi),pis[csample[i]-UKi*(csample[i]/UKi)]);
 //	  if(csample[i]<0 | csample[i]>(ci-1)){Rprintf("Error: i %d csample[i] %d\n",i, csample[i]);}
@@ -312,6 +318,7 @@ void bsC (
 	 est[j+gi*isamp]/=den;
 //	Rprintf("est %d %f %f\n",j,den,est[j+gi*isamp]);
 	}
+	nm[isamp]=den*den/den2;
 
 	}
 

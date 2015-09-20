@@ -7,6 +7,7 @@ SSBS.estimates <- function(rds.data,trait.variable,
 		confidence.level=NULL,
 		fast=TRUE, useC=FALSE,
 		control=control.rds.estimates(),
+		continuous=NA, is.cts=FALSE, is.quantile=FALSE,
 		weight.type="Gile's SS", verbose=TRUE)
 {
 	
@@ -33,6 +34,7 @@ SSBS.estimates <- function(rds.data,trait.variable,
 	if(is.null(number.ss.samples.per.iteration)){
 		number.ss.samples.per.iteration <- 500
 	}
+	if(weight.type=="Good-Fellows"){useC <- FALSE}
 	
 	trait.min.value <- NULL
 	tv <- rds.data[[trait.variable]]
@@ -90,7 +92,7 @@ SSBS.estimates <- function(rds.data,trait.variable,
 	}
 	
 	n0 <- sum(recruiter.id==seed.rid, na.rm=TRUE)
-	
+	recID <- match(recruiter.id,get.id(rds.data))
 
 	
 	###########################################################################################
@@ -111,6 +113,7 @@ SSBS.estimates <- function(rds.data,trait.variable,
 		g <- length(outclasses)
 		refs.to.trait <- refs.to.trait[remvalues,]
 		recruiter.id <- recruiter.id[remvalues]
+		recID <- recID[remvalues]
 		n0 <- sum(recruiter.id==seed.rid, na.rm=TRUE)
 	}
 	
@@ -121,15 +124,24 @@ SSBS.estimates <- function(rds.data,trait.variable,
 				number.ss.samples.per.iteration=number.ss.samples.per.iteration,
 				fast=fast,useC=useC,
 				weight.type=weight.type,
+				recID=recID,
 				control=control,
+				continuous=continuous, is.cts=is.cts, is.quantile=is.quantile,
 				verbose=verbose) 
-		names(result$point_estimate) <- outclasses
-		names(result$se_estimate) <- outclasses
-		colnames(result$bsests) <- outclasses
+		if(result$is.cts){
+		 names(result$point_estimate) <-  trait.variable
+		 names(result$se_estimate) <-  trait.variable
+		}else{
+		 names(result$point_estimate) <- outclasses
+		 names(result$se_estimate) <- outclasses
+		 colnames(result$bsests) <- outclasses
+		}
 	}else{
 		result<-list(point_estimate=c(0,1),
 				bsests=cbind(rep(1,number.of.bootstrap.samples),
 						rep(1,number.of.bootstrap.samples)),
+			        is.quantile=is.quantile, is.cts=is.cts,
+			        mu=NULL, sigma2=NULL,
 				se_estimate=c(0,0))
 		names(result$point_estimate) <- c("0",outclasses)
 		names(result$se_estimate) <- c("0",outclasses)
@@ -144,6 +156,10 @@ SSBS.estimates <- function(rds.data,trait.variable,
 	colnames(a)[1] <- trait.variable
 	
 	attr(a,"bsresult") <- result
+	attr(a,"is.cts") <- result$is.cts
+	attr(a,"is.quantile") <- result$is.quantile
+	attr(a,"mu") <- result$mu
+	attr(a,"sigma2") <- result$sigma2
 	return(a)
 }
 
@@ -171,20 +187,22 @@ vh.est<-function(degs,dis,wstart=0,wsample=NULL){
 	num/den
 }
 #was spps_est_keep
-spps.est.keep<-function(degs,dis,nguess,wstart=0,wsample=NULL,number.ss.iterations=5,number.ss.samples.per.iteration=2000,SS.infinity=0.04){
+spps.est.keep<-function(degs,dis,nguess,wstart=0,wsample=NULL,number.ss.iterations=5,number.ss.samples.per.iteration=2000,SS.infinity=0.04,
+		   weight.type="Gile's SS",recID=NULL){
 	degs[degs==0]<-1 
 	mapping<-getestCstacked(degs,n=nguess,nit=number.ss.iterations,nsampsamp=number.ss.samples.per.iteration,trace=FALSE,SS.infinity=SS.infinity)
-	weights=approx(x=mapping$classes,y=1/mapping$probs,xout=degs,rule=2)$y
+	weights=stats::approx(x=mapping$classes,y=1/mapping$probs,xout=degs,rule=2)$y
 	pis <- 1/weights
-	if(is.factor(dis)){
+	 if(is.factor(dis)){
 		num <- rep(0,length=length(levels(dis)))
-		a <- tapply(1/degs,as.numeric(dis),sum)
+		a <- tapply(weights,as.numeric(dis),sum)
 		num[as.numeric(names(a))] <- a
-	}else{
-		num<-sum(dis/degs)
-	}
-	est<-num/sum(1/degs)
+	 }else{
+		num<-sum(dis*weights)
+	 }
+	 est<-num/sum(weights)
 	
+	# Note wts are actually the pis here
 	list(samplewts=pis,
 			est=est, 
 			classes=mapping$classes, pvec=mapping$probs,
@@ -192,13 +210,14 @@ spps.est.keep<-function(degs,dis,nguess,wstart=0,wsample=NULL,number.ss.iteratio
 }
 
 #was ssps_est
-spps.est<-function(degs,dis,nguess,wstart=0,wsample=NULL,nsampsamp=500,hajek=TRUE, mapping=NULL,SS.infinity=0.04){
-	degs[degs==0]<-1 #added 070708
-	if(is.null(mapping)){
+spps.est<-function(degs,dis,nguess,wstart=0,wsample=NULL,nsampsamp=500,hajek=TRUE,mapping=NULL,SS.infinity=0.04,
+		   weight.type="Gile's SS",recID=NULL){
+	  degs[degs==0]<-1 #added 070708
+	  if(is.null(mapping)){
 		mapping<-getestCstacked(degs,n=nguess,nit=3,nsampsamp=nsampsamp,trace=FALSE,hajek=hajek,SS.infinity=SS.infinity)
-	}
-	pis=1/approx(x=mapping$classes,y=1/mapping$probs,xout=degs,rule=2)$y
-	vh.est(pis,dis,wstart=wstart,wsample=wsample)
+	  }
+	  pis=1/stats::approx(x=mapping$classes,y=1/mapping$probs,xout=degs,rule=2)$y
+	    list(est=vh.est(pis,dis,wstart=wstart,wsample=wsample),pis=pis)
 }
 
 ######################################
@@ -218,17 +237,62 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
 		number.ss.samples.per.iteration=500,
 		fast=TRUE, useC=FALSE,
 		weight.type="Gile's SS",
+		recID=NULL,
 		control=control.rds.estimates(),
+		continuous=NA, is.cts=FALSE, is.quantile=FALSE,
 		verbose=TRUE){ 
 	fdis <- dis
 	dis <- as.numeric(dis)
 	outclasses <- levels(fdis)
 	g=length(outclasses)
 	nsamp<-length(degs)
+	#
+	# The next section pools small categories
+	if(is.cts){
+	        num.dis <- as.numeric(as.character(fdis))
+	        oo <- order(order(as.numeric(outclasses)))
+		olevels <- outclasses[order(oo)]
+		nc0 <- as.character(oo[dis])
+		nc <- mapply(gsub, list('\\d+'), sprintf('%.4d', as.numeric(regmatches(nc0, gregexpr('\\d+', nc0)))), nc0)
+		tnc <- nc
+		g <- sort(unique(tnc))
+		tg <- g
+		tt <- table(nc)
+		ntt <- names(tt)
+		sa <- tt[-1]+tt[-length(tt)]
+		while(any(sa<10)){
+		  i <- which.max(sa<10)
+		  nc[nc==(ntt[i+1])] <- ntt[i]
+	           g[ g==(ntt[i+1])] <- ntt[i]
+		  tt <- table(nc)
+		  ntt <- names(tt)
+		  sa <- tt[-1]+tt[-length(tt)]
+		}
+	        mnc <- match(nc,tnc)
+		gn=as.numeric(nc0)[match(g, tnc)]
+		gm=match(gn,sort(unique(gn)))
+		nc=gm[as.numeric(nc0)[mnc]]
+		dis.agg <- tapply(num.dis,nc,mean)
+#
+		fdis.orig <- fdis
+		dis.orig <- dis
+	        outclasses <- as.character(dis.agg)
+	        fdis <- factor(outclasses[nc],labels=outclasses)
+	        dis <- nc
+		g <- length(outclasses)
+		refs.to.trait.orig <- refs.to.trait[,order(oo)]
+		refs.to.trait <- matrix(0,ncol=g,nrow=nsamp)
+	        for(i in 1:nsamp){
+		  refs.to.trait[i,] <- tapply(refs.to.trait.orig[i,],gm,sum)
+		}
+	}	
+
 	nrefs<-apply(refs.to.trait,1,sum)[which(fullcup)]
 # nrefs[i] is the number of referrals for respondent i (i.e., the number of returned coupons)
 	if(n*control$SS.infinity > nsamp){n <- round(nsamp/control$SS.infinity)}  
-	sek<-spps.est.keep(degs,fdis,n,number.ss.samples.per.iteration=number.ss.samples.per.iteration,SS.infinity=control$SS.infinity) 
+	sek<-spps.est.keep(degs,fdis,n,number.ss.samples.per.iteration=number.ss.samples.per.iteration,SS.infinity=control$SS.infinity,
+		   weight.type=weight.type,recID=recID)
+	# Note wts are actually the pis here
 	wts<-sek$samplewts
 	est<-sek$est         
 	pvec<-sek$pvec
@@ -281,35 +345,37 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
 	wtsboth<-wtsbotha
 	
 	manynewests<-matrix(0,nrow=nit,ncol=g)
+	manynewnms<-rep(0,nit)
 	manysamp<-vector("list",length=nit)
 	
-	if(weight.type=="Gile's SS"){
+	if(weight.type %in% c("Gile's SS","Good-Fellows")){
 		effn <- n
 	}else{
 		effn <- 10^8
 	}
 	
 # moved
-		newprops<-probtodist(classesboth,samplecounts, wtsboth, n)$props
-		props2<-newprops/sum(newprops)
-		nbyclass<-round(n*props2)  
-#		nbyclass[nbyclass==0]<-1
-		offby<-n-sum(nbyclass)
-		if(is.na(offby)){print("Error in getincl: offby"); } 
- 		tempties <- (tiemtx+t(tiemtx))/2
-#		symetrize the ties so that
+	newprops<-probtodist(classesboth,samplecounts, wtsboth, n)$props
+	props2<-newprops/sum(newprops)
+	nbyclass<-round(n*props2)  
+#	nbyclass[nbyclass==0]<-1
+	offby<-n-sum(nbyclass)
+	if(is.na(offby)){print("Error in getincl: offby"); } 
+ 	tempties <- (tiemtx+t(tiemtx))/2
+#	symetrize the ties so that
 	# tempties is a matrix with the estimated number of ties (not referrals)
 	# from class i to class j (in the population). It is based on extrapolating
 	# the number of referrals 
 # moved
-	pis=1/approx(x=data.mapping$classes,y=1/data.mapping$probs,xout=rep(classes,g),rule=2)$y
+	pis=1/stats::approx(x=data.mapping$classes,y=1/data.mapping$probs,xout=rep(classes,g),rule=2)$y
 	data<-list(n=n, effn=effn,
 			classesboth=classesboth,
 			n0=n0, nsamp=nsamp, nrefs=nrefs,
 			mapping=data.mapping, K=K, g=g, pis=pis, nit=nit,
 			control=control,
 			number.ss.samples.per.iteration=number.ss.samples.per.iteration,
-			props2=props2,offby=offby,nbyclass=nbyclass,tempties=tempties
+			props2=props2,offby=offby,nbyclass=nbyclass,tempties=tempties,
+			weight.type=weight.type
                   )
 	
 	if(useC){
@@ -321,6 +387,7 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
 			tempties=as.double(data$tempties),
 			pis=as.double(data$pis),
 			est=as.double(rep(0,data$g*data$nit)),
+			nm=as.double(rep(0,data$nit)),
 			numsamp=as.integer(data$nit),
 			offby=as.integer(data$offby),
 			K=as.integer(data$K),
@@ -332,6 +399,7 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
 			PACKAGE="RDS")
           manynewests <- matrix(Cret$est,ncol=g,byrow=TRUE)
           colnames(manynewests) <- outclasses
+          manynewnms <- Cret$nm
 	}else{
 	  bsfn <- function(i, data){
                 offby <- data$offby
@@ -352,8 +420,15 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
 					if(sum(dif==0)){
 						dif<-1-(data$props2-nbyclass/data$n)
 						dif[nbyclass==1]<-0
+					        dif[dif<0]<-0
 					}       
 					tochange<-sample(1:length(dif),1,prob=dif)
+					while(any(nbyclass[tochange]<1)){
+					 tochange<-sample(1:length(dif),1,prob=dif)
+						print(nbyclass)
+						print(tochange)
+						print(dif)
+					}
 					nbyclass[tochange]<-nbyclass[tochange]-1
 				}
 			}}   
@@ -365,6 +440,8 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
 		idis<-((popclass-1)%/%K)+1  
 		ideg<-round(popclass-K*(popclass%/%K))
 		ideg[ideg==0]<-K
+		is.seed <- rep(FALSE,nsamp)
+		recID <- rep(NA,data$nsamp)
 		dissample <- rep(0,data$nsamp)
 		degsample <- dissample
 		
@@ -378,6 +455,7 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
 		 pclass[j]<-pclass[j]-ideg[j]
                  degsample[i] <- ideg[j]
                  dissample[i] <- idis[j]
+                 is.seed[i] <- TRUE
 		}
 #		todisnew=matrix(0,nrow=data$nsamp,ncol=g)
 		
@@ -443,6 +521,7 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
 #			nsample[mm]<-nextresp
                  	degsample[mm] <- tdeg
                  	dissample[mm] <- nextdis
+                 	recID[mm] <- activnode
 			countrefs<-countrefs+1
 # numberfrom is the number of recruits to get for the current recruiter
 			if((mm<nsamp)&(countrefs==numberfrom)){
@@ -464,17 +543,20 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
 				dissample,
 				data$effn,nsampsamp=ceiling(number.ss.samples.per.iteration/4), 
 				mapping=data$mapping,
-				SS.infinity=control$SS.infinity)
+				SS.infinity=control$SS.infinity,
+				weight.type=data$weight.type,recID=recID)
   
 #		list(samp=manysamp, newests=manynewests)
-		list(newests=manynewests)
+		list(newest=manynewests$est,
+		     newnm=sum(manynewests$pis,na.rm=TRUE)^2/sum(manynewests$pis^2,na.rm=TRUE))
 		
 	  }
 	  if(verbose)  cat(paste('Computation 0% completed ...\n',sep=""))
 	  for(i in 1:nit){
 		out <- bsfn(i,data)
 #		manysamp[[i]] <- out[["samp"]]
-		manynewests[i,] <- out[["newests"]]
+		manynewests[i,] <- out[["newest"]]
+		manynewnms[i] <- out[["newnm"]]
 		
 		if(verbose) {
 			if(i == trunc(i/(nit/10))*(nit/10)){
@@ -484,6 +566,26 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
 	  }
 	}
 
-	list(point_estimate=sek$est,bsests=manynewests,
-		se_estimate=apply(manynewests,2,sd))
+	if(is.cts){
+	  # Note sek$samplewts are actually the pis here
+	  wts.agg <- tapply(1/sek$samplewts,dis,sum)
+	  fn.mu <- function(x,dis){wtd.mean(dis,x,na.rm=TRUE,normwt=TRUE)}
+	  if(is.quantile){ 
+	    fn <- function(x,dis){wtd.quantile(dis,x,probs=continuous,na.rm=TRUE,normwt=TRUE)}
+	    list(point_estimate=fn(wts.agg,dis.agg),
+	       bsests=matrix(apply(manynewests,1,fn,dis.agg),ncol=1),bsnm=manynewnms,
+	       se_estimate=stats::sd(apply(manynewests,1,fn,dis.agg)),is.cts=is.cts,is.quantile=is.quantile,
+	       mu=fn.mu(wts.agg,dis.agg),
+	       sigma2=fn.mu(wts.agg,dis.agg^2)-fn.mu(wts.agg,dis.agg)^2)
+	  }else{
+	    list(point_estimate=fn.mu(wts.agg,dis.agg),
+	       bsests=matrix(apply(manynewests,1,fn.mu,dis.agg),ncol=1),bsnm=manynewnms,
+	       se_estimate=stats::sd(apply(manynewests,1,fn.mu,dis.agg)),is.cts=is.cts,is.quantile=is.quantile,
+	       mu=fn.mu(wts.agg,dis.agg),
+	       sigma2=fn.mu(wts.agg,dis.agg^2)-fn.mu(wts.agg,dis.agg)^2)
+	  }
+	}else{
+	  list(point_estimate=sek$est,bsests=manynewests,bsnm=manynewnms,
+		se_estimate=apply(manynewests,2,sd),is.cts=is.cts,is.quantile=is.quantile)
+	}
 }

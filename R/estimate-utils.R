@@ -8,7 +8,7 @@ EL.se<-function(weights,outcome,N=NULL, use.second.order=TRUE, homophily=1){
       wij <- outer(weights[!nas],weights[!nas],"*")
       wij <- wij * (1+(homophily-1)*outer(outcome[!nas],outcome[!nas],"!="))
 #
-      wij[wij > 10*median(wij)] <- 10*median(wij)
+      wij[wij > 10*stats::median(wij)] <- 10*stats::median(wij)
 #     Compute the EL standard error (if available)
       iLj <- row(wij)>col(wij)
       oij <- 0.5*outer(outcome[!nas],outcome[!nas],"+")
@@ -20,7 +20,7 @@ EL.se<-function(weights,outcome,N=NULL, use.second.order=TRUE, homophily=1){
       wi <- weights[!nas]
       oi <- outcome[!nas]
 #
-      wi[wi > 10*median(wi)] <- 10*median(wi)
+      wi[wi > 10*stats::median(wi)] <- 10*stats::median(wi)
 #     Compute the EL standard error (if available)
       esti  <- sum(oi*wi)/sum(wi)
       varest <- sum(((oi-esti)*wi*wi)^2)/(sum(wi*wi)^2)
@@ -42,7 +42,7 @@ EL.est<-function(weights,outcome,N=NULL, use.second.order=TRUE, homophily=1.35){
       wij <- outer(weights[!nas],weights[!nas],"*")
       wij <- wij / (1+(homophily-1)*outer(outcome[!nas],outcome[!nas],"=="))
 #
-#     wij[wij > 10*median(wij)] <- 10*median(wij)
+#     wij[wij > 10*stats::median(wij)] <- 10*stats::median(wij)
 #     Compute the EL standard error (if available)
       iLj <- row(wij)>col(wij)
       oij <- 0.5*outer(outcome[!nas],outcome[!nas],"+")
@@ -55,7 +55,7 @@ EL.est<-function(weights,outcome,N=NULL, use.second.order=TRUE, homophily=1.35){
       wi <- weights[!nas]
       oi <- outcome[!nas]
 #
-      wi[wi > 10*median(wi)] <- 10*median(wi)
+      wi[wi > 10*stats::median(wi)] <- 10*stats::median(wi)
 #     Compute the EL standard error (if available)
       esti  <- sum(oi*wi)/sum(wi)
       varest <- sum(((oi-esti)*wi*wi)^2)/(sum(wi*wi)^2)

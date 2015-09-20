@@ -63,11 +63,11 @@ read.rdsat <- function(file,delim=c("<auto>","\t"," ",","),N=NULL){
 	coupon.columns <- 4:(4 + header.max.coupons - 1) 
 	
 	if(delim==" ") delim=""
-	rds.data <- read.table(file,skip=2,sep=delim,na.strings=header.na.symbol,as.is=FALSE,stringsAsFactors=FALSE,nrows=1)
+	rds.data <- utils::read.table(file,skip=2,sep=delim,na.strings=header.na.symbol,as.is=FALSE,stringsAsFactors=FALSE,nrows=1)
 	ccc <- rep(NA,ncol(rds.data))
 	ccc[c(1,3,coupon.columns)] <- "character"
 	ccc[2] <- "numeric"
-	rds.data <- read.table(file,skip=2,sep=delim,na.strings=header.na.symbol,as.is=FALSE,stringsAsFactors=FALSE,colClasses=ccc)
+	rds.data <- utils::read.table(file,skip=2,sep=delim,na.strings=header.na.symbol,as.is=FALSE,stringsAsFactors=FALSE,colClasses=ccc)
 	
 	# Strip out most blank lines
 	rds.data <- rds.data[!apply(is.na(rds.data[,1:3]),1,all),]

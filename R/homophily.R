@@ -122,9 +122,9 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
 			weight.type <- "Gile's SS"
 	}
 	weight.type <- match.arg(weight.type,
-			c("Gile's SS","RDS-I", "RDS-II", "RDS-I (DS)","Arithmetic Mean"))
+			c("Gile's SS","RDS-I", "RDS-II", "RDS-I (DS)","Good-Fellows","Arithmetic Mean"))
 	if(is.na(weight.type)) { # User typed an unrecognizable name
-		stop(paste('You must specify a valid weight.type. The valid types are "Gile\'s SS","RDS-I", "RDS-II", "RDS-I (DS)", and "Arithmetic Mean"'), call.=FALSE)
+		stop(paste('You must specify a valid weight.type. The valid types are "Gile\'s SS","RDS-I", "RDS-II", "RDS-I (DS)", "Good-Fellows", and "Arithmetic Mean"'), call.=FALSE)
 	}
 	if(is.null(N)  && weight.type=="Gile's SS" && ! recruitment){
 		stop("Parameter N missing, with no default for this data set")
@@ -239,6 +239,7 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
 		weights.nomiss <- compute.weights(rds.data.sub,
 				weight.type=weight.type,
 				N=N,
+				outcome.variable=outcome.variable,
 				number.ss.samples.per.iteration=number.ss.samples.per.iteration,
 				hajek=TRUE)
 		
@@ -280,6 +281,7 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
 			weights.nomiss <- compute.weights(rds.data,
 					weight.type=weight.type, N=N,
 					group.variable=outcome.variable,
+					outcome.variable=outcome.variable,
 					number.ss.samples.per.iteration=number.ss.samples.per.iteration)
 			
 			group.names <- sort(unique(as.character(outcome)))
@@ -330,7 +332,7 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
 #' @param rds.data An \code{rds.data.frame} that indicates recruitment patterns by a pair of attributes named ``id'' and ``recruiter.id''.
 #' @param outcome.variable A string giving the name of the variable in the \code{rds.data} that contains a categorical or numeric variable to be analyzed.
 #' @param weight.type A string giving the type of estimator to use. The options are\cr
-#' \code{"Gile's SS"}, \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, and \code{"Arithemic Mean"}. If \code{NULL} it defaults to \code{"Gile's SS"}.
+#' \code{"Gile's SS"}, \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, \code{"Good-Fellows"} and \code{"Arithemic Mean"}. If \code{NULL} it defaults to \code{"Gile's SS"}.
 #' @param uncertainty A string giving the type of uncertainty estimator to use. The options are \code{"Gile's SS"} and \code{"Salganik"}. This is usually determined by \code{weight.type} to be consistent with the estimator's origins (e.g., for \code{"Gile's SS"}, \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, and \code{"Arithemic Mean"}). Hence it's current functionality is limited. If \code{NULL} it defaults to \code{"Gile's SS"}.
 #' @param recruitment A logical indicating if the homophily in the recruitment chains should be computed also. The default is FALSE.
 #' @param N An estimate of  the number of members of the population being sampled. If \code{NULL} it is read as the \code{population.size.mid} attribute of the \code{rds.data} frame. If that is missing it defaults to 1000.

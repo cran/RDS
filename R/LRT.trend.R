@@ -71,7 +71,7 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
   xbar <- sum(a*x)/sum(a)
   k <- length(x)
   set.seed(seed)
-  r <- matrix(rnorm(k*number.of.bootstrap.samples),ncol=k)
+  r <- matrix(stats::rnorm(k*number.of.bootstrap.samples),ncol=k)
   r <- sweep(r,2,sigma,"*") + xbar
   L <- t(apply(r,1,LRT.value.trend,sigma=sigma))
   obsL <- LRT.value.trend(x,sigma)
@@ -110,58 +110,58 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
   }
   if("distributions" %in% plot){
     binn <- 500
-    maxl <- max(1.1*obsL[3],quantile(L[,3],0.95))
+    maxl <- max(1.1*obsL[3],stats::quantile(L[,3],0.95))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
 #   yl <- locfit::locfit.raw(locfit::lp(L[,3],nn=0.1,h=0.8), xlim=c(0,maxl))
 #   gpdf <- predict(yl, newdata=r)
     gpdf=bgk_kde(L[,3],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,3]),xlim=c(0,max(obsL[3],quantile(L[,3],0.99))),
+#  plot(density(L[,3]),xlim=c(0,max(obsL[3],stats::quantile(L[,3],0.99))),
    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
      xlab="Likelihood Ratio Statistic",main="Null Distribution of the Overall Test Statistic",sub="The vertical line is the observed statistic")
    abline(v=obsL[3],lty=2)
-    maxl <- max(1.1*obsL[1],quantile(L[,1],0.95))
+    maxl <- max(1.1*obsL[1],stats::quantile(L[,1],0.95))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
 #   yl <- locfit::locfit.raw(locfit::lp(L[,1],nn=0.1,h=0.8), xlim=c(0,maxl))
 #   gpdf <- predict(yl, newdata=r)
     gpdf=bgk_kde(L[,1],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,1]),xlim=c(0,max(obsL[1],quantile(L[,1],0.99))),
+#  plot(density(L[,1]),xlim=c(0,max(obsL[1],stats::quantile(L[,1],0.99))),
    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
      xlab="Likelihood Ratio Statistic",main="Null Distribution of the Increasing Test Statistic",sub="The vertical line is the observed statistic")
    abline(v=obsL[1],lty=2)
-    maxl <- max(1.1*obsL[2],quantile(L[,2],0.95))
+    maxl <- max(1.1*obsL[2],stats::quantile(L[,2],0.95))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
 #   yl <- locfit::locfit.raw(locfit::lp(L[,2],nn=0.1,h=0.8), xlim=c(0,maxl))
 #   gpdf <- predict(yl, newdata=r)
     gpdf=bgk_kde(L[,2],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,2]),xlim=c(0,max(obsL[2],quantile(L[,2],0.99))),
+#  plot(density(L[,2]),xlim=c(0,max(obsL[2],stats::quantile(L[,2],0.99))),
    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
      xlab="Likelihood Ratio Statistic",main="Null Distribution of the Decreasing Test Statistic",sub="The vertical line is the observed statistic")
    abline(v=obsL[2],lty=2)
-    maxl <- max(1.1*obsL[4],quantile(L[,4],0.95))
+    maxl <- max(1.1*obsL[4],stats::quantile(L[,4],0.95))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
 #   yl <- locfit::locfit.raw(locfit::lp(L[,4],nn=0.1,h=0.8), xlim=c(0,maxl))
 #   gpdf <- predict(yl, newdata=r)
     gpdf=bgk_kde(L[,4],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,1]),xlim=c(0,max(obsL[1],quantile(L[,1],0.99))),
+#  plot(density(L[,1]),xlim=c(0,max(obsL[1],stats::quantile(L[,1],0.99))),
    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
      xlab="Likelihood Ratio Statistic",main="Null Distribution of the Monotone Test Statistic",sub="The vertical line is the observed statistic")
@@ -249,13 +249,13 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
   Atot <- cbind(s[-length(s)], s[-1])
   fit.ls1 <- isotone::activeSet(Atot, "LS", y = x, weights = a)
   m.inc=fit.ls1$x
-  r <- matrix(rnorm(k*number.of.bootstrap.samples),ncol=k)
+  r <- matrix(stats::rnorm(k*number.of.bootstrap.samples),ncol=k)
   r <- sweep(r,2,sigma,"*") + m.inc
   L.inc <- t(apply(r,1,LRT.value.trend,sigma=sigma))
   Atot <- cbind(s[-1],s[-length(s)])
   fit.ls2 <- isotone::activeSet(Atot, "LS", y = x, weights = a)
   m.dec=fit.ls2$x
-  r <- matrix(rnorm(k*number.of.bootstrap.samples),ncol=k)
+  r <- matrix(stats::rnorm(k*number.of.bootstrap.samples),ncol=k)
   r <- sweep(r,2,sigma,"*") + m.dec
   L.dec <- t(apply(r,1,LRT.value.trend,sigma=sigma))
   L <- L.inc
@@ -294,44 +294,44 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
   }
   if("distributions" %in% plot){
     binn <- 500
-    maxl <- max(1.1*obsL[6],quantile(L[,3],0.99))
+    maxl <- max(1.1*obsL[6],stats::quantile(L[,3],0.99))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
 #   yl <- locfit::locfit.raw(locfit::lp(L[,6],nn=0.1,h=0.8), xlim=c(0,maxl))
 #   gpdf <- predict(yl, newdata=r)
     gpdf=bgk_kde(L[,6],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,6]),xlim=c(0,max(obsL[6],quantile(L[,6],0.99))),
+#  plot(density(L[,6]),xlim=c(0,max(obsL[6],stats::quantile(L[,6],0.99))),
    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
      xlab="Likelihood Ratio Statistic",main="Null Distribution of the Overall Test Statistic",sub="The vertical line is the observed statistic")
    abline(v=obsL[6],lty=2)
-    maxl <- max(1.1*obsL[4],quantile(L[,4],0.99))
+    maxl <- max(1.1*obsL[4],stats::quantile(L[,4],0.99))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
 #   yl <- locfit::locfit.raw(locfit::lp(L[,4],nn=0.1,h=0.8), xlim=c(0,maxl))
 #   gpdf <- predict(yl, newdata=r)
     gpdf=bgk_kde(L[,4],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,4]),xlim=c(0,max(obsL[4],quantile(L[,4],0.99))),
+#  plot(density(L[,4]),xlim=c(0,max(obsL[4],stats::quantile(L[,4],0.99))),
    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
      xlab="Likelihood Ratio Statistic",main="Null Distribution of the Increasing Test Statistic",sub="The vertical line is the observed statistic")
    abline(v=obsL[4],lty=2)
-    maxl <- max(1.1*obsL[5],quantile(L[,5],0.99))
+    maxl <- max(1.1*obsL[5],stats::quantile(L[,5],0.99))
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
 #   yl <- locfit::locfit.raw(locfit::lp(L[,5],nn=0.1,h=0.8), xlim=c(0,maxl))
 #   gpdf <- predict(yl, newdata=r)
     gpdf=bgk_kde(L[,5],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
 #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,5]),xlim=c(0,max(obsL[5],quantile(L[,5],0.99))),
+#  plot(density(L[,5]),xlim=c(0,max(obsL[5],stats::quantile(L[,5],0.99))),
    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
      xlab="Likelihood Ratio Statistic",main="Null Distribution of the Decreasing Test Statistic",sub="The vertical line is the observed statistic")

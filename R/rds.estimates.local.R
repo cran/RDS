@@ -1,8 +1,7 @@
-
-
+#' @importFrom stats approx coef fft median optim pnorm printCoefmat pt qnorm qt quantile resid residuals rnorm runif sd spline symnum uniroot var vcov xtabs
 RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
-		control=control.rds.estimates(),
-		empir.lik=TRUE, weight.type, N=NULL, ...){
+		control=control.rds.estimates(), continuous=NA, is.cts=FALSE, is.quantile=FALSE,
+		empir.lik=FALSE, weight.type, N=NULL, ...){
 	
 	if(is(rds.data,"rds.data.frame")){
 		
@@ -89,13 +88,25 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 	# the RDS-II estimates.   The cases for numeric and categorical outcomes are handled 
 	# separately.
 	outcome <- rds.data.nomiss[[outcome.variable]]
-	toutcome <- table(outcome)
+	if(is.cts & !is.numeric(outcome)){outcome <- as.numeric(as.character(outcome))}
+
 	if(is.numeric(outcome)){
-		estimate <- HT.estimate(weights=weights.all,outcome=outcome)
+		if(is.quantile & all(!is.na(continuous))){ 
+		  estimate <- wtd.quantile(outcome,weights.all,probs=continuous,na.rm=TRUE,normwt=TRUE)
+		}else{
+		  estimate <- HT.estimate(weights=weights.all,outcome=outcome)
+		}
 		if(empir.lik){
 #		estimate <- EL.est(weights=weights.all,outcome=outcome,N=N)
-		  h.est <- homophily.estimates(rds.data,outcome.variable,N=N,weight.type=weight.type,recruitment=FALSE)
- 		  attr(estimate,"EL.se") <- EL.se(weights.all,outcome,N=N,homophily=h.est@estimate)
+		  if(!is.numeric(rds.data.nomiss[[outcome.variable]]) | 
+		     mean(duplicated(rds.data.nomiss[[outcome.variable]],na.rm=TRUE)) < control$discrete.cutoff ){
+		      h.est <- homophily.estimates(rds.data,outcome.variable,N=N,weight.type=weight.type,recruitment=FALSE)
+		      h.est <- h.est@estimate[order(as.numeric(names(h.est@estimate)))]
+		      h.est <- sum(h.est*table(outcome),na.rm=TRUE)/sum(table(outcome)[!is.na(h.est)])
+ 		      attr(estimate,"EL.se") <- EL.se(weights.all,outcome,N=N,homophily=h.est)
+		  }else{
+ 		    attr(estimate,"EL.se") <- EL.se(weights.all,outcome,N=N,homophily=1)
+		  }
                 }
 	}else{
 		outcome <- as.factor(outcome)
@@ -103,7 +114,7 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 		outcome=factor(outcome,levels=levels(outcome)[order(levels(outcome))])
 		
 		# Calculate the within group totals of the *inverse* of the weights, again we exclude the seeds. 
-		wtd.degree.totals <- xtabs(weights.all~outcome,
+		wtd.degree.totals <- stats::xtabs(weights.all~outcome,
 				data=rds.data.nomiss)
 		
 		estimate.xtabs <- wtd.degree.totals/sum(wtd.degree.totals)
@@ -137,7 +148,7 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 			#
 			# Design effect (for numeric outcomes)
 			#
-			varoutcome <- var(outcome)
+			varoutcome <- wtd.var(outcome,weights.all)
 			if(is.null(N)){
 				varsrs <- varoutcome/nsamples
 			}else{
