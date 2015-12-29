@@ -159,6 +159,11 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 				estimator.name = weight.type, 
 				N=N,
 				...)
+
+		attr(bs,"is.cts") <- is.cts
+		attr(bs,"is.quantile") <- is.quantile
+	        attr(bs,"mu") <- observed.estimate
+		attr(bs,"sigma2") <- observed.estimate * (1 - observed.estimate)
 		
 		bso <- bs[match(names(bs),outclasses)]
 		estimate <- cbind(observed.estimate, observed.estimate - crit * bso,
@@ -205,6 +210,19 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 						crit * sqrt(varsrs), 
 				observed.estimate + crit * sqrt(varsrs))
 		colnames(estimate) <- c("point", "lower", "upper")
+		bs <- varsrs
+		attr(bs,"is.cts") <- is.cts
+		attr(bs,"is.quantile") <- is.quantile
+	        attr(bs,"mu") <- observed.estimate
+	        if(is.cts){
+		  oc <- rds.data.nomiss[[outcome.variable]]
+	          if(!is.numeric(oc)){oc <- as.numeric(as.character(oc))}
+		  fn.mu <- function(x,dis){wtd.mean(dis,x,na.rm=TRUE,normwt=TRUE)}
+		  attr(bs,"sigma2") <- fn.mu(weights.all,oc^2)-fn.mu(weights.all,oc)^2
+		}else{
+		  attr(bs,"sigma2") <- observed.estimate * (1 - observed.estimate)
+		}
+
 	} else if(uncertainty == "Gile"){
 		bs <- SSBS.estimates(rds.data.nomiss, 
 				outcome.variable,  

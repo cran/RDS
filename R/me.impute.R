@@ -36,13 +36,15 @@
 #' The alternative is \code{cmp}, meaning a Conway-Maxwell-Poisson distribution.
 #' In this case, \code{unit.scale}
 #' is the scale parameter compared to a Poisson of the same mean (values less than one mean 
-#' under-dispersed and values over one mean over-dispersed).
+#' under-dispersed and values over one mean over-dispersed). The default is \code{cmp}.
 #' @param guess vector; if not \code{NULL}, the initial parameter values for the MLE fitting. 
 #' @param reflect.time logical; If \code{FALSE} then the \code{recruit.time} is the time before the 
 #' end of the study (instead of the time since the survey started or chronological time).
 #' @param optimism logical; If \code{TRUE} then add a term to the model allowing
 #' the (proportional) inflation of the self-reported degrees relative to the unit sizes.
 #' @param maxit integer; The maximum number of iterations in the likelihood maximization. By default it is 100.
+#' @param K integer; The maximum degree. All self-reported degrees above this are recorded as being at least K.
+#' By default it is the 95th percentile of the self-reported network sizes.
 #' @param verbose logical; if this is \code{TRUE}, the program will print out additional
 #  information about the fitting process.
 #' @export
@@ -59,19 +61,20 @@
 impute.visibility <-function(rds.data,max.coupons=NULL,
 	type.impute = c("distribution","mode","median","mean"),
         recruit.time=NULL,include.tree=FALSE, unit.scale=NULL, 
-	unit.model = c("nbinom","cmp"),
+	unit.model = c("cmp","nbinom"),
 	optimism = FALSE,
 	guess=NULL,
         reflect.time=TRUE,
 	maxit=100,
+	K=NULL,
         verbose=TRUE){
  	if(!is(rds.data,"rds.data.frame"))
  		stop("rds.data must be of type rds.data.frame")   
 	
 	if(missing(unit.model)){
-		unit.model <- "nbinom"
+		unit.model <- "cmp"
 	}
-	unit.model <- match.arg(unit.model, c("nbinom","cmp"))
+	unit.model <- match.arg(unit.model, c("cmp","nbinom"))
 	n <- nrow(rds.data)
  	if(is.null(attr(rds.data,"network.size.variable")))
  		stop("rds.data must have a network.size attribute.")
@@ -141,6 +144,12 @@ impute.visibility <-function(rds.data,max.coupons=NULL,
           stop(paste('You must specify a valid type.impute. The valid types are "distribution","mode","median", and "mean"'), call.=FALSE)
         }
 
+ 	if(is.null(K)){
+ 	  if(length(network.size[!remvalues])>0){
+ 	   K <- round(quantile(network.size[!remvalues],0.95))
+	  }
+        }
+
 	#Augment the reported network size by the number of recruits and the recruiter (if any).
 	if(include.tree){
           nsize <- pmax(network.size,nr+!is.seed)
@@ -150,33 +159,35 @@ impute.visibility <-function(rds.data,max.coupons=NULL,
 
 #     names(fit$par) <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "Neg.Bin scale","Optimism")
 
+	gmean <- HT.estimate(vh.weights(nsize[!is.na(nsize)]),nsize[!is.na(nsize)])
+        if(is.na(gmean)) gmean <- 38
+
         if(is.null(guess)){
-	 gmean <- HT.estimate(vh.weights(nsize),nsize)
 	 gsd <- sqrt(HT.estimate(vh.weights(nsize),(nsize-gmean)^2))
-         if(is.na(gmean)) gmean <- 38
          if(is.null(unit.scale)){
           if(unit.model=="cmp"){
-            guess <- c(gmean,-5,0,0.14,gsd,1)
+            guess <- c(-5,0,0.5,gsd,1)
           }else{
-            guess <- c(gmean,-5,0,0.14,gsd,1)
+            guess <- c(-5,0,0.5,gsd,1)
           }
          }else{
           if(unit.model=="cmp"){
-            guess <- c(gmean,-5,0,0.14,1)
+            guess <- c(-5,0,0.5,1)
           }else{
-            guess <- c(gmean,-5,0,0.14,1)
+            guess <- c(-5,0,0.5,1)
           }
          }
-         if(!recruit.time){guess <- guess[-3]}
+         if(!recruit.time){guess <- guess[-2]}
          if(!optimism){guess <- guess[-length(guess)]}
         }
         fit <- memle(guess=guess,network.size=nsize[!remvalues],num.recruits=nr[!remvalues],
 		     recruit.time=recruit.time,recruit.times=recruit.times[!remvalues],max.coupons=max.coupons,
-		     unit.scale=unit.scale,unit.model=unit.model,optimism=optimism,maxit=maxit)
+		     unit.scale=unit.scale,unit.model=unit.model,optimism=optimism,maxit=maxit,K=K,gmean=gmean)
         if(verbose){
          print(summary(fit))
         }
-        a=dmepdf(fit$coef,nsize,nr,fit$recruit.time,recruit.times,unit.scale=unit.scale,unit.model=unit.model,optimism=optimism)
+
+        a=dmepdf(fit$coef,nsize,nr,fit$recruit.time,recruit.times,unit.scale=unit.scale,unit.model=unit.model,optimism=optimism,gmean=gmean)
 
 	is <- switch(type.impute, 
 		`distribution` = {

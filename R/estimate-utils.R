@@ -1,6 +1,7 @@
 #TODO what is this function???
 #Is it the empirical likelihood standard error? What assumptions?
 #was EL_se
+#  @export 
 EL.se<-function(weights,outcome,N=NULL, use.second.order=TRUE, homophily=1){
   nas <- is.na(weights)|is.na(outcome)
   nas <- nas | is.infinite(weights)|is.infinite(outcome)
@@ -30,6 +31,50 @@ EL.se<-function(weights,outcome,N=NULL, use.second.order=TRUE, homophily=1){
   }else{
     sqrt( (N-length(outcome))*varest/(N-1) )
   }
+}
+
+#  @export 
+EL.se.new<-function(weights,outcome,N=NULL, use.second.order=FALSE, homophily=1){
+  nas <- is.na(weights)|is.na(outcome)
+  nas <- nas | is.infinite(weights)|is.infinite(outcome)
+  if(use.second.order){
+      wi <- weights[!nas]
+      wi[wi > 10*median(wi)] <- 10*median(wi)
+      wij <- outer(weights[!nas],weights[!nas],"*")
+#     wij <- wij * (1+(homophily-1)*outer(outcome[!nas],outcome[!nas],"!="))
+      wij[wij > 10*median(wij)] <- 10*median(wij)
+#     Compute the EL standard error (if available)
+      iLj <-  row(wij) >col(wij)
+      iLjn <- row(wij)!=col(wij)
+      oij <- 0.5*outer(outcome[!nas],outcome[!nas],"+")
+      diag(oij) <- 0
+      estij <- sum(oij*wij*iLj)/sum(wij*iLj)
+      #
+      qij <- 2*(oij-estij)*wij*wij*iLjn
+      q <- sum(wij*wij*iLjn)
+      qi <- apply(qij,2,sum)
+      cross.mat=1-wij/outer(wi,wi,"*")
+      sgn=sign(sum((cross.mat/wij)[iLjn]))
+      varest <- (sum(qij*qij)+sgn*sum(cross.mat*outer(qi,qi,"*")*iLjn))/(q*q)
+  }else{
+      wij <- outer(weights[!nas],weights[!nas],"*")
+#     wij <- wij * (1+(homophily-1)*outer(outcome[!nas],outcome[!nas],"!="))
+      wij[wij > 10*stats::median(wij)] <- 10*stats::median(wij)
+#     Compute the EL standard error (if available)
+      iLj <-  row(wij) >col(wij)
+      iLjn <- row(wij)!=col(wij)
+      oij <- 0.5*outer(outcome[!nas],outcome[!nas],"+")
+      diag(oij) <- 0
+      estij <- sum(oij*wij*iLj)/sum(wij*iLj)
+      qij <- 2*(oij-estij)*wij*wij*iLjn
+      q <- sum(wij*wij*iLjn)
+      varest <- sum(qij*qij)/(q*q)
+  }
+# if(is.null(N) | !is.numeric(N)){
+    sqrt( varest )
+# }else{
+#   sqrt( (N-length(outcome))*varest/(N-1) )
+# }
 }
 
 

@@ -8,7 +8,7 @@
 write.rdsobj <- function(x,file){
 	if(!inherits(x,"rds.data.frame"))
 		stop("data is not an rds.data.frame object")
-	dput(x,file)
+	saveRDS(x,file)
 }
 
 

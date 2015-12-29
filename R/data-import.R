@@ -96,7 +96,8 @@ read.rdsat <- function(file,delim=c("<auto>","\t"," ",","),N=NULL){
 #'           2.10.0 this can be a compressed file (see 'file')
 #' @export
 read.rdsobj <- function(file){
-	obj <- dget(file)
+	obj <- try(readRDS(file), silent=TRUE)
+	if(inherits(obj,"try-error")){obj <- dget(file)}
 	if(!inherits(obj,"rds.data.frame"))
 		stop("Object stored in file is not an rds.data.frame object")
 	assert.valid.rds.data.frame(obj)

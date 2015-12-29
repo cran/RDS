@@ -18,7 +18,7 @@
 \item{...}{Additional arguments for the underlying plot function if applicable.}
 }
 \value{
-Either nothing, or a ggplot2 object for plotting.
+Either nothing (for the recruitment tree plot), or a ggplot2 object.
 }
 \description{
 Diagnostic plots for the RDS recruitment process
@@ -32,12 +32,16 @@ Several types of diagnostics are supported by the plot.type argument.
 'Recruits per subject' shows counts of how many subjects are recruited by each subject who are non-terminal.
 }
 \examples{
-\dontrun{
 data(fauxmadrona)
+\dontrun{
 plot(fauxmadrona)
+}
 plot(fauxmadrona, plot.type='Recruits by wave')
 plot(fauxmadrona, plot.type='Recruits per seed')
 plot(fauxmadrona, plot.type='Recruits per subject')
-}
+
+plot(fauxmadrona, plot.type='Recruits by wave', stratify.by='disease')
+plot(fauxmadrona, plot.type='Recruits per seed', stratify.by='disease')
+plot(fauxmadrona, plot.type='Recruits per subject', stratify.by='disease')
 }
 

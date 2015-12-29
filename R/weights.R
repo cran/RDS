@@ -62,6 +62,7 @@ compute.weights <- function(rds.data,
 			`Arithmetic Mean` = rep(ifelse(is.null(N),1,N)/n, n),
 			`Gile's SS` = gile.ss.weights(degs = deg, N = N, SS.infinity=control$SS.infinity, ...)
 	)
+#			`Good-Fellows` = gf.weights(rds.data, N = N, SS.infinity=control$SS.infinity, ...)
 	se <- substitute(subset)
 	if(!is.null(se)){
 		if(class(se)!="name") subset <- eval(subset, rds.data, parent.frame())

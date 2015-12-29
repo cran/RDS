@@ -3,52 +3,53 @@ memle <-function(network.size,num.recruits,recruit.time=FALSE,recruit.times=rep(
           unit.model="nbinom",
           cutoff=0,cutabove=1000,
           guess=c(3,0,-0.00001,0.6,1.5,0),
-          method="BFGS", hessian=TRUE, K=max(1000,network.size), optimism=TRUE, maxit=100, verbose=FALSE){
+          method="BFGS", hessian=TRUE, K=max(1000,network.size), optimism=TRUE, maxit=100, gmean=length(network.size)/sum(1/network.size),
+	  verbose=FALSE){
  logit <- function(p){log(p/(1-p))}
  if(is.null(unit.scale) | !is.numeric(unit.scale)){
   unit.scale <- -1
   if(!recruit.time){
    if(optimism) {
-    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4])+1,exp(l[5]))}
-    ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]-1),log(v[5]))}
-    gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]),exp(l[5]))}
+    vtrans <- function(l){c(l[1],exp(l[2]),exp(l[3])+1,exp(l[4]))}
+    ltrans <- function(v){c(v[1],log(v[2]),log(v[3]-1),log(v[4]))}
+    gtrans <- function(l){c(1,exp(l[2]),exp(l[3]),exp(l[4]))}
    }else{
-    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4])+1)}
-    ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]-1))}
-    gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]))}
+    vtrans <- function(l){c(l[1],exp(l[2]),exp(l[3])+1)}
+    ltrans <- function(v){c(v[1],log(v[2]),log(v[3]-1))}
+    gtrans <- function(l){c(1,exp(l[2]),exp(l[3]))}
    }
   }else{
    if(optimism) {
-    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]),exp(l[5])+1,exp(l[6]))}
-    ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]),log(v[5]-1),log(v[6]))}
-    gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]),exp(l[5]),exp(l[6]))}
+    vtrans <- function(l){c(l[1],l[2],exp(l[3]),exp(l[4])+1,exp(l[5]))}
+    ltrans <- function(v){c(v[1],v[2],log(v[3]),log(v[4]-1),log(v[5]))}
+    gtrans <- function(l){c(1,1,exp(l[3]),exp(l[4]),exp(l[5]))}
    }else{
-    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]),exp(l[5])+1)}
-    ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]),log(v[5]-1))}
-    gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]),exp(l[5]))}
+    vtrans <- function(l){c(l[1],l[2],exp(l[3]),exp(l[4])+1)}
+    ltrans <- function(v){c(v[1],v[2],log(v[3]),log(v[4]-1))}
+    gtrans <- function(l){c(1,1,exp(l[3]),exp(l[4]))}
    }
   }
  }else{
 # unit.scale <- 1
   if(!recruit.time){
    if(optimism) {
-    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4]))}
-    ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]))}
-    gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]))}
+    vtrans <- function(l){c(l[1],exp(l[2]),exp(l[3]))}
+    ltrans <- function(v){c(v[1],log(v[2]),log(v[3]))}
+    gtrans <- function(l){c(1,exp(l[2]),exp(l[3]))}
    }else{
-    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]))}
-    ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]))}
-    gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]))}
+    vtrans <- function(l){c(l[1],exp(l[2]))}
+    ltrans <- function(v){c(v[1],log(v[2]))}
+    gtrans <- function(l){c(1,exp(l[2]))}
    }
   }else{
    if(optimism) {
-    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]),exp(l[5]))}
-    ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]),log(v[5]))}
-    gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]),exp(l[5]))}
+    vtrans <- function(l){c(l[1],l[2],exp(l[3]),exp(l[4]))}
+    ltrans <- function(v){c(v[1],v[2],log(v[3]),log(v[4]))}
+    gtrans <- function(l){c(1,1,exp(l[3]),exp(l[4]))}
    }else{
-    vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],l[3],exp(l[4]))}
-    ltrans <- function(v){c(-log(v[1]-1),v[2],v[3],log(v[4]))}
-    gtrans <- function(l){c(-exp(-l[1]),1,1,exp(l[4]))}
+    vtrans <- function(l){c(l[1],l[2],exp(l[3]))}
+    ltrans <- function(v){c(v[1],v[2],log(v[3]))}
+    gtrans <- function(l){c(1,1,exp(l[3]))}
    }
   }
  }
@@ -61,72 +62,74 @@ memle <-function(network.size,num.recruits,recruit.time=FALSE,recruit.times=rep(
    method=method,
    hessian=hessian,control=list(fnscale=-10, trace=6, maxit=maxit),
    n=n,
+   network.size=network.size,
+   num.recruits=num.recruits,
    recruit.time=recruit.time,
    recruit.times=recruit.times,
-   num.recruits=num.recruits,network.size=network.size,
    max.coupons=max.coupons,K=K,
-   unit.scale=unit.scale, optimism=optimism, verbose=verbose)
+   unit.scale=unit.scale, optimism=optimism, gmean=gmean, verbose=verbose)
   if(recruit.time & fit$par[3] > 0.0001){
     recruit.time <- FALSE
     if(unit.scale<0){
      if(optimism) {
-      vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4])+1,exp(l[5]))}
-      ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]-1),log(v[5]))}
-      gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]),exp(l[5]))}
+      vtrans <- function(l){c(l[1],exp(l[2]),exp(l[3])+1,exp(l[4]))}
+      ltrans <- function(v){c(v[1],log(v[2]),log(v[3]-1),log(v[4]))}
+      gtrans <- function(l){c(exp(l[2]),exp(l[3]),exp(l[4]))}
      }else{
-      vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4])+1)}
-      ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]-1))}
-      gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]))}
+      vtrans <- function(l){c(l[1],exp(l[2]),exp(l[3])+1)}
+      ltrans <- function(v){c(v[1],log(v[2]),log(v[3]-1))}
+      gtrans <- function(l){c(1,exp(l[2]),exp(l[3]))}
      }
     }else{
      if(optimism) {
-      vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]),exp(l[4]))}
-      ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]),log(v[4]))}
-      gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]),exp(l[4]))}
+      vtrans <- function(l){c(l[1],exp(l[2]),exp(l[3]))}
+      ltrans <- function(v){c(v[1],log(v[2]),log(v[3]))}
+      gtrans <- function(l){c(1,exp(l[2]),exp(l[3]))}
      }else{
-      vtrans <- function(l){c((exp(l[1])+1)/exp(l[1]),l[2],exp(l[3]))}
-      ltrans <- function(v){c(-log(v[1]-1),v[2],log(v[3]))}
-      gtrans <- function(l){c(-exp(-l[1]),1,exp(l[3]))}
+      vtrans <- function(l){c(l[1],exp(l[2]))}
+      ltrans <- function(v){c(v[1],log(v[2]))}
+      gtrans <- function(l){c(1,exp(l[2]))}
      }
     }
-    guess <- guess[-3]
+    guess <- guess[-2]
     fit <- stats::optim(par=ltrans(guess),fn=llme,
      method=method,
      hessian=hessian,control=list(fnscale=-1,trace=6, maxit=maxit),
      n=n,
+     network.size=network.size,
+     num.recruits=num.recruits,
      recruit.time=recruit.time,
      recruit.times=recruit.times,
-     num.recruits=num.recruits,network.size=network.size,
      max.coupons=max.coupons,K=K,
-     unit.scale=unit.scale, optimism=optimism,
+     unit.scale=unit.scale, optimism=optimism, gmean=gmean,
      verbose=verbose)
   }
   if(unit.scale<0){
    if(unit.model=="cmp"){
     if(!recruit.time){
-     namesf <- c("CMP mean","Recruitment Odds","Error log-s.d.", "CMP skew","Optimism")
+     namesf <- c("Recruitment Odds","Error log-s.d.", "CMP skew","Optimism")
     }else{
-     namesf <- c("CMP mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "CMP skew","Optimism")
+     namesf <- c("Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "CMP skew","Optimism")
     }
    }else{
     if(!recruit.time){
-     namesf <- c("Neg.Bin. mean","Recruitment Odds","Error log-s.d.", "Neg.Bin scale","Optimism")
+     namesf <- c("Recruitment Odds","Error log-s.d.", "Neg.Bin scale","Optimism")
     }else{
-     namesf <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "Neg.Bin scale","Optimism")
+     namesf <- c("Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "Neg.Bin scale","Optimism")
     }
    }
   }else{
    if(unit.model=="cmp"){
     if(!recruit.time){
-     namesf <- c("CMP mean","Recruitment Odds","Error log-s.d.","Optimism")
+     namesf <- c("Recruitment Odds","Error log-s.d.","Optimism")
     }else{
-     namesf <- c("CMP mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.","Optimism")
+     namesf <- c("Recruitment Odds","Recruitment Odds Time","Error log-s.d.","Optimism")
     }
    }else{
     if(!recruit.time){
-     namesf <- c("Neg.Bin. mean","Recruitment Odds","Error log-s.d.","Optimism")
+     namesf <- c("Recruitment Odds","Error log-s.d.","Optimism")
     }else{
-     namesf <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.","Optimism")
+     namesf <- c("Recruitment Odds","Recruitment Odds Time","Error log-s.d.","Optimism")
     }
    }
   }
@@ -156,7 +159,8 @@ memle <-function(network.size,num.recruits,recruit.time=FALSE,recruit.times=rep(
  out
 }
 llcmpme <- function(v,n,network.size,num.recruits,recruit.time, recruit.times,
-                  max.coupons,K=1000,unit.scale=-1,optimism=TRUE,verbose=FALSE){
+                  max.coupons,K=1000,unit.scale=-1,optimism=TRUE,gmean=length(network.size)/sum(1/network.size),verbose=FALSE){
+ v <- c(-log(gmean - 1),v)
  if(!recruit.time){
     v <- c(v[1:2],0,v[-c(1:2)])
     recruit.times <- rep(0,n)
@@ -182,7 +186,8 @@ llcmpme <- function(v,n,network.size,num.recruits,recruit.time, recruit.times,
  out
 }
 llnbme <- function(v,n,network.size,num.recruits,recruit.time,recruit.times,
-                  max.coupons,K=1000,unit.scale=-1,optimism=TRUE,verbose=FALSE){
+                  max.coupons,K=1000,unit.scale=-1,optimism=TRUE,gmean=length(network.size)/sum(1/network.size),verbose=FALSE){
+ v <- c(-log(gmean - 1),v)
  if(!recruit.time){
     v <- c(v[1:2],0,v[-c(1:2)])
     recruit.times <- rep(0,n)
@@ -208,7 +213,8 @@ llnbme <- function(v,n,network.size,num.recruits,recruit.time,recruit.times,
  out
 }
 dnbmepdf <- function(v,network.size,num.recruits,recruit.time,recruit.times,max.coupons=3,K=1000,
-		     nb.scale=NULL,optimism=TRUE,verbose=FALSE){
+		     nb.scale=NULL,optimism=TRUE,gmean=length(network.size)/sum(1/network.size),verbose=FALSE){
+ v <- c(gmean,v)
  if(is.null(nb.scale)){
    nb.scale <- -1
  }else{
@@ -238,7 +244,8 @@ dnbmepdf <- function(v,network.size,num.recruits,recruit.time,recruit.times,max.
 }
 
 dmepdf <- function(v,network.size,num.recruits,recruit.time,recruit.times,max.coupons=3,K=1000,
-		   unit.scale=NULL,unit.model="nbinom",optimism=TRUE,verbose=FALSE){
+		   unit.scale=NULL,unit.model="nbinom",optimism=TRUE,gmean=length(network.size)/sum(1/network.size),verbose=FALSE){
+ v <- c(gmean,v)
  if(is.null(unit.scale) | !is.numeric(unit.scale)){
    unit.scale <- -1
  }

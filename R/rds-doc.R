@@ -3,7 +3,10 @@
 #'     with data collected using Respondent-Driven Sampling. This includes
 #'     Heckathorn's RDS-I and RDS-II estimators as well as Gile's Sequential
 #'     Sampler estimator.
-#' @import ggplot2 scales reshape2 gridExtra methods
+#' @import ggplot2 reshape2 gridExtra methods
+#' @importFrom stats approx coef fft median optim pnorm printCoefmat pt qnorm qt quantile resid residuals rnorm runif sd spline symnum uniroot var vcov xtabs
+#' @importFrom graphics abline axis hist legend lines par plot points segments strwidth symbols
+#' @importFrom scales hue_pal
 #' @docType package
 #' @name RDS
 #' @useDynLib RDS

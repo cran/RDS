@@ -1,6 +1,6 @@
 #' Summarizing Generalized Linear Model Fits with Odds Ratios for Survey Data
 #' 
-#' \code{RDS::summary.svyglm} is a version of \code{summary.svyglm} that 
+#' \code{RDS::summary.svyglm.RDS} is a version of \code{summary.svyglm} that 
 #' reports odds-ratios in place of coefficients in the summary table. 
 #' This only applies for the \code{binomial} family. Otherwise it is identical to
 #' \code{summary.svyglm}.
@@ -21,6 +21,7 @@
 #' @param correlation logical; if \code{TRUE}, the correlation matrix of the
 #' estimated parameters is returned and printed.
 #' @param df.resid Optional denominator degrees of freedom for Wald tests.
+#' @param odds logical; Should the coefficients be reported as odds (rather than log-odds)?
 #' @param \dots further arguments passed to or from other methods.
 #' @return \code{RDS::summary.svyglm} returns an object of class \code{"summary.svyglm.RDS"},
 #' a list with components
@@ -44,15 +45,16 @@
 #' is true.)  The estimated correlations of the estimated coefficients.}
 #' \item{symbolic.cor}{(only if \code{correlation} is true.)  The value of the
 #' argument \code{symbolic.cor}.}
+#' \item{odds}{Are the coefficients reported as odds (rather than log-odds)?}
 #' @seealso \code{\link[survey]{svyglm}}, \code{\link{summary}}.
 #' @keywords models regression
 #' @examples
 #' 
 #' ## For examples see example(svyglm)
 #' 
-##' @export
-#' @method summary svyglm
-summary.svyglm<-function (object, correlation = FALSE, df.resid=NULL,...) 
+#' @export
+#' @method summary svyglm.RDS
+summary.svyglm.RDS<-function (object, correlation = FALSE, df.resid=NULL, odds=TRUE, ...) 
 {
     Qr <- object$qr
     est.disp <- TRUE
@@ -70,7 +72,7 @@ summary.svyglm<-function (object, correlation = FALSE, df.resid=NULL,...)
     var.cf <- diag(covmat)
     s.err <- sqrt(var.cf)
     tvalue <- coef.p/s.err
-    if(object$family$family == "binomial"){
+    if(object$family$family == "binomial" & odds){
      dn <- c("Estimate", "Lower")
      qvalue <- stats::qt(0.975,df=df.r)
      if (!est.disp) {
@@ -124,6 +126,7 @@ summary.svyglm<-function (object, correlation = FALSE, df.resid=NULL,...)
     }
     ans$aliased<-is.na(stats::coef(object,na.rm=FALSE))
     ans$survey.design<-list(call=object$survey.design$call)
+    ans$odds<-odds
     class(ans) <- c("summary.svyglm.RDS","summary.svyglm","summary.glm")
     return(ans)
 }
@@ -170,7 +173,7 @@ print.summary.svyglm.RDS<-function (x, digits = max(3, getOption("digits") - 3),
     print(x$survey.design$call)
    
         if (!is.null(df <- x$df) && (nsingular <- df[3] - df[1])) 
-         if(x$family$family == "binomial"){
+         if(x$odds & x$family$family == "binomial"){
             cat("\nOdds Ratios: (", nsingular, " not defined because of singularities)\n", 
                 sep = "")
 	 }else{
@@ -178,7 +181,7 @@ print.summary.svyglm.RDS<-function (x, digits = max(3, getOption("digits") - 3),
                 sep = "")
 	 }
         else {
-        if(x$family$family == "binomial"){
+        if(x$odds & x$family$family == "binomial"){
           cat("\nOdds Ratios\n")
 	}else{
           cat("\nCoefficients\n")
@@ -191,9 +194,9 @@ print.summary.svyglm.RDS<-function (x, digits = max(3, getOption("digits") - 3),
                 colnames(coefs)))
             coefs[!aliased, ] <- x$coefficients
         }
-        if(x$family$family == "binomial"){
-	  coefs[,1:3] <- exp(coefs[,1:3])
-	}
+#       if(x$family$family == "binomial"){
+#  coefs[,1:3] <- exp(coefs[,1:3])
+#}
 	stats::printCoefmat(coefs, digits = digits, signif.stars = signif.stars, 
             na.print = "NA", ...)
     

@@ -193,6 +193,9 @@ spps.est.keep<-function(degs,dis,nguess,wstart=0,wsample=NULL,number.ss.iteratio
 	mapping<-getestCstacked(degs,n=nguess,nit=number.ss.iterations,nsampsamp=number.ss.samples.per.iteration,trace=FALSE,SS.infinity=SS.infinity)
 	weights=stats::approx(x=mapping$classes,y=1/mapping$probs,xout=degs,rule=2)$y
 	pis <- 1/weights
+#	if(weight.type == "Good-Fellows"){
+#	  est=gf.est(deg=degs,outcome=dis,N=nguess,recID=recID,SS.infinity=SS.infinity)
+#	}else{
 	 if(is.factor(dis)){
 		num <- rep(0,length=length(levels(dis)))
 		a <- tapply(weights,as.numeric(dis),sum)
@@ -201,6 +204,7 @@ spps.est.keep<-function(degs,dis,nguess,wstart=0,wsample=NULL,number.ss.iteratio
 		num<-sum(dis*weights)
 	 }
 	 est<-num/sum(weights)
+#	}
 	
 	# Note wts are actually the pis here
 	list(samplewts=pis,
@@ -217,7 +221,11 @@ spps.est<-function(degs,dis,nguess,wstart=0,wsample=NULL,nsampsamp=500,hajek=TRU
 		mapping<-getestCstacked(degs,n=nguess,nit=3,nsampsamp=nsampsamp,trace=FALSE,hajek=hajek,SS.infinity=SS.infinity)
 	  }
 	  pis=1/stats::approx(x=mapping$classes,y=1/mapping$probs,xout=degs,rule=2)$y
+#	  if(weight.type == "Good-Fellows"){
+#	    list(est=gf.est(deg=degs,outcome=dis,N=nguess,recID=recID,SS.infinity=SS.infinity),pis=pis)
+#	  }else{
 	    list(est=vh.est(pis,dis,wstart=wstart,wsample=wsample),pis=pis)
+#	  }
 }
 
 ######################################

@@ -1,4 +1,3 @@
-#' @importFrom stats approx coef fft median optim pnorm printCoefmat pt qnorm qt quantile resid residuals rnorm runif sd spline symnum uniroot var vcov xtabs
 RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 		control=control.rds.estimates(), continuous=NA, is.cts=FALSE, is.quantile=FALSE,
 		empir.lik=FALSE, weight.type, N=NULL, ...){

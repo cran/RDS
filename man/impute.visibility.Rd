@@ -9,8 +9,8 @@
 impute.visibility(rds.data, max.coupons = NULL,
   type.impute = c("distribution", "mode", "median", "mean"),
   recruit.time = NULL, include.tree = FALSE, unit.scale = NULL,
-  unit.model = c("nbinom", "cmp"), optimism = FALSE, guess = NULL,
-  reflect.time = TRUE, maxit = 100, verbose = TRUE)
+  unit.model = c("cmp", "nbinom"), optimism = FALSE, guess = NULL,
+  reflect.time = TRUE, maxit = 100, K = NULL, verbose = TRUE)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame}
@@ -50,7 +50,7 @@ on the variance of the negative binomial compared to a Poisson of the same mean.
 The alternative is \code{cmp}, meaning a Conway-Maxwell-Poisson distribution.
 In this case, \code{unit.scale}
 is the scale parameter compared to a Poisson of the same mean (values less than one mean
-under-dispersed and values over one mean over-dispersed).}
+under-dispersed and values over one mean over-dispersed). The default is \code{cmp}.}
 
 \item{optimism}{logical; If \code{TRUE} then add a term to the model allowing
 the (proportional) inflation of the self-reported degrees relative to the unit sizes.}
@@ -61,6 +61,9 @@ the (proportional) inflation of the self-reported degrees relative to the unit s
 end of the study (instead of the time since the survey started or chronological time).}
 
 \item{maxit}{integer; The maximum number of iterations in the likelihood maximization. By default it is 100.}
+
+\item{K}{integer; The maximum degree. All self-reported degrees above this are recorded as being at least K.
+By default it is the 95th percentile of the self-reported network sizes.}
 
 \item{verbose}{logical; if this is \code{TRUE}, the program will print out additional}
 }

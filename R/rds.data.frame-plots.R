@@ -1,4 +1,3 @@
-# was plot.rds.diagnostics
 #' Diagnostic plots for the RDS recruitment process
 #' @param x An rds.data.frame object.
 #' @param plot.type the type of diagnostic.
@@ -11,17 +10,20 @@
 #' 'Recruits by wave' displays counts of subjects based on how far they rare from their seed.
 #' 'Recruit per seed' shows the total tree size for each seed.
 #' 'Recruits per subject' shows counts of how many subjects are recruited by each subject who are non-terminal.
-#' @return Either nothing, or a ggplot2 object for plotting.
+#' @return Either nothing (for the recruitment tree plot), or a ggplot2 object.
 #' @method plot rds.data.frame
 #' @examples 
-#' \dontrun{
 #' data(fauxmadrona)
+#' \dontrun{
 #' plot(fauxmadrona)
+#' }
 #' plot(fauxmadrona, plot.type='Recruits by wave')
 #' plot(fauxmadrona, plot.type='Recruits per seed')
 #' plot(fauxmadrona, plot.type='Recruits per subject')
-#' }
-#' @importFrom graphics abline axis hist legend lines par plot points segments strwidth symbols
+#' 
+#' plot(fauxmadrona, plot.type='Recruits by wave', stratify.by='disease')
+#' plot(fauxmadrona, plot.type='Recruits per seed', stratify.by='disease')
+#' plot(fauxmadrona, plot.type='Recruits per subject', stratify.by='disease')
 plot.rds.data.frame <- function(x,
 		plot.type=c("Recruitment tree",
 				"Network size by wave",					
@@ -67,7 +69,7 @@ plot.rds.data.frame <- function(x,
 							labs(title=plot.type)
 		}else if(plot.type=="Recruits per subject"){
 			sd <- tmp$recruiter.id == get.seed.rid(x)
-			p <- qplot(x=factor(as.vector(table(tmp$recruiter.id[!sd]))[-1]),binwidth=1,origin=-.5,
+			p <- qplot(x=factor(as.vector(table(tmp$recruiter.id[!sd]))[-1]),
 									xlab="# of Recruits") + 
 							labs(title=plot.type)
 		}
@@ -103,8 +105,7 @@ plot.rds.data.frame <- function(x,
 			idmap <- match(rids,get.id(x))
 			col <- tmp$color[idmap]
 			dat <- data.frame(Var2=col,value=as.vector(tab))
-			p <- qplot(x=factor(dat$value),fill=factor(dat$Var2),binwidth=1,origin=-.5,
-									xlab="# of Recruits") + 
+			p <- qplot(x=factor(dat$value),fill=factor(dat$Var2), xlab="# of Recruits") + 
 							scale_fill_hue(guide=guide_legend(title=stratify.by)) + 
 							labs(title=plot.type)
 		}		

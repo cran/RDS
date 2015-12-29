@@ -2,6 +2,7 @@
 #' converts to character with minimal loss of precision for numeric variables
 #' @param x the value
 #' @param ... passed to either format or as.character.
+#' @export
 as.char <- function(x,...){
 	if(is.numeric(x))
 		if(is.integer(x))

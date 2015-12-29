@@ -92,10 +92,14 @@ void gllcmpmeC (double *v,
 //  Rprintf("< %f\n",1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0));
     }
 //  temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
-    temp *= poilog(srd[i],log(u)-log(opt),lnsd);
-//  Rprintf("dn %f\n", dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0));
+    if(srd[i]>=0){
+      temp *= poilog(srd[i],log(u)-log(opt),lnsd);
+    }
+//  Rprintf("dn %f\n", poilog(srd[i],log(u)-log(opt),lnsd));
+//  Rprintf("dn %f\n", log(temp));
     sint += temp; 
    }
+// if(sint <= 0.0) Rprintf("sint %f\n", sint);
    loglik+=log(sint);
   }
   (*llik)=loglik;
@@ -176,10 +180,10 @@ void gcmpmepdfC (double *v,
      temp *= 1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0);
 //  Rprintf("< %f\n",1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0));
     }
-//  if(srd[i]>0.0){
+    if(srd[i]>=0){
 //   temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
      temp *= poilog(srd[i],log(u)-log(opt),lnsd);
-//  }
+    }
 //  Rprintf("dn %f\n", dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0));
     sint += temp; 
     dpdf[i*Ki+iu-1] = temp; 
@@ -266,7 +270,9 @@ void gllnbmeC (double *v,
 //  Rprintf("< %f\n",1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0));
     }
 //  temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
-    temp *= poilog(srd[i],log(u)-log(opt),lnsd);
+    if(srd[i]>=0){
+      temp *= poilog(srd[i],log(u)-log(opt),lnsd);
+    }
 //  Rprintf("pln srd %d %f\n", srd[i], poilog(srd[i],log(u)-log(opt),lnsd));
 //  Rprintf("dn %f\n", dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0));
     sint += temp; 
@@ -348,10 +354,10 @@ void gnbmepdfC (double *v,
      temp *= 1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0);
 //  Rprintf("< %f\n",1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0));
     }
-//  if(srd[i]>zero){
+    if(srd[i]>=0){
 //   temp *= dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0);
      temp *= poilog(srd[i],log(u)-log(opt),lnsd);
-//  }
+    }
 //  Rprintf("dn %f\n", dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0));
     sint += temp; 
     dpdf[i*Ki+iu-1] = temp; 

@@ -134,7 +134,7 @@ convergence.plot <- function(rds.data, outcome.variable, est.func=RDS.II.estimat
 		return(p + ggtitle(paste("Convergence plot of",nm)))
 	}
  	plots <- lapply(1:length(outcome.variable),make.plot)
-	do.call(.grid.arrange_RDS,plots)
+	do.call(grid.arrange,plots)
 }
 
 #' Bottleneck Plot
@@ -222,115 +222,4 @@ bottleneck.plot <- function(rds.data, outcome.variable, est.func=RDS.II.estimate
 			theme_bw() +
 			ylab("Estimate") +
 			xlab("# of Observations")
-}
-
-.grid.arrange_RDS <- function(..., as.table=FALSE, clip=TRUE,
-     main=NULL, sub=NULL, left=NULL, legend=NULL, newpage=TRUE){
-    if(newpage) grid::grid.newpage()
-    grid::grid.draw(.arrangeGrob_RDS(...,as.table=as.table, clip=clip,
-       main=main, sub=sub, left=left, legend=legend))
-}
-#' @importFrom grDevices n2mfrow
-.arrangeGrob_RDS <- function(..., as.table=FALSE, clip=TRUE,
-                        main=NULL, sub=NULL, left=NULL,
-                        legend=NULL) {
-
-  if(is.null(main)) main <- grid::nullGrob()
-  if(is.null(sub)) sub <- grid::nullGrob()
-  if(is.null(legend)) legend <- grid::nullGrob()
-  if(is.null(left)) left <- grid::nullGrob()
-  
-  if(is.character(main)) main <- grid::textGrob(main)
-  if(is.character(sub)) sub <- grid::textGrob(sub)
-  if(is.character(legend)) legend <- grid::textGrob(legend, rot=-90)
-  if(is.character(left)) left <- grid::textGrob(left, rot=90)
-
-  arrange.class <- "arrange" # grob class
-  
-  dots <- list(...)
-  
-  params <- c("nrow", "ncol", "widths", "heights",
-              "default.units", "respect", "just" )
- ## names(formals(grid.layout))
-  layout.call <- intersect(names(dots), params)
-  params.layout <- dots[layout.call]
-  if(is.null(names(dots)))
-    not.grobnames <- FALSE else
-  not.grobnames <- names(dots) %in% layout.call
-  
-  grobs <- dots[! not.grobnames ]
-  
-  n <- length(grobs)
-  
-  nm <- grDevices::n2mfrow(n)
-  
-  if(is.null(params.layout$nrow) & is.null(params.layout$ncol)) 
-    {
-      params.layout$nrow = nm[1]
-      params.layout$ncol = nm[2]
-    }
-  if(is.null(params.layout$nrow))
-    params.layout$nrow = ceiling(n/params.layout$ncol)
-  if(is.null(params.layout$ncol))
-    params.layout$ncol = ceiling(n/params.layout$nrow)
-  
-  nrow <- params.layout$nrow 
-  ncol <- params.layout$ncol
-
-  lay <- do.call(grid::grid.layout, params.layout)
-  
-  fg <- grid::frameGrob(layout=lay)
-
-  ## if a ggplot is present, make the grob derive from the ggplot class
-  classes <- lapply(grobs, class)
-  inherit.ggplot <- any("ggplot" %in% unlist(classes))
-  if(inherit.ggplot) arrange.class <- c(arrange.class, "ggplot")
-  
-  ii.p <- 1
-  for(ii.row in seq(1, nrow)){
-    ii.table.row <- ii.row 
-    if(as.table) {ii.table.row <- nrow - ii.table.row + 1}
-    for(ii.col in seq(1, ncol)){
-      ii.table <- ii.p
-      if(ii.p > n) break
-      
-      ##  select current grob
-      cl <- class(grobs[[ii.table]])
-      ct <- if("grob" %in% unlist(cl)) "grob" else
-      if("ggplot" %in% unlist(cl)) "ggplot" else cl
-      
-      g.tmp <- switch(ct,
-                      ggplot = ggplot2::ggplotGrob(grobs[[ii.table]]),
-                      trellis = grid::grob(p=grobs[[ii.table]], cl="lattice"),
-                      grob = grobs[[ii.table]], 
-                      stop("input must be grobs!"))
-      
-      if(clip) # gTree seems like overkill here ?
-        g.tmp <- grid::gTree(children=grid::gList(grid::clipGrob(), g.tmp))
-      
-      fg <- grid::placeGrob(fg, g.tmp, row=ii.table.row, col=ii.col)
-      ii.p <- ii.p + 1
-    }
-  }
-
-  ## optional annotations in a frame grob
-  wl <- grid::unit(1, "grobwidth", left) 
-  wr <- grid::unit(1, "grobwidth", legend)
-  hb <- grid::unit(1, "grobheight", sub)
-  ht <- grid::unit(1, "grobheight", main)
-  
-  annotate.lay <- grid::grid.layout(3, 3,
-                              widths=grid::unit.c(wl, grid::unit(1, "npc")-wl-wr, wr),
-                              heights=grid::unit.c(ht, grid::unit(1, "npc")-hb-ht, hb))
-  
-  af <- grid::frameGrob(layout=annotate.lay)
-  
-  af <- grid::placeGrob(af, fg, row=2, col=2)
-  af <- grid::placeGrob(af, main, row=1, col=2)
-  af <- grid::placeGrob(af, sub, row=3, col=2)
-  af <- grid::placeGrob(af, left, row=2, col=1)
-  af <- grid::placeGrob(af, legend, row=2, col=3)
-  
- 
-  invisible(grid::gTree(children=grid::gList(af), cl=arrange.class))
 }

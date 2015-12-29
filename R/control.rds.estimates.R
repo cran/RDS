@@ -1,3 +1,4 @@
+utils::globalVariables(c(".control.rds.estimates"))
 #' Auxiliary for Controlling RDS.bootstrap.intervals
 #' 
 #' Auxiliary function as user interface for fine-tuning RDS.bootstrap.intervals algorithm,
@@ -49,9 +50,20 @@ control.rds.estimates<-function(confidence.level=0.95,
                               seed=NULL){
 
   formal.args<-formals(sys.function())
+  if(!exists(".control.rds.estimates")){
     control<-list()
     for(arg in names(formal.args))
       control[arg]<-list(get(arg))
+  }else{
+    control<-.control.rds.estimates
+    if(!missing(confidence.level)){control[["confidence.level"]] <- confidence.level}
+    if(!missing(SS.infinity)){control[["SS.infinity"]] <- SS.infinity}
+    if(!missing(lowprevalence)){control[["lowprevalence"]] <- lowprevalence}
+    if(!missing(discrete.cutoff)){control[["discrete.cutoff"]] <- discrete.cutoff}
+    if(!missing(useC)){control[["useC"]] <- useC}
+    if(!missing(number.of.bootstrap.samples)){control[["number.of.bootstrap.samples"]] <- number.of.bootstrap.samples}
+    if(!missing(seed)){control[["seed"]] <- seed}
+  }
 
   set.control.class()
 }
