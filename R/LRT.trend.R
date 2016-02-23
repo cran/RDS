@@ -10,13 +10,24 @@
 #' \deqn{H_0 : p_1 = \ldots = p_K}
 #' vs
 #' \deqn{H_1 : p_1 \ge p_2 \ldots \ge p_K}
-#' with at least one equality strict. A likelihood ratio statistic for this test has 
+#' with at least one equality strict. The alternatie hypothesis is for a monotone decreasing trend.
+#' A likelihood ratio statistic for this test has 
 #' been derived (Bartholomew 1959).
 #' The null distribution of the likelihood ratio statistic is very complex 
-#' but can be determined by a simple Monte Carlo.\cr
+#' but can be determined by a simple Monte Carlo process.\cr
+#' Alternatively, we can test the null hypothesis:\cr
+#' \deqn{H_0 : p_1 \ge p_2 \ldots \ge p_K}
+#' vs
+#' \deqn{H_1 : \overline{H_0}}
+#' The null distribution of the likelihood ratio statistic is very complex 
+#' but can be determined by a simple Monte Carlo process.
+#' In both cases we also test for:\cr
+#' \deqn{H : p_1 \le p_2 \ldots \le p_K}
+#' that is, a monotonically increasing trend.
 #' The function requires the isotone library.
 #' 
 #' @aliases LRT.trend
+#' @aliases LRT.trend.null
 #' @aliases LRT.trend.test
 #' @param data A two row matrix or data.frame of prevalence estimates and
 #' their standard errors. The first row is the prevalence estimates and the
@@ -24,6 +35,9 @@
 #' order (e.g., time) there are to be assessed. The row names of \code{data}
 #' should be "estimate" and "sigma". This is 
 #' @param variables A character vector of column names it select from \code{data}.
+#' @param null A character string indicating the null hypothesis to use. The value \code{"monotone"} uses the various 
+#' monotone hypotheses as the nulls. If not \code{"monotone"}, the null is chosen to be that of equality of the means
+#' over all periods.
 #' @param confidence.level The confidence level for the confidence intervals. The default is 0.95 for 95\%.
 #' @param number.of.bootstrap.samples The number of Monte Carlo draws to
 #' determine the null distribution of the likelihood ratio statistic.
@@ -31,7 +45,7 @@
 #' If \code{estimates} is given then a plot of the estimates and nominal 95\% confidence bands (as error bars) is produced.
 #' If \code{distributions} is given then a plot is produced of the null distributions of 
 #' the likelihood
-#' ratio statistic with the observed statistics plotted as a vertical dashed line.
+#' ratio statistic with the observed likelihood ratio statistics plotted as a vertical dashed line.
 #' @param seed The value of the random number seed. Preset by default to allow reproducibility.
 #' @return 
 #' A list with components
@@ -51,9 +65,10 @@
 #' colnames(d) <- c("time_1","time_2","time_3") 
 #' LRT.trend.test(d,number.of.bootstrap.samples=1000)
 #' @export 
-LRT.trend.test <- function(data,variables=colnames(data),confidence.level=0.95,
+LRT.trend.test <- function(data,variables=colnames(data),null="monotone",confidence.level=0.95,
    number.of.bootstrap.samples=5000,plot=NULL,seed=1){
-   out <- LRT.trend(x=as.numeric(data["estimate",variables]),
+   LRT.fn <- ifelse(null=="monotone",LRT.trend.null,LRT.trend)
+   out <- LRT.fn(x=as.numeric(data["estimate",variables]),
                     sigma=as.numeric(data["sigma",variables]),
                     number.of.bootstrap.samples=number.of.bootstrap.samples,
                     confidence.level=confidence.level,
@@ -72,7 +87,7 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
   k <- length(x)
   set.seed(seed)
   r <- matrix(stats::rnorm(k*number.of.bootstrap.samples),ncol=k)
-  r <- sweep(r,2,sigma,"*") + xbar
+  r <- sweep(r,2,sigma,"*");r <- sweep(r,2,xbar,"+")
   L <- t(apply(r,1,LRT.value.trend,sigma=sigma))
   obsL <- LRT.value.trend(x,sigma)
   options("scipen"=100)
@@ -82,23 +97,35 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
   }else{
     cat(sprintf("We do not reject the null hypothesis of equal proportions (at the %s%% level).\n\n",format(100*(1-confidence.level))))
   }
-  cat(sprintf("In a test of the null hypothesis of equal proportions against the alternative of a monotone trend (either up or down), the p-value is %s.\n",format.pval(mean(obsL[4] <= L[,4]),eps=0.0001)))
-  if(mean(obsL[4] <= L[,4]) < (1-confidence.level)){
+  if(all(diff(x) >= 0) | all(diff(x) <= 0)){
+   cat(sprintf("In a test of the null hypothesis of equal proportions against the alternative of a monotone trend (either up or down), the p-value is %s.\n",format.pval(mean(obsL[4] <= L[,4]),eps=0.0001)))
+   if(mean(obsL[4] <= L[,4]) < (1-confidence.level)){
     cat(sprintf("We reject the null hypothesis of equal proportions in favor of the alternative of a monotone trend (at the %s%% level).\n\n",format(100*(1-confidence.level))))
-  }else{
+   }else{
     cat(sprintf("We do not reject the null hypothesis of equal proportions (at the %s%% level).\n\n",format(100*(1-confidence.level))))
+   }
+  }else{
+    cat(sprintf("We do not accept the hypothesis of a monotone trend (at the %s%% level).\n\n",format(100*(1-confidence.level))))
   }
-  cat(sprintf("In a test of the null hypothesis of equal proportions against the alternative of an increasing trend, the p-value is %s.\n",format.pval(mean(obsL[1] <= L[,1]),eps=0.0001)))
-  if(mean(obsL[1] <= L[,1]) < (1-confidence.level)){
+  if(all(diff(x) >= 0)){
+   cat(sprintf("In a test of the null hypothesis of equal proportions against the alternative of an increasing trend, the p-value is %s.\n",format.pval(mean(obsL[1] <= L[,1]),eps=0.0001)))
+   if(mean(obsL[1] <= L[,1]) < (1-confidence.level)){
     cat(sprintf("We reject the null hypothesis of equal proportions in favor of the alternative of an increasing trend (at the %s%% level).\n\n",format(100*(1-confidence.level))))
-  }else{
+   }else{
     cat(sprintf("We do not reject the null hypothesis of equal proportions (at the %s%% level).\n\n",format(100*(1-confidence.level))))
+   }
+  }else{
+    cat(sprintf("We do not accept the hypothesis of an increasing trend (at the %s%% level).\n\n",format(100*(1-confidence.level))))
   }
-  cat(sprintf("In a test of the null hypothesis of equal proportions against the alternative of an decreasing trend, the p-value is %s.\n",format.pval(mean(obsL[2] <= L[,2]),eps=0.0001)))
-  if(mean(obsL[2] <= L[,2]) < (1-confidence.level)){
+  if(all(diff(x) <= 0)){
+   cat(sprintf("In a test of the null hypothesis of equal proportions against the alternative of an decreasing trend, the p-value is %s.\n",format.pval(mean(obsL[2] <= L[,2]),eps=0.0001)))
+   if(mean(obsL[2] <= L[,2]) < (1-confidence.level)){
     cat(sprintf("We reject the null hypothesis of equal proportions in favor of the alternative of a decreasing trend (at the %s%% level).\n\n",format(100*(1-confidence.level))))
-  }else{
+   }else{
     cat(sprintf("We do not reject the null hypothesis of equal proportions (at the %s%% level).\n\n",format(100*(1-confidence.level))))
+   }
+  }else{
+    cat(sprintf("We do not accept the hypothesis of a decreasing trend  (at the %s%% level).\n\n",format(100*(1-confidence.level))))
   }
 #
   if("estimates" %in% plot){
@@ -110,62 +137,87 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
   }
   if("distributions" %in% plot){
     binn <- 500
-    maxl <- max(1.1*obsL[3],stats::quantile(L[,3],0.95))
+    maxl <- stats::quantile(L[,3],0.95)
+    gpdf=bgk_kde(L[,3],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,3]))
+    maxl <- max(1.1*obsL[3],maxl)
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-#   yl <- locfit::locfit.raw(locfit::lp(L[,3],nn=0.1,h=0.8), xlim=c(0,maxl))
-#   gpdf <- predict(yl, newdata=r)
-    gpdf=bgk_kde(L[,3],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r,method="natural")$y
+    gpdf[r>max(L[,3])] <- 0
+    gpdf[gpdf<0] <- 0
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
-#   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,3]),xlim=c(0,max(obsL[3],stats::quantile(L[,3],0.99))),
+    if(mean(obsL[3] <= L[,3]) < (1-confidence.level)){
+      mainm <- paste("Null Distribution of the Overall Test Statistic",
+       sprintf("\nWe reject the null hypothesis of equal proportions (at the %s%% level).",format(100*(1-confidence.level))))
+    }else{
+      mainm <- paste("Null Distribution of the Overall Test Statistic",
+       sprintf("\nWe do not reject the null hypothesis of equal proportions (at the %s%% level).",format(100*(1-confidence.level))))
+    }
    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
-     xlab="Likelihood Ratio Statistic",main="Null Distribution of the Overall Test Statistic",sub="The vertical line is the observed statistic")
+     xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
    abline(v=obsL[3],lty=2)
-    maxl <- max(1.1*obsL[1],stats::quantile(L[,1],0.95))
+    maxl <- stats::quantile(L[,1],0.95)
+    gpdf=bgk_kde(L[,1],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,1]))
+    maxl <- max(1.1*obsL[1],maxl)
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-#   yl <- locfit::locfit.raw(locfit::lp(L[,1],nn=0.1,h=0.8), xlim=c(0,maxl))
-#   gpdf <- predict(yl, newdata=r)
-    gpdf=bgk_kde(L[,1],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r,method="natural")$y
+    gpdf[r>max(L[,1])] <- 0
+    gpdf[gpdf<0] <- 0
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
-#   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,1]),xlim=c(0,max(obsL[1],stats::quantile(L[,1],0.99))),
-   plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
+   if(all(diff(x) >= 0)){
+    if(mean(obsL[1] <= L[,1]) < (1-confidence.level)){
+      mainm <- paste("Null Distribution of the Increasing Test Statistic",
+       sprintf("\nWe reject the null hypothesis of equal proportions (at the %s%% level).",format(100*(1-confidence.level))))
+    }else{
+      mainm <- paste("Null Distribution of the Increasing Test Statistic",
+       sprintf("\nWe do not reject the null hypothesis of equal proportions (at the %s%% level).",format(100*(1-confidence.level))))
+    }
+    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
-     xlab="Likelihood Ratio Statistic",main="Null Distribution of the Increasing Test Statistic",sub="The vertical line is the observed statistic")
-   abline(v=obsL[1],lty=2)
-    maxl <- max(1.1*obsL[2],stats::quantile(L[,2],0.95))
+     xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
+    abline(v=obsL[1],lty=2)
+   }
+    maxl <- stats::quantile(L[,2],0.95)
+    gpdf=bgk_kde(L[,2],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,2]))
+    maxl <- max(1.1*obsL[2],maxl)
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-#   yl <- locfit::locfit.raw(locfit::lp(L[,2],nn=0.1,h=0.8), xlim=c(0,maxl))
-#   gpdf <- predict(yl, newdata=r)
-    gpdf=bgk_kde(L[,2],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r,method="natural")$y
+    gpdf[r>max(L[,2])] <- 0
+    gpdf[gpdf<0] <- 0
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
-#   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,2]),xlim=c(0,max(obsL[2],stats::quantile(L[,2],0.99))),
-   plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
+   if(all(diff(x) <= 0)){
+    if(mean(obsL[2] <= L[,2]) < (1-confidence.level)){
+      mainm <- paste("Null Distribution of the Decreasing Test Statistic",
+       sprintf("\nWe reject the null hypothesis of equal proportions (at the %s%% level).",format(100*(1-confidence.level))))
+    }else{
+      mainm <- paste("Null Distribution of the Decreasing Test Statistic",
+       sprintf("\nWe do not reject the null hypothesis of equal proportions (at the %s%% level).",format(100*(1-confidence.level))))
+    }
+    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
-     xlab="Likelihood Ratio Statistic",main="Null Distribution of the Decreasing Test Statistic",sub="The vertical line is the observed statistic")
-   abline(v=obsL[2],lty=2)
-    maxl <- max(1.1*obsL[4],stats::quantile(L[,4],0.95))
+     xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
+    abline(v=obsL[2],lty=2)
+   }
+    maxl <- stats::quantile(L[,4],0.95)
+    gpdf=bgk_kde(L[,4],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,4]))
+    maxl <- max(1.1*obsL[4],maxl)
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-#   yl <- locfit::locfit.raw(locfit::lp(L[,4],nn=0.1,h=0.8), xlim=c(0,maxl))
-#   gpdf <- predict(yl, newdata=r)
-    gpdf=bgk_kde(L[,4],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r,method="natural")$y
+    gpdf[r>max(L[,4])] <- 0
+    gpdf[gpdf<0] <- 0
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
-#   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,1]),xlim=c(0,max(obsL[1],stats::quantile(L[,1],0.99))),
-   plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
+   if(all(diff(x) >= 0) | all(diff(x) <= 0)){
+    mainm <- paste("Null Distribution of the Monotone Test Statistic",
+     sprintf("\nWe do not reject the null hypothesis of equal proportions (at the %s%% level).",format(100*(1-confidence.level))))
+    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
-     xlab="Likelihood Ratio Statistic",main="Null Distribution of the Monotone Test Statistic",sub="The vertical line is the observed statistic")
-   abline(v=obsL[4],lty=2)
+     xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
+    abline(v=obsL[4],lty=2)
+   }
   }
   invisible(list(pvalue.increasing=mean(obsL[1] <= L[,1]),
        pvalue.decreasing=mean(obsL[2] <= L[,2]),
@@ -187,7 +239,13 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
 #' with at least one equality strict. A likelihood ratio statistic for this test has 
 #' been derived (Bartholomew 1959).
 #' The null distribution of the likelihood ratio statistic is very complex 
-#' but can be determined by a simple Monte Carlo.\cr
+#' but can be determined by a simple Monte Carlo process.\cr
+#' We also test the null hypothesis:\cr
+#' \deqn{H_0 : p_1 \ge p_2 \ldots \ge p_K}
+#' vs
+#' \deqn{H_1 : \overline{H_0}}
+#' The null distribution of the likelihood ratio statistic is very complex 
+#' but can be determined by a simple Monte Carlo process.
 #' The function requires the isotone library.
 #' 
 #' @aliases LRT.value.trend
@@ -246,38 +304,62 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
   k <- length(x)
   set.seed(seed)
   s <- seq_along(x)
-  Atot <- cbind(s[-length(s)], s[-1])
-  fit.ls1 <- isotone::activeSet(Atot, "LS", y = x, weights = a)
-  m.inc=fit.ls1$x
-  r <- matrix(stats::rnorm(k*number.of.bootstrap.samples),ncol=k)
-  r <- sweep(r,2,sigma,"*") + m.inc
-  L.inc <- t(apply(r,1,LRT.value.trend,sigma=sigma))
-  Atot <- cbind(s[-1],s[-length(s)])
-  fit.ls2 <- isotone::activeSet(Atot, "LS", y = x, weights = a)
-  m.dec=fit.ls2$x
-  r <- matrix(stats::rnorm(k*number.of.bootstrap.samples),ncol=k)
-  r <- sweep(r,2,sigma,"*") + m.dec
-  L.dec <- t(apply(r,1,LRT.value.trend,sigma=sigma))
+  r <- matrix(stats::rnorm(k*number.of.bootstrap.samples*100),ncol=k)
+  r <- sweep(r,2,sigma,"*");r <- sweep(r,2,x,"+")
+  r <- r[apply(r,1,function(x){all(diff(x)>=0)}),,drop=FALSE]
+  L.not.inc <- FALSE
+  if(nrow(r)<100){
+    L.inc <- matrix(0,nrow=number.of.bootstrap.samples,ncol=7)
+    L.not.inc <- TRUE
+  }else{
+    r <- r[1:min(number.of.bootstrap.samples,nrow(r)),]
+    if(nrow(r)<number.of.bootstrap.samples){
+      r <- r[sample.int(nrow(r),size=number.of.bootstrap.samples,replace=TRUE),]
+    }
+    L.inc <- t(apply(r,1,LRT.value.trend,sigma=sigma))
+  }
+  r <- matrix(stats::rnorm(k*number.of.bootstrap.samples*100),ncol=k)
+  r <- sweep(r,2,sigma,"*");r <- sweep(r,2,x,"+")
+  r <- r[apply(r,1,function(x){all(diff(x)<=0)}),,drop=FALSE]
+  L.not.dec <- FALSE
+  if(nrow(r)<100){
+    L.dec <- matrix(0,nrow=number.of.bootstrap.samples,ncol=7)
+    L.not.dec <- TRUE
+  }else{
+    r <- r[1:min(number.of.bootstrap.samples,nrow(r)),]
+    if(nrow(r)<number.of.bootstrap.samples){
+      r <- r[sample.int(nrow(r),size=number.of.bootstrap.samples,replace=TRUE),]
+    }
+    L.dec <- t(apply(r,1,LRT.value.trend,sigma=sigma))
+  }
   L <- L.inc
-  L[,5] <- L.dec[,5]
-  L[,6] <- pmin(L.inc[,6],L.dec[,6])
+  L[,6] <- L.dec[,6]
+  if(L.not.inc){
+    L[,7] <- L.dec[,7]
+  }
+  if(L.not.dec){
+    L[,7] <- L.inc[,7]
+  }
+  if(!L.not.inc & !L.not.dec){ 
+    L[,7] <- pmin(L.inc[,7],L.dec[,7])
+  }
   obsL <- LRT.value.trend(x,sigma)
 #
   options("scipen"=100)
-  cat(sprintf("In a test of the null hypothesis of an increasing trend in proportions against the complementary hypothesis, the p-value is %s.\n",format.pval(mean(obsL[4] <= L[,4]),eps=0.0001)))
-  if(mean(obsL[4] <= L[,4]) < (1-confidence.level)){
+  cat(sprintf("In a test of the null hypothesis of an increasing trend in proportions against the complementary hypothesis, the p-value is %s.\n",format.pval(mean(obsL[5] <= L[,5]),eps=0.0001)))
+  if(mean(obsL[5] <= L[,5]) < (1-confidence.level)){
     cat(sprintf("We reject the null hypothesis of an increasing trend (at the %s%% level).\n\n",format(100*(1-confidence.level))))
   }else{
     cat(sprintf("We do not reject the null hypothesis of an increasing trend (at the %s%% level).\n\n",format(100*(1-confidence.level))))
   }
-  cat(sprintf("In a test of the null hypothesis of an decreasing trend in proportions against the complementary hypothesis, the p-value is %s.\n",format.pval(mean(obsL[5] <= L[,5]),eps=0.0001)))
-  if(mean(obsL[5] <= L[,5]) < (1-confidence.level)){
+  cat(sprintf("In a test of the null hypothesis of an decreasing trend in proportions against the complementary hypothesis, the p-value is %s.\n",format.pval(mean(obsL[6] <= L[,6]),eps=0.0001)))
+  if(mean(obsL[6] <= L[,6]) < (1-confidence.level)){
     cat(sprintf("We reject the null hypothesis of an decreasing trend (at the %s%% level).\n\n",format(100*(1-confidence.level))))
   }else{
     cat(sprintf("We do not reject the null hypothesis of an decreasing trend (at the %s%% level).\n\n",format(100*(1-confidence.level))))
   }
-  cat(sprintf("In a test of the null hypothesis of a monotone trend in proportions against the complementary hypothesis, the p-value is %s.\n",format.pval(mean(obsL[6] <= L[,6]),eps=0.0001)))
-  if(mean(obsL[6] <= L[,6]) < (1-confidence.level)){
+  cat(sprintf("In a test of the null hypothesis of a monotone trend in proportions against the complementary hypothesis, the p-value is %s.\n",format.pval(mean(obsL[7] <= L[,7]),eps=0.0001)))
+  if(mean(obsL[7] <= L[,7]) < (1-confidence.level)){
     cat(sprintf("We reject the null hypothesis of a monotone trend (at the %s%% level).\n\n",format(100*(1-confidence.level))))
   }else{
     cat(sprintf("We do not reject the null hypothesis of a monotone trend (at the %s%% level).\n\n",format(100*(1-confidence.level))))
@@ -293,52 +375,76 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
      main="Trend of estimates")
   }
   if("distributions" %in% plot){
-    binn <- 500
-    maxl <- max(1.1*obsL[6],stats::quantile(L[,3],0.99))
+   binn <- 500
+   if((!L.not.inc | !L.not.dec) & var(L[,7]) > 0 ){
+    maxl <- stats::quantile(L[,7],0.95)
+    gpdf=bgk_kde(L[,7],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,7]))
+    maxl <- max(1.1*obsL[7],maxl)
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-#   yl <- locfit::locfit.raw(locfit::lp(L[,6],nn=0.1,h=0.8), xlim=c(0,maxl))
-#   gpdf <- predict(yl, newdata=r)
-    gpdf=bgk_kde(L[,6],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r,method="natural")$y
+    gpdf[r>max(L[,7])] <- 0
+    gpdf[gpdf<0] <- 0
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
-#   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,6]),xlim=c(0,max(obsL[6],stats::quantile(L[,6],0.99))),
+    if(mean(obsL[7] <= L[,7]) < (1-confidence.level)){
+      mainm <- paste("Monotone Null Distribution of the Overall Test Statistic",
+       sprintf("\nWe reject the null hypothesis of a monotone trend (at the %s%% level).",format(100*(1-confidence.level))))
+    }else{
+      mainm <- paste("Monotone Null Distribution of the Overall Test Statistic",
+       sprintf("\nWe do not reject the null hypothesis of a monotone trend (at the %s%% level).",format(100*(1-confidence.level))))
+    }
    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
-     xlab="Likelihood Ratio Statistic",main="Null Distribution of the Overall Test Statistic",sub="The vertical line is the observed statistic")
-   abline(v=obsL[6],lty=2)
-    maxl <- max(1.1*obsL[4],stats::quantile(L[,4],0.99))
+     xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
+   abline(v=obsL[7],lty=2)
+  }
+  if(!L.not.inc & var(L[,5]) > 0){
+    maxl <- stats::quantile(L[,5],0.95)
+    gpdf=bgk_kde(L[,5],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,5]))
+    maxl <- max(1.1*obsL[5],maxl)
     r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-#   yl <- locfit::locfit.raw(locfit::lp(L[,4],nn=0.1,h=0.8), xlim=c(0,maxl))
-#   gpdf <- predict(yl, newdata=r)
-    gpdf=bgk_kde(L[,4],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r,method="natural")$y
+    gpdf[r>max(L[,5])] <- 0
+    gpdf[gpdf<0] <- 0
     scalef <- binn/sum(gpdf)
     gpdf <- gpdf * scalef
-#   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,4]),xlim=c(0,max(obsL[4],stats::quantile(L[,4],0.99))),
+    if(mean(obsL[5] <= L[,5]) < (1-confidence.level)){
+      mainm <- paste("Monotone Null Distribution of the Increasing Test Statistic",
+       sprintf("\nWe reject the null hypothesis of an increasing trend (at the %s%% level).",format(100*(1-confidence.level))))
+    }else{
+      mainm <- paste("Monotone Null Distribution of the Increasing Test Statistic",
+       sprintf("\nWe do not reject the null hypothesis of an increasing trend (at the %s%% level).",format(100*(1-confidence.level))))
+    }
    plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
      ylab="Density",
-     xlab="Likelihood Ratio Statistic",main="Null Distribution of the Increasing Test Statistic",sub="The vertical line is the observed statistic")
-   abline(v=obsL[4],lty=2)
-    maxl <- max(1.1*obsL[5],stats::quantile(L[,5],0.99))
-    r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
-#   yl <- locfit::locfit.raw(locfit::lp(L[,5],nn=0.1,h=0.8), xlim=c(0,maxl))
-#   gpdf <- predict(yl, newdata=r)
-    gpdf=bgk_kde(L[,5],n=2^(ceiling(log(maxl)/log(2))),MIN=0)
-    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r)$y
-    scalef <- binn/sum(gpdf)
-    gpdf <- gpdf * scalef
-#   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
-#  plot(density(L[,5]),xlim=c(0,max(obsL[5],stats::quantile(L[,5],0.99))),
-   plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
-     ylab="Density",
-     xlab="Likelihood Ratio Statistic",main="Null Distribution of the Decreasing Test Statistic",sub="The vertical line is the observed statistic")
+     xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
    abline(v=obsL[5],lty=2)
   }
-  invisible(list(pvalue.increasing=mean(obsL[1] <= L[,1]),
-       pvalue.decreasing=mean(obsL[2] <= L[,2]),
-       pvalue.overall=mean(obsL[3] <= L[,3]),
+  if(!L.not.dec & var(L[,6]) > 0){
+    maxl <- stats::quantile(L[,6],0.95)
+    gpdf=bgk_kde(L[,6],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,6]))
+    maxl <- max(1.1*obsL[6],maxl)
+    r <- seq(0, maxl, length = binn + 1)[-1] - 0.5*maxl/binn
+    gpdf <- stats::spline(x=gpdf[1,],y=gpdf[2,],xout=r,method="natural")$y
+    gpdf[r>max(L[,6])] <- 0
+    gpdf[gpdf<0] <- 0
+    scalef <- binn/sum(gpdf)
+    gpdf <- gpdf * scalef
+    if(mean(obsL[6] <= L[,6]) < (1-confidence.level)){
+      mainm <- paste("Monotone Null Distribution of the Decreasing Test Statistic",
+       sprintf("\nWe reject the null hypothesis of an decreasing trend (at the %s%% level).",format(100*(1-confidence.level))))
+    }else{
+      mainm <- paste("Monotone Null Distribution of the Decreasing Test Statistic",
+       sprintf("\nWe do not reject the null hypothesis of an decreasing trend (at the %s%% level).",format(100*(1-confidence.level))))
+    }
+   plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
+     ylab="Density",
+     xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
+   abline(v=obsL[6],lty=2)
+  }
+  }
+  invisible(list(pvalue.increasing=mean(obsL[5] <= L[,5]),
+       pvalue.decreasing=mean(obsL[6] <= L[,6]),
+       pvalue.overall=mean(obsL[7] <= L[,7]),
        L=L,x=x,sigma=sigma))
 }
