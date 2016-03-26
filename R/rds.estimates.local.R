@@ -54,13 +54,14 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 		subset <- rep(TRUE,length=nrow(rds.data.nomiss))
 	}else{
 		csubset <- as.character(enquote(substitute(subset)))[2]
+		if(nchar(csubset)>20) csubset <- "subsetted"
 		subset[is.na(subset)] <- FALSE
 		if(!is.null(N)){
 			#use VH estimator to adjust population size to sub-population
 			tmp.wts <- vh.weights(rds.data.nomiss[[network.size]])
 			tmp.wts <- tmp.wts/sum(tmp.wts)
 			prop <- sum(tmp.wts*subset)
-			N <- N * prop
+			N <- round(N * prop)
 			if(N < sum(subset))
 				stop("Estimated sub-population size smaller than subset.")
 		}
@@ -99,7 +100,7 @@ RDS.estimates.local <- function(rds.data,outcome.variable,subset=NULL,
 #		estimate <- EL.est(weights=weights.all,outcome=outcome,N=N)
 		  if(!is.numeric(rds.data.nomiss[[outcome.variable]]) | 
 		     mean(duplicated(rds.data.nomiss[[outcome.variable]],na.rm=TRUE)) < control$discrete.cutoff ){
-		      h.est <- homophily.estimates(rds.data,outcome.variable,N=N,weight.type=weight.type,recruitment=FALSE)
+		      h.est <- homophily.estimates(rds.data.nomiss,outcome.variable,N=N,weight.type=weight.type,recruitment=FALSE)
 		      h.est <- h.est@estimate[order(as.numeric(names(h.est@estimate)))]
 		      h.est <- sum(h.est*table(outcome),na.rm=TRUE)/sum(table(outcome)[!is.na(h.est)])
  		      attr(estimate,"EL.se") <- EL.se(weights.all,outcome,N=N,homophily=h.est)

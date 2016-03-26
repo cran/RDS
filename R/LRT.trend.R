@@ -304,45 +304,23 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
   k <- length(x)
   set.seed(seed)
   s <- seq_along(x)
-  r <- matrix(stats::rnorm(k*number.of.bootstrap.samples*100),ncol=k)
-  r <- sweep(r,2,sigma,"*");r <- sweep(r,2,x,"+")
-  r <- r[apply(r,1,function(x){all(diff(x)>=0)}),,drop=FALSE]
-  L.not.inc <- FALSE
-  if(nrow(r)<100){
-    L.inc <- matrix(0,nrow=number.of.bootstrap.samples,ncol=7)
-    L.not.inc <- TRUE
-  }else{
-    r <- r[1:min(number.of.bootstrap.samples,nrow(r)),]
-    if(nrow(r)<number.of.bootstrap.samples){
-      r <- r[sample.int(nrow(r),size=number.of.bootstrap.samples,replace=TRUE),]
-    }
-    L.inc <- t(apply(r,1,LRT.value.trend,sigma=sigma))
-  }
-  r <- matrix(stats::rnorm(k*number.of.bootstrap.samples*100),ncol=k)
-  r <- sweep(r,2,sigma,"*");r <- sweep(r,2,x,"+")
-  r <- r[apply(r,1,function(x){all(diff(x)<=0)}),,drop=FALSE]
-  L.not.dec <- FALSE
-  if(nrow(r)<100){
-    L.dec <- matrix(0,nrow=number.of.bootstrap.samples,ncol=7)
-    L.not.dec <- TRUE
-  }else{
-    r <- r[1:min(number.of.bootstrap.samples,nrow(r)),]
-    if(nrow(r)<number.of.bootstrap.samples){
-      r <- r[sample.int(nrow(r),size=number.of.bootstrap.samples,replace=TRUE),]
-    }
-    L.dec <- t(apply(r,1,LRT.value.trend,sigma=sigma))
-  }
+  # Find best increasing means
+  Atot <- cbind(s[-length(s)], s[-1])
+  fit.ls1 <- isotone::activeSet(Atot, "LS", y = x, weights = a)
+  m.inc=fit.ls1$x
+  r <- matrix(stats::rnorm(k*number.of.bootstrap.samples),ncol=k)
+  r <- sweep(r,2,sigma,"*");r <- sweep(r,2,m.inc,"+")
+  L.inc <- t(apply(r,1,LRT.value.trend,sigma=sigma))
+  # Find best increasing means
+  Atot <- cbind(s[-1],s[-length(s)])
+  fit.ls2 <- isotone::activeSet(Atot, "LS", y = x, weights = a)
+  m.dec=fit.ls2$x
+  r <- matrix(stats::rnorm(k*number.of.bootstrap.samples),ncol=k)
+  r <- sweep(r,2,sigma,"*");r <- sweep(r,2,m.dec,"+")
+  L.dec <- t(apply(r,1,LRT.value.trend,sigma=sigma))
   L <- L.inc
   L[,6] <- L.dec[,6]
-  if(L.not.inc){
-    L[,7] <- L.dec[,7]
-  }
-  if(L.not.dec){
-    L[,7] <- L.inc[,7]
-  }
-  if(!L.not.inc & !L.not.dec){ 
-    L[,7] <- pmin(L.inc[,7],L.dec[,7])
-  }
+  L[,7] <- pmin(L.inc[,7],L.dec[,7])
   obsL <- LRT.value.trend(x,sigma)
 #
   options("scipen"=100)
@@ -376,7 +354,7 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
   }
   if("distributions" %in% plot){
    binn <- 500
-   if((!L.not.inc | !L.not.dec) & var(L[,7]) > 0 ){
+   if(var(L[,7]) > 0 ){
     maxl <- stats::quantile(L[,7],0.95)
     gpdf=bgk_kde(L[,7],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,7]))
     maxl <- max(1.1*obsL[7],maxl)
@@ -398,7 +376,7 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
      xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
    abline(v=obsL[7],lty=2)
   }
-  if(!L.not.inc & var(L[,5]) > 0){
+  if(var(L[,5]) > 0){
     maxl <- stats::quantile(L[,5],0.95)
     gpdf=bgk_kde(L[,5],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,5]))
     maxl <- max(1.1*obsL[5],maxl)
@@ -420,7 +398,7 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
      xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
    abline(v=obsL[5],lty=2)
   }
-  if(!L.not.dec & var(L[,6]) > 0){
+  if(var(L[,6]) > 0){
     maxl <- stats::quantile(L[,6],0.95)
     gpdf=bgk_kde(L[,6],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,6]))
     maxl <- max(1.1*obsL[6],maxl)

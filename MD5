@@ -1,6 +1,6 @@
-abd975bfa8a708931ef030e4583bdc31 *DESCRIPTION
+ee722f0262f57d10e9e5145fa1f43fe4 *DESCRIPTION
 0b51ba4b68de8af55a02e12fdb7e31c1 *NAMESPACE
-8500a63a5fa6bcd6593ab5961dbf4c7f *R/LRT.trend.R
+3037b1b9454227ab8f6fa5840b2dbc35 *R/LRT.trend.R
 2f4e83712073e8d5f232c5bbeb9dfc89 *R/RDS.compare.proportions.R
 2fc915d80892601e673e7f878ca6bd26 *R/bgk_kde.R
 c37eea7aa29c556a2859e29145938b28 *R/bootstrap-intervals.R
@@ -24,7 +24,7 @@ fcdd2639ffd231852272f9fc859b5a3d *R/rds-ss.R
 228554b12c47fd9757191e72842bb8c8 *R/rds.data.frame-plots.R
 0339b030413c13647a9d4cb996d6e7e4 *R/rds.data.frame-utils.R
 94c5b34b7cf9a5ddbdea6fe4e8b8c9e2 *R/rds.data.frame.R
-5a4d69715e153dfc3f73d15cc61b20bb *R/rds.estimates.local.R
+3f4261115919ed180d8a72fdfa5f5ffc *R/rds.estimates.local.R
 cec42ba2a4efbe5cc0b13b56c2aafa49 *R/rds.interval.estimate.R
 2569ce6226eab99b549a850304eb86be *R/rds.weighted.estimate-class.R
 0eabc978a09985744f2a4c33e69e5c09 *R/robust.inverse.R
