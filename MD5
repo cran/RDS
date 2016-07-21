@@ -1,4 +1,4 @@
-ee722f0262f57d10e9e5145fa1f43fe4 *DESCRIPTION
+8be5836bc6bad251e1d00daea956bdbf *DESCRIPTION
 0b51ba4b68de8af55a02e12fdb7e31c1 *NAMESPACE
 3037b1b9454227ab8f6fa5840b2dbc35 *R/LRT.trend.R
 2f4e83712073e8d5f232c5bbeb9dfc89 *R/RDS.compare.proportions.R
@@ -31,7 +31,7 @@ cec42ba2a4efbe5cc0b13b56c2aafa49 *R/rds.interval.estimate.R
 b6c562dbbe6397f86f675f6a3ab79cf5 *R/salganik-bootstrap.R
 c385ac95ca509583ebea2f39439eda90 *R/summary.odds.R
 e1d9d1ab904fd1a4ed4359ebac417ee2 *R/utils.R
-3b63b679ea38409147f00a1df6ac8bba *R/weights.R
+fa910504fc88826f55737db0d19b1d00 *R/weights.R
 b3eb48a3205f6e1eec07cc7e88a8be40 *R/wtd.stats.R
 7cf84ef7690bb7a8e0a2b5e5b34d2c30 *data/faux.RData
 2f42742bf65847a64a428704d0a9f719 *data/fauxmadrona.RData
@@ -106,7 +106,7 @@ ded92d0addbbf8c594b40a0afc8a7006 *man/vh.weights.Rd
 7aee869b2232b521cf128137f4aaf9aa *man/write.netdraw.Rd
 7fca6d5a1ca2fbb3f0fd21c33f0992f4 *man/write.rdsat.Rd
 bc2add8f666c7507d8ba8ca934442788 *man/write.rdsobj.Rd
-15f2fa652ab1a748161646c8cb4bdc20 *src/bsC.c
+ba3bcf70441a0441a4c0c19718ab2303 *src/bsC.c
 b23cc29a50af4bff80a0d7e62b9e22a5 *src/bsC.h
 c5ed612df07d030a6d4f82ca22c3800a *src/dpoilog.c
 a3e20e395259d0c645c9200b74cd438a *src/getinclCstacked.c

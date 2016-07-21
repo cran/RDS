@@ -82,6 +82,7 @@ void bsC (
 	}
 	for (i=0; i<ni; i++){
 	  crefs[i]=0;
+	  csample[i]=0;
 	}
 	for (i=0; i<ni; i++){
 	    if(nrefs[i] > 0){crefs[nrefs[i]-1]++;}

@@ -27,9 +27,7 @@ compute.weights <- function(rds.data,
 		weight.type = c("Gile's SS","RDS-I","RDS-I (DS)","RDS-II","Arithmetic Mean","Good-Fellows"),
 		N = NULL, subset=NULL, control=control.rds.estimates(), ...){
 	if(!is.null(N) && N < nrow(rds.data)){
-		stop(sprintf("The population size, %d, is less than the sample
-								size, %d. The population size must be at least as large as the
-								sample size for the estimate to make sense.",N,nrow(rds.data)))
+		stop(sprintf("The population size, %d, is less than the sample size, %d. The population size must be at least as large as the sample size for the estimate to make sense.",N,nrow(rds.data)))
 	}
 	
 	n <- nrow(rds.data)
@@ -60,9 +58,9 @@ compute.weights <- function(rds.data,
 			`RDS-I (DS)` = rds.I.weights(rds.data,N=N,smoothed=TRUE,...),
 			`RDS-II` = vh.weights(degs = deg, N=N),
 			`Arithmetic Mean` = rep(ifelse(is.null(N),1,N)/n, n),
+#			`Good-Fellows` = gf.weights(rds.data, N = N, SS.infinity=control$SS.infinity, ...),
 			`Gile's SS` = gile.ss.weights(degs = deg, N = N, SS.infinity=control$SS.infinity, ...)
 	)
-#			`Good-Fellows` = gf.weights(rds.data, N = N, SS.infinity=control$SS.infinity, ...)
 	se <- substitute(subset)
 	if(!is.null(se)){
 		if(class(se)!="name") subset <- eval(subset, rds.data, parent.frame())
