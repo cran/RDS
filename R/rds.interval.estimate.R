@@ -1,5 +1,3 @@
-
-
 #' An object of class rds.interval.estimate
 #' 
 #' This function creates an object of class \code{rds.interval.estimate}.
@@ -114,6 +112,10 @@ print.rds.interval.estimate <- function(x, ...) {
 	fmatest[-nrow(fmatest),  5] <- fmt(matest[,  5], width = 8, digits=3)
 	
 	clp <- x$conf.level*100
+	tmp <- as.data.frame(fmatest,stringsAsFactors=FALSE)
+	tmp[-nrow(tmp),2] <- paste("(",tmp[,2],", ",tmp[,3],")",sep="")[-nrow(tmp)]
+	tmp <- tmp[,-3]
+	colnames(tmp) <- c("Estimate", paste0(clp,"% Interval"), "Design Effect", "Std. Error", "N")
 	if (is.element("DeducerRichOutput", .packages())) {
 		colnames(fmatest) <- c("Point Estimate", paste0(" ",clp,"% Lower\n Bound"), 
 				paste0(" ",clp,"% Upper\n Bound"), "Estimated\n Design Effect", 
@@ -125,20 +127,14 @@ print.rds.interval.estimate <- function(x, ...) {
 	switch(((x$csubset=="")|(x$csubset=="NULL"))+1,paste("[",x$csubset,"]",sep=""),NULL)))
 	}
 	else {
-		tmp <- as.data.frame(fmatest,stringsAsFactors=FALSE)
-		tmp[-nrow(tmp),2] <- paste("(",tmp[,2],", ",tmp[,3],")",sep="")[-nrow(tmp)]
-		tmp <- tmp[,-3]
-		colnames(tmp) <- c("Estimate", paste0(clp,"% Interval"), 
-				"Design Effect", 
-				"Std. Error", "N")
 		cat(paste(c(x$weight.type, "Estimate for", 
 								x$outcome.variable,
 	switch(((x$csubset=="")|(x$csubset=="NULL"))+1,paste("[",x$csubset,"]",sep=""),NULL),"\n")))
 		print(tmp)
 		if(!is.null(x$N))
 			cat("* Using population size estimate:",x$N,"\n")
-		return(invisible(x))
 	}
+	return(invisible(tmp))
 }
 
 #' Is an instance of rds.interval.estimate
@@ -152,8 +148,22 @@ is.rds.interval.estimate <- function(x) inherits(x,"rds.interval.estimate")
 #' @export
 is.rds.interval.estimate.list <- function(x) inherits(x,"rds.interval.estimate.list")
 
-
-
-
-
-
+#' Convert the output of print.rds.interval.estimate from a character data.frame to a numeric matrix
+#' @param x An object, typically the result of print.rds.interval.estimate.
+#' @param proportion logical, Should the outcome be treated as a proportion and converted to a percentage.
+#' @export
+export.rds.interval.estimate <- function(x,proportion=TRUE){
+  a <- as.matrix(x)
+  a <- a[-nrow(a),]
+  b <- matrix(0,ncol=6,nrow=nrow(a))
+  for(i in 1:nrow(a)){
+    b[i,2:3] <- eval(parse(text=paste("c",a[i,2],sep="")))
+  }
+  b[,c(1,4:6)] <- as.numeric(a[,c(1,3:5)])
+  colnames(b) <- c(colnames(a)[1],"95% lower","95% upper",colnames(a)[3:ncol(a)])
+  rownames(b) <- rownames(a)
+  if(proportion){
+    b[,c(1,2,3,5)] <- 100*b[,c(1,2,3,5)]
+  }
+  as.data.frame(b)
+}
