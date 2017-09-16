@@ -6,7 +6,7 @@
 based on various estimators}
 \usage{
 compute.weights(rds.data, weight.type = c("Gile's SS", "RDS-I", "RDS-I (DS)",
-  "RDS-II", "Arithmetic Mean", "Good-Fellows"), N = NULL, subset = NULL,
+  "RDS-II", "Arithmetic Mean", "HCG"), N = NULL, subset = NULL,
   control = control.rds.estimates(), ...)
 }
 \arguments{

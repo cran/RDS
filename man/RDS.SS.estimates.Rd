@@ -6,7 +6,8 @@
 \usage{
 RDS.SS.estimates(rds.data, outcome.variable, N = NULL, subset = NULL,
   number.ss.samples.per.iteration = 500, number.ss.iterations = 5,
-  control = control.rds.estimates(), hajek = TRUE, empir.lik = TRUE)
+  control = control.rds.estimates(), hajek = TRUE, empir.lik = TRUE,
+  to.factor = FALSE)
 }
 \arguments{
 \item{rds.data}{An \code{rds.data.frame} that indicates recruitment patterns
@@ -45,6 +46,8 @@ or the standard Hortitz-Thompson. The default is TRUE.}
 
 \item{empir.lik}{If true, and outcome.variable is numeric, standard errors
 based on empirical likelihood will be given.}
+
+\item{to.factor}{force variable to be a factor}
 }
 \value{
 If \code{outcome.variable} is numeric then the Gile SS estimate of the mean is returned, otherwise a vector of proportion estimates is returned.

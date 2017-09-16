@@ -3,10 +3,12 @@
 #'     with data collected using Respondent-Driven Sampling. This includes
 #'     Heckathorn's RDS-I and RDS-II estimators as well as Gile's Sequential
 #'     Sampler estimator.
-#' @import ggplot2 reshape2 gridExtra methods
-#' @importFrom stats approx coef fft median optim pnorm printCoefmat pt qnorm qt quantile resid residuals rnorm runif sd spline symnum uniroot var vcov xtabs
+#' @import ggplot2 reshape2 gridExtra methods network ergm parallel
+#' @importFrom stats chisq.test na.omit rbinom as.formula constrOptim approx coef fft median optim pnorm printCoefmat pt qnorm qt quantile resid residuals rnorm runif sd spline symnum uniroot var vcov xtabs
 #' @importFrom graphics abline axis hist legend lines par plot points segments strwidth symbols
 #' @importFrom scales hue_pal
+#' @importFrom Hmisc cut2
+#' @importFrom igraph degree.sequence.game
 #' @docType package
 #' @name RDS
 #' @useDynLib RDS
@@ -25,6 +27,16 @@ NULL
 #' data(faux)
 #' RDS.I.estimates(rds.data=faux,outcome.variable='X')
 #' @name faux
+NULL
+
+#' A Simulated RDS Data Set
+#' @description This is a faux set used to demonstrate RDS functions and analysis.
+#' @docType data
+#' @keywords datasets
+#' @format An rds.data.frame object
+#' @references Gile, Krista J., Handcock, Mark S., 2010 \emph{Respondent-driven Sampling: An Assessment of Current Methodology},  \emph{Sociological Methodology}, 40, 285-327. 
+#' @seealso \code{\link{fauxsycamore}}, \code{\link{fauxmadrona}}
+#' @name fauxtime
 NULL
 
 

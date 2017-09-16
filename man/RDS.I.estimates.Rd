@@ -5,7 +5,8 @@
 \title{Compute RDS-I Estimates}
 \usage{
 RDS.I.estimates(rds.data, outcome.variable, N = NULL, subset = NULL,
-  smoothed = FALSE, empir.lik = TRUE)
+  smoothed = FALSE, empir.lik = TRUE, to.factor = FALSE,
+  cont.breaks = 3)
 }
 \arguments{
 \item{rds.data}{An \code{rds.data.frame} that indicates recruitment patterns
@@ -25,6 +26,10 @@ where it is assumed that the observed Markov process is reversible.}
 
 \item{empir.lik}{Should confidence intervals be estimated using 
 empirical likelihood.}
+
+\item{to.factor}{force variable to be a factor}
+
+\item{cont.breaks}{The number of categories used for the RDS-I adjustment when the variate is continuous.}
 }
 \value{
 If the \code{empir.lik} is true, an object of class

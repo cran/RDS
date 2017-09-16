@@ -5,7 +5,7 @@
 \title{RDS-II Estimates}
 \usage{
 RDS.II.estimates(rds.data, outcome.variable, N = NULL, subset = NULL,
-  empir.lik = TRUE)
+  empir.lik = TRUE, to.factor = FALSE)
 }
 \arguments{
 \item{rds.data}{An \code{rds.data.frame} that indicates recruitment patterns
@@ -28,6 +28,8 @@ the outcome variable where TRUE means include it in the analysis. If
 
 \item{empir.lik}{If true, and outcome.variable is numeric, standard errors
 based on empirical likelihood will be given.}
+
+\item{to.factor}{force variable to be a factor}
 }
 \value{
 If \code{outcome.variable} is numeric then the RDS-II estimate of the mean is returned, otherwise a vector of proportion estimates is returned.

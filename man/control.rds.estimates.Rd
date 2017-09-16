@@ -12,18 +12,18 @@ control.rds.estimates(confidence.level = 0.95, SS.infinity = 0.01,
 \item{confidence.level}{The confidence level for the confidence intervals.
 The default is 0.95 for 95\%.}
 
-\item{SS.infinity}{The sample proportion, \code{n/N}, below which the computation 
+\item{SS.infinity}{The sample proportion, \code{n/N}, below which the computation
 of the SS weights should simplify to that of the \code{RDS-II} weights.}
 
-\item{lowprevalence}{Standard confidence interval procedures can be inaccurate when the 
-outcome expected count is close to zero. This sets conditions where alternatives to the 
+\item{lowprevalence}{Standard confidence interval procedures can be inaccurate when the
+outcome expected count is close to zero. This sets conditions where alternatives to the
 standard are used for the \code{ci.type="hmg"} option. See Details for its use.}
 
-\item{discrete.cutoff}{The minimum proportion of the values of the outcome variable that 
+\item{discrete.cutoff}{The minimum proportion of the values of the outcome variable that
 need to be unique before the variable is judged to be continuous.}
 
 \item{useC}{Use a C-level implementation of Gile's bootstrap (rather than
-the R level). The implementations should be computational 
+the R level). The implementations should be computational
 equivalent (except for speed).}
 
 \item{number.of.bootstrap.samples}{The number of bootstrap samples to take
@@ -47,14 +47,14 @@ function.
 Some of the arguments are not yet fully implemented. It will evolve slower to incorporate more
 arguments as the package develops.
 
-Standard confidence interval procedures can be inaccurate when the 
-outcome expected count is close to zero. In these cases 
-the combined Agresti-Coull and the bootstrap-t interval of 
+Standard confidence interval procedures can be inaccurate when the
+outcome expected count is close to zero. In these cases
+the combined Agresti-Coull and the bootstrap-t interval of
 Mantalos and Zografos (2008) can be used.
-The \code{lowprevalence} argument is a 
+The \code{lowprevalence} argument is a
 two vector parameter setting the conditions under which the approximation is used.
 The first is the penalty term on the differential activity. If the observed number
-of the rare group minus the product of the first parameter and the differential 
+of the rare group minus the product of the first parameter and the differential
 activity is lower than the
 second parameter, the low prevalence approximation is used.
 }

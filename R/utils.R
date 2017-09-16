@@ -4,18 +4,18 @@
 #' @param ... passed to either format or as.character.
 #' @export
 as.char <- function(x,...){
-	if(is.numeric(x))
-		if(is.integer(x))
-			ifelse(is.na(x),NA,format(x,trim=TRUE,scientific=FALSE,...))
-		else
-			ifelse(is.na(x),NA,format(x,trim=TRUE,scientific=FALSE,digits=15,...))
-	else
-		as.character(x,...)
+  if(is.numeric(x))
+    if(is.integer(x))
+      ifelse(is.na(x),NA,format(x,trim=TRUE,scientific=FALSE,...))
+  else
+    ifelse(is.na(x),NA,format(x,trim=TRUE,scientific=FALSE,digits=15,...))
+  else
+    as.character(x,...)
 }
 
 
 orWaldCI <- function(tables, alpha = 0.05){
-# a = extract.counts(tables[[1]])
+  # a = extract.counts(tables[[1]])
   a = tables[[1]][[1]]$table
   n00 = a[1,1]
   n01 = a[1,2]
@@ -43,9 +43,9 @@ orWaldCI <- function(tables, alpha = 0.05){
   ORlo <- exp(loglo)
   ORhi <- exp(loghi)
   #
-# oframe <- data.frame(LowerCI = ORlo, OR = OR, UpperCI = ORhi, alpha = alpha)
+  # oframe <- data.frame(LowerCI = ORlo, OR = OR, UpperCI = ORhi, alpha = alpha)
   cat(sprintf("The odds ratio is %f. A 95%% confidence interval is (%f, %f).\n",
-     OR,ORlo,ORhi))
+              OR,ORlo,ORhi))
   invisible()
 }
 
@@ -64,3 +64,15 @@ orWaldCI <- function(tables, alpha = 0.05){
   val <- tryCatch(withCallingHandlers(expr, warning = wHandler), error = eHandler)
   list(value = val, warnings = myWarnings, error=myError)
 } 
+
+
+
+.cut2 <- function(x, g){
+  uni <- unique(x)
+  if(length(uni) <= g)
+    return(factor(x))
+  else
+    return(Hmisc::cut2(x, g=g))
+}
+
+

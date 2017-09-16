@@ -2,7 +2,7 @@
 % Please edit documentation in R/rds.data.frame.R
 \name{get.population.size}
 \alias{get.population.size}
-\title{Returns the population size assosiated with the data.}
+\title{Returns the population size associated with the data.}
 \usage{
 get.population.size(x, check.type = TRUE)
 }
@@ -12,6 +12,6 @@ get.population.size(x, check.type = TRUE)
 \item{check.type}{if true, x is required to be of type rds.data.frame}
 }
 \description{
-Returns the population size assosiated with the data.
+Returns the population size associated with the data.
 }
 

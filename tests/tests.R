@@ -3,4 +3,4 @@
 library(testthat)
 library(RDS)
 
-test_package("RDS")
+test_check("RDS")

@@ -311,7 +311,7 @@ void bsC (
 	 den+=temp;
 	 den2+=(temp*temp);
 	 est[idis[csample[i]]+gi*isamp]+=temp;
-//	Rprintf("csample %d pix %d pis %f\n",csample[i], csample[i]-UKi*(csample[i]/UKi),pis[csample[i]-UKi*(csample[i]/UKi)]);
+	 //	Rprintf("csample %d pix %d pis %f\n",csample[i], csample[i]-UKi*(csample[i]/UKi),pis[csample[i]-UKi*(csample[i]/UKi)]);
 //	  if(csample[i]<0 | csample[i]>(ci-1)){Rprintf("Error: i %d csample[i] %d\n",i, csample[i]);}
 	}
 //	Rprintf("est[0] %f est[1] %f\n",est[0],est[1]);

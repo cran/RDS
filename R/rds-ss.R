@@ -34,6 +34,7 @@
 #' or the standard Hortitz-Thompson. The default is TRUE.
 #' @param empir.lik If true, and outcome.variable is numeric, standard errors
 #' based on empirical likelihood will be given.
+#' @param to.factor force variable to be a factor
 #' @return 
 #' If \code{outcome.variable} is numeric then the Gile SS estimate of the mean is returned, otherwise a vector of proportion estimates is returned.
 #' If the \code{empir.lik} is true, an object of class \code{rds.interval.estimate} is returned. This is a list with components
@@ -78,43 +79,44 @@
 #' RDS.SS.estimates(rds.data=fauxmadrona,outcome.variable="disease",N=1000)
 #' 
 #' @export RDS.SS.estimates
-RDS.SS.estimates <-
-		function(rds.data,outcome.variable,N=NULL,subset=NULL,
-				number.ss.samples.per.iteration=500,number.ss.iterations=5,
-				control=control.rds.estimates(),
-				hajek=TRUE,empir.lik=TRUE){
-	se <- substitute(subset)
-	subset <- eval(se,rds.data,parent.frame())
-	if(length(outcome.variable) == 1){
-		result <- RDS.estimates.local(
-				rds.data=rds.data,
-				outcome.variable=outcome.variable,
-				N=N,
-				subset=subset,
-				number.ss.samples.per.iteration=number.ss.samples.per.iteration,
-				number.ss.iterations=number.ss.iterations,
-				control=control,
-				hajek=hajek,
-				empir.lik=empir.lik,
-				weight.type="Gile's SS")
-	}
-	else {
-		result <- lapply(outcome.variable,function(g){
-					RDS.estimates.local(
-							rds.data=rds.data,
-							outcome.variable=g,
-							N=N,
-							subset=subset,
-							number.ss.samples.per.iteration=number.ss.samples.per.iteration,
-							number.ss.iterations=number.ss.iterations,
-							control=control,
-							hajek=hajek,
-							empir.lik=empir.lik,
-							weight.type="Gile's SS")
-					})
-		names(result) <- outcome.variable
-	}
-	return(result)
-}
+RDS.SS.estimates <- function(rds.data,outcome.variable,N=NULL,subset=NULL,
+           number.ss.samples.per.iteration=500,number.ss.iterations=5,
+           control=control.rds.estimates(),
+           hajek=TRUE,empir.lik=TRUE,to.factor=FALSE){
+    se <- substitute(subset)
+    subset <- eval(se,rds.data,parent.frame())
+    if(length(outcome.variable) == 1){
+      result <- RDS.estimates.local(
+        rds.data=rds.data,
+        outcome.variable=outcome.variable,
+        N=N,
+        subset=subset,
+        number.ss.samples.per.iteration=number.ss.samples.per.iteration,
+        number.ss.iterations=number.ss.iterations,
+        control=control,
+        hajek=hajek,
+        empir.lik=empir.lik,
+        weight.type="Gile's SS",
+        to.factor=to.factor)
+    }
+    else {
+      result <- lapply(outcome.variable,function(g){
+        RDS.estimates.local(
+          rds.data=rds.data,
+          outcome.variable=g,
+          N=N,
+          subset=subset,
+          number.ss.samples.per.iteration=number.ss.samples.per.iteration,
+          number.ss.iterations=number.ss.iterations,
+          control=control,
+          hajek=hajek,
+          empir.lik=empir.lik,
+          weight.type="Gile's SS",
+          to.factor=to.factor)
+      })
+      names(result) <- outcome.variable
+    }
+    return(result)
+  }
 
 

@@ -63,21 +63,21 @@
 #' 
 
 rds.interval.estimate <- function(estimate, outcome.variable, 
-		weight.type, uncertainty, weights, N=NULL,conf.level=.95,csubset="") {
-	
-	.Object <- list()
-	
-	.Object$estimate <- estimate[1:(length(estimate)/6)]
-	.Object$interval <- estimate
-	.Object$outcome.variable <- outcome.variable
-	.Object$weight.type <- weight.type
-	.Object$uncertainty <- uncertainty
-	.Object$weights <- weights
-	.Object$N <- N
-	.Object$conf.level <- conf.level
-	.Object$csubset <- csubset
-	class(.Object) <- "rds.interval.estimate"
-	return(.Object)
+                                  weight.type, uncertainty, weights, N=NULL,conf.level=.95,csubset="") {
+  
+  .Object <- list()
+  
+  .Object$estimate <- estimate[1:(length(estimate)/6)]
+  .Object$interval <- estimate
+  .Object$outcome.variable <- outcome.variable
+  .Object$weight.type <- weight.type
+  .Object$uncertainty <- uncertainty
+  .Object$weights <- weights
+  .Object$N <- N
+  .Object$conf.level <- conf.level
+  .Object$csubset <- csubset
+  class(.Object) <- "rds.interval.estimate"
+  return(.Object)
 }
 
 #' Prints an \code{rds.interval.estimate} object
@@ -86,55 +86,55 @@ rds.interval.estimate <- function(estimate, outcome.variable,
 #' @method print rds.interval.estimate
 #' @export
 print.rds.interval.estimate <- function(x, ...) {
-	fmt <- function(x,...){
-		format(x,...,scientific=FALSE)
-	}
-	matest <- matrix(x$interval, ncol = 6, byrow = FALSE)
-	if (nrow(matest) > 1) {
-		rownames(matest) <- names(x$interval)[1:nrow(matest)]
-	}
-	else {
-		rownames(matest) <- x$outcome.variable
-		names(x$interval) <- rep(x$outcome.variable, length(x$interval))
-	}
-	rownames(matest)[is.na(rownames(matest))] <- "NA"
-	mnames <- max(nchar(names(x$interval)[1:nrow(matest)]))
-	colnames(matest) <- c("point", "lower", "upper", "Design Effect", 
-			"s.e.", "n")
-	
-	nsamples <- sum(matest[,ncol(matest)])
-	fmatest <- rbind(matest,"")
-	fmatest[nrow(fmatest),ncol(fmatest)-1] <- "Total"
-	fmatest[,ncol(fmatest)] <- fmt(c(matest[,ncol(matest)],nsamples), width = 5, digits = 5)
-	fmatest[-nrow(fmatest),  1] <- fmt(matest[,  1], width = 8, digits=4)
-	fmatest[-nrow(fmatest),2:4] <- fmt(matest[,2:4], width = 8, digits=4)
-	fmatest[-nrow(fmatest),  4] <- fmt(matest[,  4], width = 6, digits=3)
-	fmatest[-nrow(fmatest),  5] <- fmt(matest[,  5], width = 8, digits=3)
-	
-	clp <- x$conf.level*100
-	tmp <- as.data.frame(fmatest,stringsAsFactors=FALSE)
-	tmp[-nrow(tmp),2] <- paste("(",tmp[,2],", ",tmp[,3],")",sep="")[-nrow(tmp)]
-	tmp <- tmp[,-3]
-	colnames(tmp) <- c("Estimate", paste0(clp,"% Interval"), "Design Effect", "Std. Error", "N")
-	if (is.element("DeducerRichOutput", .packages())) {
-		colnames(fmatest) <- c("Point Estimate", paste0(" ",clp,"% Lower\n Bound"), 
-				paste0(" ",clp,"% Upper\n Bound"), "Estimated\n Design Effect", 
-				"Standard Error", "Sample Size")
-		
-		get("print_to_html")(fmatest, caption.placement = "top", digits = c(8, 
-						5, 5, 5, 1, 5, 0), caption = paste(x$weight.type, 
-						"Estimate for", x$outcome.variable,
-	switch(((x$csubset=="")|(x$csubset=="NULL"))+1,paste("[",x$csubset,"]",sep=""),NULL)))
-	}
-	else {
-		cat(paste(c(x$weight.type, "Estimate for", 
-								x$outcome.variable,
-	switch(((x$csubset=="")|(x$csubset=="NULL"))+1,paste("[",x$csubset,"]",sep=""),NULL),"\n")))
-		print(tmp)
-		if(!is.null(x$N))
-			cat("* Using population size estimate:",x$N,"\n")
-	}
-	return(invisible(tmp))
+  fmt <- function(x,...){
+    format(x,...,scientific=FALSE)
+  }
+  matest <- matrix(x$interval, ncol = 6, byrow = FALSE)
+  if (nrow(matest) > 1) {
+    rownames(matest) <- names(x$interval)[1:nrow(matest)]
+  }
+  else {
+    rownames(matest) <- x$outcome.variable
+    names(x$interval) <- rep(x$outcome.variable, length(x$interval))
+  }
+  rownames(matest)[is.na(rownames(matest))] <- "NA"
+  mnames <- max(nchar(names(x$interval)[1:nrow(matest)]))
+  colnames(matest) <- c("point", "lower", "upper", "Design Effect", 
+                        "s.e.", "n")
+  
+  nsamples <- sum(matest[,ncol(matest)])
+  fmatest <- rbind(matest,"")
+  fmatest[nrow(fmatest),ncol(fmatest)-1] <- "Total"
+  fmatest[,ncol(fmatest)] <- fmt(c(matest[,ncol(matest)],nsamples), width = 5, digits = 5)
+  fmatest[-nrow(fmatest),  1] <- fmt(matest[,  1], width = 8, digits=4)
+  fmatest[-nrow(fmatest),2:4] <- fmt(matest[,2:4], width = 8, digits=4)
+  fmatest[-nrow(fmatest),  4] <- fmt(matest[,  4], width = 6, digits=3)
+  fmatest[-nrow(fmatest),  5] <- fmt(matest[,  5], width = 8, digits=3)
+  
+  clp <- x$conf.level*100
+  tmp <- as.data.frame(fmatest,stringsAsFactors=FALSE)
+  tmp[-nrow(tmp),2] <- paste("(",tmp[,2],", ",tmp[,3],")",sep="")[-nrow(tmp)]
+  tmp <- tmp[,-3]
+  colnames(tmp) <- c("Estimate", paste0(clp,"% Interval"), "Design Effect", "Std. Error", "N")
+  if (is.element("DeducerRichOutput", .packages())) {
+    colnames(fmatest) <- c("Point Estimate", paste0(" ",clp,"% Lower\n Bound"), 
+                           paste0(" ",clp,"% Upper\n Bound"), "Estimated\n Design Effect", 
+                           "Standard Error", "Sample Size")
+    
+    get("print_to_html")(fmatest, caption.placement = "top", digits = c(8, 
+                                                                        5, 5, 5, 1, 5, 0), caption = paste(x$weight.type, 
+                                                                                                           "Estimate for", x$outcome.variable,
+                                                                                                           switch(((x$csubset=="")|(x$csubset=="NULL"))+1,paste("[",x$csubset,"]",sep=""),NULL)))
+  }
+  else {
+    cat(paste(c(x$weight.type, "Estimate for", 
+                x$outcome.variable,
+                switch(((x$csubset=="")|(x$csubset=="NULL"))+1,paste("[",x$csubset,"]",sep=""),NULL),"\n")))
+    print(tmp)
+    if(!is.null(x$N))
+      cat("* Using population size estimate:",x$N,"\n")
+  }
+  return(invisible(tmp))
 }
 
 #' Is an instance of rds.interval.estimate
@@ -154,7 +154,7 @@ is.rds.interval.estimate.list <- function(x) inherits(x,"rds.interval.estimate.l
 #' @export
 export.rds.interval.estimate <- function(x,proportion=TRUE){
   a <- as.matrix(x)
-  a <- a[-nrow(a),]
+  a <- a[-nrow(a),,drop=FALSE]
   b <- matrix(0,ncol=6,nrow=nrow(a))
   for(i in 1:nrow(a)){
     b[i,2:3] <- eval(parse(text=paste("c",a[i,2],sep="")))

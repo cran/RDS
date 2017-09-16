@@ -21,6 +21,7 @@
 #' @param N Population size to be used to calculate the empirical likelihood interval. If NULL, this value is
 #' taken to be the population.size.mid attribute of the data and if that is not set, no finite population
 #' correction is used.
+#' @param to.factor force variable to be a factor
 #' @return 
 #' If \code{outcome.variable} is numeric then the RDS-II estimate of the mean is returned, otherwise a vector of proportion estimates is returned.
 #' If the \code{empir.lik} is true, an object of class \code{rds.interval.estimate} is returned. This is a list with components
@@ -58,21 +59,21 @@
 #' RDS.II.estimates(rds.data=faux,outcome.variable='X',subset= Y!="blue")
 #' 
 #' @export RDS.II.estimates
-RDS.II.estimates <- function(rds.data,outcome.variable, N=NULL,subset=NULL,empir.lik=TRUE){
-	se <- substitute(subset)
-	subset <- eval(se,rds.data,parent.frame())
-	if(length(outcome.variable) == 1){
-		result <- RDS.estimates.local(rds.data,outcome.variable,subset=subset,
-				empir.lik=empir.lik, weight.type="RDS-II", N=N)
-	}
-	else{
-		result <- lapply(outcome.variable,function(g){
-					RDS.estimates.local(rds.data, g, subset, empir.lik=empir.lik, 
-							weight.type="RDS-II", N=N)
-				})
-		names(result) <- outcome.variable
-	}
-	return(result)
+RDS.II.estimates <- function(rds.data,outcome.variable, N=NULL,subset=NULL,empir.lik=TRUE,to.factor=FALSE){
+  se <- substitute(subset)
+  subset <- eval(se,rds.data,parent.frame())
+  if(length(outcome.variable) == 1){
+    result <- RDS.estimates.local(rds.data,outcome.variable,subset=subset,
+                                  empir.lik=empir.lik, weight.type="RDS-II", N=N, to.factor=to.factor)
+  }
+  else{
+    result <- lapply(outcome.variable,function(g){
+      RDS.estimates.local(rds.data, g, subset, empir.lik=empir.lik, 
+                          weight.type="RDS-II", N=N, to.factor=to.factor)
+    })
+    names(result) <- outcome.variable
+  }
+  return(result)
 }
 
 

@@ -5,7 +5,7 @@
 \title{Bottleneck Plot}
 \usage{
 bottleneck.plot(rds.data, outcome.variable, est.func = RDS.II.estimates,
-  as.factor = FALSE, ...)
+  as.factor = FALSE, n.eval.points = 25, ...)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame.}
@@ -16,6 +16,8 @@ bottleneck.plot(rds.data, outcome.variable, est.func = RDS.II.estimates,
 returning an rds.weighted.estimate object.}
 
 \item{as.factor}{Convert all outcome variables to factors}
+
+\item{n.eval.points}{number of evaluation points to calculate the estimates at}
 
 \item{...}{additional parameters for est.func.}
 }

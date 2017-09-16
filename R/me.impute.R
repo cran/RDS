@@ -47,7 +47,7 @@
 #' By default it is the 95th percentile of the self-reported network sizes.
 #' @param verbose logical; if this is \code{TRUE}, the program will print out additional
 #  information about the fitting process.
-#' @export
+#' @export impute.visibility
 #' @examples
 #' \dontrun{
 #' data(fauxmadrona)
@@ -58,166 +58,170 @@
 #' # frequency of estimated personal visibility
 #' table(visibility)
 #' }
+#' @references 
+#' McLaughlin, K.R., M.S. Handcock, and L.G. Johnston, 2015. 
+#' Inference for the visibility distribution for respondent-driven sampling. 
+#' In JSM Proceedings. Alexandria, VA: American Statistical Association. 2259-2267.
 impute.visibility <-function(rds.data,max.coupons=NULL,
-	type.impute = c("distribution","mode","median","mean"),
-        recruit.time=NULL,include.tree=FALSE, unit.scale=NULL, 
-	unit.model = c("cmp","nbinom"),
-	optimism = FALSE,
-	guess=NULL,
-        reflect.time=TRUE,
-	maxit=100,
-	K=NULL,
-        verbose=TRUE){
- 	if(!is(rds.data,"rds.data.frame"))
- 		stop("rds.data must be of type rds.data.frame")   
-	
-	if(missing(unit.model)){
-		unit.model <- "cmp"
-	}
-	unit.model <- match.arg(unit.model, c("cmp","nbinom"))
-	n <- nrow(rds.data)
- 	if(is.null(attr(rds.data,"network.size.variable")))
- 		stop("rds.data must have a network.size attribute.")
-        nr <- get.number.of.recruits(rds.data)
-        nw <- get.wave(rds.data)
-        ns <- get.seed.id(rds.data)
-        is.seed <- (get.rid(rds.data)=="seed")
-
- 	if(is.null(max.coupons)){
- 	  max.coupons <- attr(rds.data,"max.coupons")
- 	  if(is.null(max.coupons)){
- 		max.coupons <- max(nr,na.rm=TRUE)
-          }
-        }
-        if(length(recruit.time)==1){
-         if(is.character(recruit.time)){
-          if(recruit.time=="wave"){
-	   recruit.times <- nw
-	  }else{
-	   recruit.times <- as.numeric(rds.data[[recruit.time]])
-          }
-	  recruit.time <- TRUE
-	 }else{
-	  if(is.na(recruit.time)){
-	   recruit.times <- rep(0,n)
-	   recruit.time <- FALSE
-	  }else{
-	   stop("The recruitment time should be a variable in the RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
-	  }
-	 }
-	}else{
-         if(length(recruit.time)==0 & is.null(recruit.time)){
-	  recruit.time <- 1:n
-         }else{
-          if(length(recruit.time)!=n | (!is.numeric(recruit.time) & !is(recruit.time,"POSIXt") & !is(recruit.time,"Date"))){
-	   stop("The recruitment time should be a variable in the RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
-	  }
-	 }
-         if(length(recruit.time)==n & (is(recruit.time,"POSIXt") | is(recruit.time,"Date"))){
-	  recruit.times <- as.numeric(recruit.time)
-	 }else{
-	  recruit.times <- recruit.time
-         }
-	 recruit.time <- TRUE
-        }
-	if(any(is.na(recruit.times))){
-         med.index <- cbind(c(2,1:(n-1)),c(3,3:n,n))
-         moving.median=function(i){stats::median(recruit.times[med.index[i,]],na.rm=TRUE)}
-	 while(any(is.na(recruit.times))){
-          for(i in which(is.na(recruit.times))){recruit.times[i] <- moving.median(i)}
-	 }
-	}
-	recruit.times <- recruit.times - min(recruit.times)
-        if(reflect.time){
-	 recruit.times <- max(recruit.times)-recruit.times
-        }
-	network.size <- as.numeric(rds.data[[attr(rds.data,"network.size.variable")]])
-	remvalues <- is.na(network.size)
-	if(any(remvalues)){
-          warning(paste(sum(remvalues),"of",nrow(rds.data),
-                   "network sizes were missing. These will be imputed from the marginal distribution"), call. = FALSE)
-        }
-	if(missing(type.impute)){type.impute <- "distribution"}
-        type.impute <- match.arg(type.impute,
-	 c("distribution","mode","median","mean"))
-        if(is.na(type.impute)) { # User typed an unrecognizable name
-          stop(paste('You must specify a valid type.impute. The valid types are "distribution","mode","median", and "mean"'), call.=FALSE)
-        }
-
- 	if(is.null(K)){
- 	  if(length(network.size[!remvalues])>0){
- 	   K <- round(quantile(network.size[!remvalues],0.95))
-	  }
-        }
-
-	#Augment the reported network size by the number of recruits and the recruiter (if any).
-	if(include.tree){
-          nsize <- pmax(network.size,nr+!is.seed)
-	}else{
-          nsize <- network.size
-	}
-
-#     names(fit$par) <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "Neg.Bin scale","Optimism")
-
-	gmean <- HT.estimate(vh.weights(nsize[!is.na(nsize)]),nsize[!is.na(nsize)])
-        if(is.na(gmean)) gmean <- 38
-
-        if(is.null(guess)){
-	 gsd <- sqrt(HT.estimate(vh.weights(nsize),(nsize-gmean)^2))
-         if(is.null(unit.scale)){
-          if(unit.model=="cmp"){
-            guess <- c(-5,0,0.5,gsd,1)
-          }else{
-            guess <- c(-5,0,0.5,gsd,1)
-          }
-         }else{
-          if(unit.model=="cmp"){
-            guess <- c(-5,0,0.5,1)
-          }else{
-            guess <- c(-5,0,0.5,1)
-          }
-         }
-         if(!recruit.time){guess <- guess[-2]}
-         if(!optimism){guess <- guess[-length(guess)]}
-        }
-        fit <- memle(guess=guess,network.size=nsize[!remvalues],num.recruits=nr[!remvalues],
-		     recruit.time=recruit.time,recruit.times=recruit.times[!remvalues],max.coupons=max.coupons,
-		     unit.scale=unit.scale,unit.model=unit.model,optimism=optimism,maxit=maxit,K=K,gmean=gmean)
-        if(verbose){
-         print(summary(fit))
-        }
-
-        a=dmepdf(fit$coef,nsize,nr,fit$recruit.time,recruit.times,unit.scale=unit.scale,unit.model=unit.model,optimism=optimism,gmean=gmean)
-
-	is <- switch(type.impute, 
-		`distribution` = {
-			ff <- function(x){sample.int(n=length(x),size=1,prob=x)};
-			apply(a,2,ff)
-				 },
-		`mode` = {
-			apply(a,2,which.max)
-				 },
-		`median` = {
-			ff <- function(x){seq_along(x)[match(TRUE,cumsum(x) >= 0.5)]};
-			apply(a,2,ff)
-				 },
-		`mean` = {
-			apply(a,2,function(x){sum((1:length(x))*x)})
-				 }
-			 )
-
-	return(is)
+                             type.impute = c("distribution","mode","median","mean"),
+                             recruit.time=NULL,include.tree=FALSE, unit.scale=NULL, 
+                             unit.model = c("cmp","nbinom"),
+                             optimism = FALSE,
+                             guess=NULL,
+                             reflect.time=TRUE,
+                             maxit=100,
+                             K=NULL,
+                             verbose=TRUE){
+  if(!is(rds.data,"rds.data.frame"))
+    stop("rds.data must be of type rds.data.frame")   
+  
+  if(missing(unit.model)){
+    unit.model <- "cmp"
+  }
+  unit.model <- match.arg(unit.model, c("cmp","nbinom"))
+  n <- nrow(rds.data)
+  if(is.null(attr(rds.data,"network.size.variable")))
+    stop("rds.data must have a network.size attribute.")
+  nr <- get.number.of.recruits(rds.data)
+  nw <- get.wave(rds.data)
+  ns <- get.seed.id(rds.data)
+  is.seed <- (get.rid(rds.data)=="seed")
+  
+  if(is.null(max.coupons)){
+    max.coupons <- attr(rds.data,"max.coupons")
+    if(is.null(max.coupons)){
+      max.coupons <- max(nr,na.rm=TRUE)
+    }
+  }
+  if(length(recruit.time)==1){
+    if(is.character(recruit.time)){
+      if(recruit.time=="wave"){
+        recruit.times <- nw
+      }else{
+        recruit.times <- as.numeric(rds.data[[recruit.time]])
+      }
+      recruit.time <- TRUE
+    }else{
+      if(is.na(recruit.time)){
+        recruit.times <- rep(0,n)
+        recruit.time <- FALSE
+      }else{
+        stop("The recruitment time should be a variable in the RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
+      }
+    }
+  }else{
+    if(length(recruit.time)==0 & is.null(recruit.time)){
+      recruit.time <- 1:n
+    }else{
+      if(length(recruit.time)!=n | (!is.numeric(recruit.time) & !is(recruit.time,"POSIXt") & !is(recruit.time,"Date"))){
+        stop("The recruitment time should be a variable in the RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
+      }
+    }
+    if(length(recruit.time)==n & (is(recruit.time,"POSIXt") | is(recruit.time,"Date"))){
+      recruit.times <- as.numeric(recruit.time)
+    }else{
+      recruit.times <- recruit.time
+    }
+    recruit.time <- TRUE
+  }
+  if(any(is.na(recruit.times))){
+    med.index <- cbind(c(2,1:(n-1)),c(3,3:n,n))
+    moving.median=function(i){stats::median(recruit.times[med.index[i,]],na.rm=TRUE)}
+    while(any(is.na(recruit.times))){
+      for(i in which(is.na(recruit.times))){recruit.times[i] <- moving.median(i)}
+    }
+  }
+  recruit.times <- recruit.times - min(recruit.times)
+  if(reflect.time){
+    recruit.times <- max(recruit.times)-recruit.times
+  }
+  network.size <- as.numeric(rds.data[[attr(rds.data,"network.size.variable")]])
+  remvalues <- is.na(network.size)
+  if(any(remvalues)){
+    warning(paste(sum(remvalues),"of",nrow(rds.data),
+                  "network sizes were missing. These will be imputed from the marginal distribution"), call. = FALSE)
+  }
+  if(missing(type.impute)){type.impute <- "distribution"}
+  type.impute <- match.arg(type.impute,
+                           c("distribution","mode","median","mean"))
+  if(is.na(type.impute)) { # User typed an unrecognizable name
+    stop(paste('You must specify a valid type.impute. The valid types are "distribution","mode","median", and "mean"'), call.=FALSE)
+  }
+  
+  if(is.null(K)){
+    if(length(network.size[!remvalues])>0){
+      K <- round(quantile(network.size[!remvalues],0.95))
+    }
+  }
+  
+  #Augment the reported network size by the number of recruits and the recruiter (if any).
+  if(include.tree){
+    nsize <- pmax(network.size,nr+!is.seed)
+  }else{
+    nsize <- network.size
+  }
+  
+  #     names(fit$par) <- c("Neg.Bin. mean","Recruitment Odds","Recruitment Odds Time","Error log-s.d.", "Neg.Bin scale","Optimism")
+  
+  gmean <- HT.estimate(vh.weights(nsize[!is.na(nsize)]),nsize[!is.na(nsize)])
+  if(is.na(gmean)) gmean <- 38
+  
+  if(is.null(guess)){
+    gsd <- sqrt(HT.estimate(vh.weights(nsize),(nsize-gmean)^2))
+    if(is.null(unit.scale)){
+      if(unit.model=="cmp"){
+        guess <- c(-5,0,0.5,gsd,1)
+      }else{
+        guess <- c(-5,0,0.5,gsd,1)
+      }
+    }else{
+      if(unit.model=="cmp"){
+        guess <- c(-5,0,0.5,1)
+      }else{
+        guess <- c(-5,0,0.5,1)
+      }
+    }
+    if(!recruit.time){guess <- guess[-2]}
+    if(!optimism){guess <- guess[-length(guess)]}
+  }
+  fit <- memle(guess=guess,network.size=nsize[!remvalues],num.recruits=nr[!remvalues],
+               recruit.time=recruit.time,recruit.times=recruit.times[!remvalues],max.coupons=max.coupons,
+               unit.scale=unit.scale,unit.model=unit.model,optimism=optimism,maxit=maxit,K=K,gmean=gmean)
+  if(verbose){
+    print(summary(fit))
+  }
+  
+  a=dmepdf(fit$coef,nsize,nr,fit$recruit.time,recruit.times,unit.scale=unit.scale,unit.model=unit.model,optimism=optimism,gmean=gmean)
+  
+  is <- switch(type.impute, 
+               `distribution` = {
+                 ff <- function(x){sample.int(n=length(x),size=1,prob=x)};
+                 apply(a,2,ff)
+               },
+               `mode` = {
+                 apply(a,2,which.max)
+               },
+               `median` = {
+                 ff <- function(x){seq_along(x)[match(TRUE,cumsum(x) >= 0.5)]};
+                 apply(a,2,ff)
+               },
+               `mean` = {
+                 apply(a,2,function(x){sum((1:length(x))*x)})
+               }
+  )
+  
+  return(is)
 }
 
 "is.psd" <- function(V, tol = 1e-12){
   if(is.null(V)){return(FALSE)}
   if(sum(is.na(V))>0){
-   ev <- FALSE
+    ev <- FALSE
   }else{
-   ev <- eigen(V, symmetric = TRUE, only.values = TRUE)$values
-   ev <- all(ev/max(ev) > tol) & all(ev >=  - tol * abs(ev[1]))
-   if(is.na(ev)){ev <- FALSE}
-   if(ev != TRUE){ev <- FALSE}
+    ev <- eigen(V, symmetric = TRUE, only.values = TRUE)$values
+    ev <- all(ev/max(ev) > tol) & all(ev >=  - tol * abs(ev[1]))
+    if(is.na(ev)){ev <- FALSE}
+    if(ev != TRUE){ev <- FALSE}
   }
   ev
 }
@@ -225,19 +229,19 @@ impute.visibility <-function(rds.data,max.coupons=NULL,
 # Complete data log-likelihoods
 #
 llmeall <- function(v,x,network.size,num.recruits,recruit.time,max.coupons=3,cutoff=0,cutabove=1000,np=6,unit.model="nbinom"){
- llme <- switch(unit.model,
-  "cmp"=llcmpme, "nbinom"=llnbme)
- x <- x[x<=cutabove]
- n <- length(x)
- tx <- tabulate(x+1)
- tr <- 0:max(x)
- names(tx) <- paste(tr)
- nc <- tx[tr<cutoff]
- aaa <- sum(nc*log(nc/n),na.rm=TRUE)+(n-sum(nc))*log((n-sum(nc))/n)+llme(v=v,network.size=network.size,num.recruits=num.recruits,recruit.time=recruit.time,max.coupons=max.coupons,cutoff=cutoff,cutabove=cutabove)
- np <- np + cutoff
- aaa <- c(np,aaa,-2*aaa+np*2+2*np*(np+1)/(n-np-1),-2*aaa+np*log(n))
- names(aaa) <- c("np","log-lik","AICC","BIC")
- aaa
+  llme <- switch(unit.model,
+                 "cmp"=llcmpme, "nbinom"=llnbme)
+  x <- x[x<=cutabove]
+  n <- length(x)
+  tx <- tabulate(x+1)
+  tr <- 0:max(x)
+  names(tx) <- paste(tr)
+  nc <- tx[tr<cutoff]
+  aaa <- sum(nc*log(nc/n),na.rm=TRUE)+(n-sum(nc))*log((n-sum(nc))/n)+llme(v=v,network.size=network.size,num.recruits=num.recruits,recruit.time=recruit.time,max.coupons=max.coupons,cutoff=cutoff,cutabove=cutabove)
+  np <- np + cutoff
+  aaa <- c(np,aaa,-2*aaa+np*2+2*np*(np+1)/(n-np-1),-2*aaa+np*log(n))
+  names(aaa) <- c("np","log-lik","AICC","BIC")
+  aaa
 }
 #' @method summary me
 ###############################################################################
@@ -281,13 +285,13 @@ llmeall <- function(v,x,network.size,num.recruits,recruit.time,max.coupons=3,cut
 ################################################################################
 
 summary.me <- function (object, ..., 
-                          digits = max(3, getOption("digits") - 3),
-                          correlation=FALSE, covariance=FALSE,
-                          total.variation=TRUE,
-                          eps=0.0001)
+                        digits = max(3, getOption("digits") - 3),
+                        correlation=FALSE, covariance=FALSE,
+                        total.variation=TRUE,
+                        eps=0.0001)
 {
   control <- object$control
-
+  
   if(is.null(object$hessian) && is.null(object$covar)){
     object$covar <- diag(NA, nrow=length(object$coef))
   }
@@ -309,46 +313,46 @@ summary.me <- function (object, ...,
   asyse <- sqrt(asyse)
   asyse <- matrix(asyse, ncol=length(asyse))
   colnames(asyse) <- colnames(asycov)
-
+  
   ans <- list(formula=object$formula,
               digits=digits, correlation=correlation,
               covariance=covariance,
               iterations=object$iterations,
               control=object$control)
   
-# nodes<- network.size(object$network)
-# dyads<- network.dyadcount(object$network,FALSE)-network.edgecount(NVL(get.miss.dyads(object$constrained, object$constrained.obs),network.initialize(1)))
+  # nodes<- network.size(object$network)
+  # dyads<- network.dyadcount(object$network,FALSE)-network.edgecount(NVL(get.miss.dyads(object$constrained, object$constrained.obs),network.initialize(1)))
   dyads<- object$df
   df <- length(object$coef)
-
+  
   rdf <- dyads - df
   tval <- object$coef / asyse
   pval <- 2 * stats::pt(q=abs(tval), df=rdf, lower.tail=FALSE)
-
+  
   count <- 1
   templist <- NULL
   while (count <= length(names(object$coef)))
-    {
-     templist <- append(templist,c(object$coef[count],
-          asyse[count],pval[count]))
-     count <- count+1
-    }
-
+  {
+    templist <- append(templist,c(object$coef[count],
+                                  asyse[count],pval[count]))
+    count <- count+1
+  }
+  
   tempmatrix <- matrix(templist, ncol=3,byrow=TRUE)
   colnames(tempmatrix) <- c("Estimate", "Std. Error", "p-value")
   rownames(tempmatrix) <- names(object$coef)
-
+  
   devtext <- "Deviance:"
   mle.lik<-object$loglik
   null.lik<-object$loglik.null
-
+  
   ans$null.lik.0 <- is.na(null.lik)
-
+  
   ans$devtable <- c("",apply(cbind(paste(format(c("    Null", "Residual"), width = 8), devtext), 
                                    format(c(if(is.na(null.lik)) 0 else -2*null.lik, -2*mle.lik), digits = digits), " on",
                                    format(c(dyads, rdf), digits = digits)," degrees of freedom\n"), 
                              1, paste, collapse = " "),"\n")
-    
+  
   ans$aic <- -2*mle.lik +2*(dyads) #AIC(mle.lik)
   ans$bic <- -2*mle.lik +log(df)*(dyads) #BIC(mle.lik)
   
@@ -383,10 +387,10 @@ summary.me <- function (object, ...,
 ###############################################################################
 
 print.summary.me <- function (x, 
-              digits = max(3, getOption("digits") - 3),
-              correlation=FALSE, covariance=FALSE,
-              signif.stars= getOption("show.signif.stars"),
-              eps.Pvalue=0.0001, print.header=TRUE, print.formula=TRUE, print.fitinfo=TRUE, print.coefmat=TRUE, print.message=TRUE, print.deviances=TRUE, print.drop=TRUE, ...){
+                              digits = max(3, getOption("digits") - 3),
+                              correlation=FALSE, covariance=FALSE,
+                              signif.stars= getOption("show.signif.stars"),
+                              eps.Pvalue=0.0001, print.header=TRUE, print.formula=TRUE, print.fitinfo=TRUE, print.coefmat=TRUE, print.message=TRUE, print.deviances=TRUE, print.drop=TRUE, ...){
   if(missing(digits)) digits <- x$digits
   
   control <- x$control
@@ -401,30 +405,30 @@ print.summary.me <- function (x,
     print(x$formula)
     cat("\n")
   }
-
+  
   if(print.fitinfo){
     if (!is.null(x$iterations)) {
       cat("Iterations: ", x$iterations, "\n")
     }
   }
-
+  
   if(print.coefmat){
-	  stats::printCoefmat(x$coefs, digits=digits, signif.stars=signif.stars,
-                 P.values=TRUE, has.Pvalue=TRUE, na.print="NA",
-                 eps.Pvalue=eps.Pvalue, ...)
+    stats::printCoefmat(x$coefs, digits=digits, signif.stars=signif.stars,
+                        P.values=TRUE, has.Pvalue=TRUE, na.print="NA",
+                        eps.Pvalue=eps.Pvalue, ...)
   }
-
+  
   if(print.message){
     if(!is.null(x$message)){ 
       cat(x$message)
     }
     cat("\n")
   }
-
+  
   if(print.deviances){
     if(!is.null(x$devtable)){
       cat(x$devtable)
-
+      
       if(x$null.lik.0) cat("Note that the null model likelihood and deviance are defined to be 0.\n\n")
       
       cat(paste("AIC:", format(x$aic, digits = digits), "  ", 
@@ -432,7 +436,7 @@ print.summary.me <- function (x,
                 "(Smaller is better.)", "\n", sep=" "))
     } 
   }
-
+  
   if((missing(covariance)&x$covariance)|covariance == TRUE){
     cat("Asymptotic covariance matrix:\n")
     print(x$asycov)

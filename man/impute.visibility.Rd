@@ -83,4 +83,9 @@ visibility <- impute.visibility(fauxmadrona)
 table(visibility)
 }
 }
+\references{
+McLaughlin, K.R., M.S. Handcock, and L.G. Johnston, 2015. 
+Inference for the visibility distribution for respondent-driven sampling. 
+In JSM Proceedings. Alexandria, VA: American Statistical Association. 2259-2267.
+}
 

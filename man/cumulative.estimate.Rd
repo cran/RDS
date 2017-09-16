@@ -5,7 +5,7 @@
 \title{Calculates estimates at each successive wave of the sampling process}
 \usage{
 cumulative.estimate(rds.data, outcome.variable, est.func = RDS.II.estimates,
-  ...)
+  n.eval.points = 25, ...)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame}
@@ -14,6 +14,8 @@ cumulative.estimate(rds.data, outcome.variable, est.func = RDS.II.estimates,
 
 \item{est.func}{A function taking rds.data and outcome.variable as parameters and
 returning an rds.weighted.estimate object}
+
+\item{n.eval.points}{number of evaluation points to calculate the estimates at}
 
 \item{...}{additional parameters for est.func}
 }

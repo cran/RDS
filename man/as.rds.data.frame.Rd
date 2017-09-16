@@ -12,7 +12,8 @@ as.rds.data.frame(df, id = if (is.null(attr(df, "id"))) "id" else attr(df,
   (all(is.na(get.population.size(df, FALSE)))) {     NULL } else
   get.population.size(df, FALSE), max.coupons = if (is.null(attr(df,
   "max.coupons"))) {     NULL } else attr(df, "max.coupons"), notes = if
-  (is.null(attr(df, "notes"))) {     NULL } else attr(df, "notes"),
+  (is.null(attr(df, "notes"))) {     NULL } else attr(df, "time"), time = if
+  (is.null(attr(df, "time"))) {     NULL } else attr(df, "time"),
   check.valid = TRUE)
 }
 \arguments{
@@ -32,6 +33,8 @@ and high estimates.}
 enrolled subject (i.e. the maximum number of recruitees for any subject).}
 
 \item{notes}{Data set notes.}
+
+\item{time}{the name of the recruitment time variable. optional.}
 
 \item{check.valid}{If true, validity checks are performed to ensure that the data is well formed.}
 }
