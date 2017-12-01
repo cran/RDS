@@ -16,4 +16,3 @@ stationary distribution of the Markov chain.
 \description{
 Markov chain statistionary distribution
 }
-

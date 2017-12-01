@@ -18,4 +18,3 @@ seeds <- get.seed.id(fauxmadrona)
 #number recruited by each seed
 barplot(table(seeds))
 }
-

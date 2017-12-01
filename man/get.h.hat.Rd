@@ -19,4 +19,3 @@ get.h.hat(rds.data, group.variable, network.var = attr(rds.data,
 Get Horvitz-Thompson estimator assuming inclusion probability proportional
 to the inverse of network.var (i.e. degree).
 }
-

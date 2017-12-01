@@ -14,4 +14,3 @@
 \description{
 Prints an differential.activity.estimate object
 }
-

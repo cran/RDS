@@ -159,7 +159,7 @@ void CRDSSample(int *tails, int *heads, int *dnedges, int *dn, int *dflag, int *
   free(mychosenIndex);
   free(myUsed);
   free(myFileIndex);
-  //  printf("Time elapsed: %f\n", ((double)clock() - start) / CLOCKS_PER_SEC);
+  free(myCoupons);
 }
 
 
@@ -314,8 +314,9 @@ void Reseed(RDSEdge *candidateEdges, double *seeddist, int *recruitedSample, int
   }
   //choose new node
   temp = cumsum[n_free_nodes-1] * unif_rand();
-  i = 1;
-  while(temp > cumsum[i-1]){i++;}
+  for (i=1; i<=n_free_nodes; i++){
+    if(temp <= cumsum[i-1]) break;
+  }
   //  Rprintf("i=%d n_free_nodes %d; max %f\n",i,n_free_nodes,cumsum[n_free_nodes-1]);
   //  i = 1 + unif_rand() * (n_free_nodes);  //make sure this is the right code
   //Rprintf("i=%d n_free_nodes %d; max \n",i,n_free_nodes);
@@ -473,6 +474,7 @@ void CompleteSurvey(Network *nwp, RDSEdge *candidateEdges, int *recruitedSample,
       candidateEdges[*candidateIndex].timeIndex = now + GetTime();
       candidateEdges[*candidateIndex].Survey = 0;
     }
+    free(neighbors);
   }
 }
 

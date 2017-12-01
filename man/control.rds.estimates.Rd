@@ -62,4 +62,3 @@ second parameter, the low prevalence approximation is used.
 \code{\link{RDS.bootstrap.intervals}}
 }
 \keyword{models}
-

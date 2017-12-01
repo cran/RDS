@@ -53,4 +53,3 @@ reingold.tilford.plot(faux)
 reingold.tilford.plot(fauxmadrona,vertex.color="disease")
 }
 }
-

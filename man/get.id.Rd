@@ -18,4 +18,3 @@ Get the subject id
 returns the variable indicated by the 'id' attribute, coersing to
 a character vector
 }
-

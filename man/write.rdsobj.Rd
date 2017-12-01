@@ -14,4 +14,3 @@ write.rdsobj(x, file)
 \description{
 Export an rds.data.frame to file
 }
-

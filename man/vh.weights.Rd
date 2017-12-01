@@ -14,4 +14,3 @@ vh.weights(degs, N = NULL)
 \description{
 Volz-Heckathorn (RDS-II) weights
 }
-

@@ -20,4 +20,3 @@ Gile, Krista J., Handcock, Mark S., 2010 \emph{Respondent-driven Sampling: An As
 \code{\link{fauxsycamore}}, \code{\link{fauxmadrona}}
 }
 \keyword{datasets}
-

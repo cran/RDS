@@ -73,9 +73,6 @@ data(fauxmadrona)
 RDS.SS.estimates(rds.data=fauxmadrona,outcome.variable="disease",N=1000)
 
 }
-\author{
-Krista J. Gile with help from Mark S. Handcock
-}
 \references{
 Gile, Krista J. 2011 \emph{Improved Inference for Respondent-Driven Sampling
 Data with Application to HIV Prevalence Estimation}, \emph{Journal of the
@@ -100,6 +97,8 @@ for Respondent Driven Sampling}. The Journal of Official Statistics 24 (1),
 \seealso{
 \code{\link{RDS.I.estimates}}, \code{\link{RDS.II.estimates}}
 }
+\author{
+Krista J. Gile with help from Mark S. Handcock
+}
 \keyword{manip}
 \keyword{survey}
-

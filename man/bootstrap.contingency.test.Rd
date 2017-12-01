@@ -37,6 +37,6 @@ the weighted contingency table. Weights are calculated using the HCG estimator a
 }
 \examples{
 data(faux)
-bootstrap.contingency.test(faux, "X", "Y", 100, verbose=FALSE)
+bootstrap.contingency.test(rds.data=faux, row.var="X", col.var="Y",
+  number.of.bootstrap.samples=50, verbose=FALSE)
 }
-

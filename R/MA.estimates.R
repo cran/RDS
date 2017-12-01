@@ -137,6 +137,7 @@
 #' }
 #'
 #' @export MA.estimates
+#' @importFrom ergm summary.formula
 MA.estimates <- function(rds.data,
                          trait.variable,
                          seed.selection = "degree",

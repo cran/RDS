@@ -56,4 +56,3 @@ Methodology}, 40, 285-327.
 \code{\link{fauxsycamore}}, \code{\link{faux}}
 }
 \keyword{datasets}
-

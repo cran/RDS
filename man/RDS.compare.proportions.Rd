@@ -34,4 +34,3 @@ confidence.level=0.95, number.of.bootstrap.samples=100)
 RDS.compare.proportions(int1,int2)
 }
 }
-

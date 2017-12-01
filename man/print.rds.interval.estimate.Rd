@@ -14,4 +14,3 @@
 \description{
 Prints an \code{rds.interval.estimate} object
 }
-

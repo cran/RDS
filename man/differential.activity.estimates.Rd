@@ -34,4 +34,3 @@ group divided by the average degree of those in another population group.
 data(faux)
 differential.activity.estimates(faux,"X",weight.type="RDS-II")
 }
-

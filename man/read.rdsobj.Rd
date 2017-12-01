@@ -17,4 +17,3 @@ Tilde-expansion is performed where supported.  As from R
 \description{
 Import data saved using write.rdsobj
 }
-

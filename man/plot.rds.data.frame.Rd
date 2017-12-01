@@ -44,4 +44,3 @@ plot(fauxmadrona, plot.type='Recruits by wave', stratify.by='disease')
 plot(fauxmadrona, plot.type='Recruits per seed', stratify.by='disease')
 plot(fauxmadrona, plot.type='Recruits per subject', stratify.by='disease')
 }
-

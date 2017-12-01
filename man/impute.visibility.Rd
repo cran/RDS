@@ -6,7 +6,7 @@
  number of their (direct) recruits. It uses the time the person was recruited as a factor in 
  determining the number of recruits they produce.}
 \usage{
-impute.visibility(rds.data, max.coupons = NULL,
+\method{impute}{visibility}(rds.data, max.coupons = NULL,
   type.impute = c("distribution", "mode", "median", "mean"),
   recruit.time = NULL, include.tree = FALSE, unit.scale = NULL,
   unit.model = c("cmp", "nbinom"), optimism = FALSE, guess = NULL,
@@ -40,7 +40,7 @@ In particular, it typically produces a positive visibility (compared to a possib
 of the distribution of the unit sizes.
 For the negative binomial, it is the multiplier on the variance of the negative binomial 
 compared to a Poisson (via the Poisson-Gamma mixture representation). Sometimes the scale is 
-unnaturally large (e.g. 40) so this give the option of fixing it (rather than use
+unnaturally large (e.g. 40) so this give the option of fixing it (rather than using
 the MLE of it). The model is fit with the parameter fixed at this passed value.}
 
 \item{unit.model}{The type of distribution for the unit sizes.
@@ -88,4 +88,3 @@ McLaughlin, K.R., M.S. Handcock, and L.G. Johnston, 2015.
 Inference for the visibility distribution for respondent-driven sampling. 
 In JSM Proceedings. Alexandria, VA: American Statistical Association. 2259-2267.
 }
-

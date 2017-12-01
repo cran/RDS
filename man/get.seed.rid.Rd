@@ -17,4 +17,3 @@ Gets the recruiter id assosiated with the seeds
 \details{
 All seed nodes must have the same placeholder recruiter id.
 }
-

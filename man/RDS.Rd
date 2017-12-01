@@ -14,4 +14,3 @@ This package provides functionality for carrying out estimation
     Heckathorn's RDS-I and RDS-II estimators as well as Gile's Sequential
     Sampler estimator.
 }
-

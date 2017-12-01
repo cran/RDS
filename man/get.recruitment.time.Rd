@@ -19,4 +19,3 @@ get.recruitment.time(x, to.numeric = TRUE, wave.fallback = FALSE,
 \description{
 Returns the recruitment time for each subject
 }
-

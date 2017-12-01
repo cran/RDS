@@ -14,4 +14,3 @@ get.population.size(x, check.type = TRUE)
 \description{
 Returns the population size associated with the data.
 }
-

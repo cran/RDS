@@ -21,4 +21,3 @@ w <- get.wave(fauxmadrona)
 #number recruited in each wave
 barplot(table(w))
 }
-

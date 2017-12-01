@@ -120,4 +120,3 @@ An Assessment of Current Methodology}. Sociological Methodology 40, 285-327.
 }
 \keyword{manip}
 \keyword{survey}
-

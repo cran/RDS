@@ -15,4 +15,3 @@ calculates the mle. i.e. the row proportions of the transition matrix
 \details{
 depreicated. just use prop.table(transition.counts,1)
 }
-

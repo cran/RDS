@@ -51,10 +51,9 @@ This function computes the Homophily Configuration Graph type estimates for a ca
 data(fauxtime)
 RDS.HCG.estimates(rds.data=fauxtime,outcome.variable='var1')
 }
-\author{
-Ian E. Fellows
-}
 \seealso{
 \code{\link{RDS.I.estimates}}, \code{\link{RDS.II.estimates}}, \code{\link{RDS.SS.estimates}}
 }
-
+\author{
+Ian E. Fellows
+}

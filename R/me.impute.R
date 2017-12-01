@@ -27,7 +27,7 @@
 #' of the distribution of the unit sizes.
 #' For the negative binomial, it is the multiplier on the variance of the negative binomial 
 #' compared to a Poisson (via the Poisson-Gamma mixture representation). Sometimes the scale is 
-#' unnaturally large (e.g. 40) so this give the option of fixing it (rather than use
+#' unnaturally large (e.g. 40) so this give the option of fixing it (rather than using
 #' the MLE of it). The model is fit with the parameter fixed at this passed value.
 #' @param unit.model The type of distribution for the unit sizes.
 #' It can be of \code{nbinom}, meaning a negative binomial. 

@@ -20,4 +20,3 @@ rds.I.weights(rds.data, outcome.variable, N = NULL, smoothed = FALSE, ...)
 \description{
 RDS-I weights
 }
-

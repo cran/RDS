@@ -26,4 +26,3 @@ name of the calling function.
 check.control.class, print.control.list
 }
 \keyword{utilities}
-

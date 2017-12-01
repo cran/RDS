@@ -43,4 +43,3 @@ p-values are still displayed.
 }
 \keyword{models}
 \keyword{regression}
-

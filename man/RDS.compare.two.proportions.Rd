@@ -31,4 +31,3 @@ for comparing the two classes
 \description{
 Compares the rates of two variables against one another.
 }
-

@@ -78,6 +78,7 @@ heterophily on HIV in the population. If the population homophily on sex is
 1.1, there are 10\% more same-sex couples than expected due to chance. Hence
 there is modest homophily on sex.
 }
+
 \examples{
 \dontrun{
 data(fauxmadrona)
@@ -108,12 +109,11 @@ homophily.estimates(fauxmadrona,outcome.variable="disease",
   N=1000,weight.type="RDS-II")
 }
 }
-\author{
-Mark S. Handcock with help from Krista J. Gile
-}
 \references{
 Gile, Krista J., Handcock, Mark S., 2010,
 \emph{Respondent-driven Sampling: An Assessment of Current Methodology}.
 Sociological Methodology 40, 285-327.
 }
-
+\author{
+Mark S. Handcock with help from Krista J. Gile
+}

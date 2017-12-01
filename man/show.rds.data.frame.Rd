@@ -14,4 +14,3 @@ show.rds.data.frame(x, ...)
 \description{
 Displays an rds.data.frame
 }
-

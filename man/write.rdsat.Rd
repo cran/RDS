@@ -14,4 +14,3 @@ write.rdsat(x, file = NULL)
 \description{
 Writes out the RDS tree in RDSAT format
 }
-

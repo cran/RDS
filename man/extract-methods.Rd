@@ -2,8 +2,8 @@
 % Please edit documentation in R/rds.data.frame.R
 \docType{methods}
 \name{[<-.rds.data.frame}
-\alias{[<-,rds.data.frame-method}
 \alias{[<-.rds.data.frame}
+\alias{[<-,rds.data.frame-method}
 \title{indexing}
 \usage{
 \method{[}{rds.data.frame} (x, i, j) <- value
@@ -24,4 +24,3 @@ indexing
 Indexed assignment. If the result is not a valid rds.data.frame, an error
 is emitted.
 }
-

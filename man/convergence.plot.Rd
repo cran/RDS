@@ -31,4 +31,3 @@ convergence.plot(faux,c("X","Y"))
 \references{
 Krista J. Gile, Lisa G. Johnston, Matthew J. Salganik \emph{Diagnostics for Respondent-driven Sampling} eprint arXiv:1209.6254, 2012
 }
-

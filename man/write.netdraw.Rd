@@ -21,4 +21,3 @@ If by.seed is false, two files are created using 'file' as a base name.
 \code{paste0(file,".DL")} contains the edge information, and \code{paste0(file,".vna")}
 contains the nodal attributes
 }
-

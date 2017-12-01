@@ -62,13 +62,6 @@ data(faux)
 RDS.I.estimates(rds.data=faux,outcome.variable='X',smoothed=TRUE)
 
 }
-\author{
-Mark S. Handcock
-\itemize{ 
-		\item{RDS.II.estimates}{\code{\link{RDS.II.estimates}}}
-		\item{RDS.SS.estimates}{\code{\link{RDS.SS.estimates}}}
-}
-}
 \references{
 Gile, Krista J., Handcock, Mark S., 2010,
 \emph{Respondent-driven Sampling: An Assessment of Current Methodology}.
@@ -82,6 +75,12 @@ Volz, E., Heckathorn, D., 2008. \emph{Probability based estimation theory
 for Respondent Driven Sampling}. The Journal of Official Statistics 24 (1),
 79-97.
 }
+\author{
+Mark S. Handcock
+\itemize{ 
+		\item{RDS.II.estimates}{\code{\link{RDS.II.estimates}}}
+		\item{RDS.SS.estimates}{\code{\link{RDS.SS.estimates}}}
+}
+}
 \keyword{manip}
 \keyword{survey}
-

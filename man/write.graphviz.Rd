@@ -14,4 +14,3 @@ write.graphviz(x, file)
 \description{
 writes an rds.data.frame recruitment tree as a GraphViz file
 }
-

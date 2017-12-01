@@ -687,7 +687,7 @@ oneiteration <- function(sampleTab,
     }
   } else{
     #
-    sim <- ergm::simulate.ergm(
+    sim <- stats::simulate(
       fit,
       nsim = M1,
       control = ergm::control.simulate.ergm(

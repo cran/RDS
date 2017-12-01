@@ -29,4 +29,3 @@ in a probability proportional to size without replacement design.}
 \description{
 Weights using Giles SS estimator
 }
-

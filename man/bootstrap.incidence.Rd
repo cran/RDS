@@ -62,4 +62,3 @@ faux$hiv[is.na(faux$recent)][c(1,6,10,21)] <- NA
 attr(faux,"time") <- "wave"
 bootstrap.incidence(faux,"recent","hiv",weight.type="RDS-II", number.of.bootstrap.samples=100)
 }
-

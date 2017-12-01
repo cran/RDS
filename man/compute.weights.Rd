@@ -42,4 +42,3 @@ based on various estimators
 \seealso{
 \code{\link{rds.I.weights}}, \code{\link{gile.ss.weights}}, \code{\link{vh.weights}}
 }
-

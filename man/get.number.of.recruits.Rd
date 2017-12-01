@@ -18,4 +18,3 @@ nr <- get.number.of.recruits(fauxmadrona)
 #frequency of number recruited by each id
 barplot(table(nr))
 }
-

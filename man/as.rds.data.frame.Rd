@@ -53,4 +53,3 @@ dat <- data.frame(id=c(1,2,3,4,5), recruiter.id=c(2,-1,2,-1,4),
 as.rds.data.frame(dat)
 
 }
-

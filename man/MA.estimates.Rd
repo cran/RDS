@@ -146,14 +146,13 @@ MA.estimates(rds.data=faux,trait.variable='X')
 }
 
 }
-\author{
-Krista J. Gile with help from Mark S. Handcock
-}
 \seealso{
 \itemize{
 \item{RDS.I.estimates}{\code{\link{RDS.I.estimates}}}
 \item{RDS.II.estimates}{\code{\link{RDS.I.estimates}}}}
 }
+\author{
+Krista J. Gile with help from Mark S. Handcock
+}
 \keyword{manip}
 \keyword{survey}
-

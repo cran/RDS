@@ -12,4 +12,3 @@ is.rds.data.frame(x)
 \description{
 Is an instance of rds.data.frame
 }
-

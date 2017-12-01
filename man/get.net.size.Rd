@@ -14,4 +14,3 @@ get.net.size(x, check.type = TRUE)
 \description{
 Returns the network size of each subject (i.e. their degree).
 }
-

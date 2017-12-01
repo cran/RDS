@@ -14,4 +14,3 @@
 \description{
 Displays a pvalue.table
 }
-

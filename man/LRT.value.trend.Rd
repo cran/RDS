@@ -51,12 +51,11 @@ sigma <- c(0.04,0.04,0.1)
 LRT.value.trend(x,sigma)
 }
 }
-\author{
-Mark S. Handcock
-}
 \references{
 Bartholomew, D. J. (1959). A test of homogeneity for ordered alternatives. Biometrika 46 36-48.
 }
+\author{
+Mark S. Handcock
+}
 \keyword{manip}
 \keyword{survey}
-

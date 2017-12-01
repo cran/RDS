@@ -2,8 +2,8 @@
 % Please edit documentation in R/rds.data.frame.R
 \docType{methods}
 \name{[.rds.data.frame}
-\alias{[,rds.data.frame-method}
 \alias{[.rds.data.frame}
+\alias{[,rds.data.frame-method}
 \title{indexing}
 \usage{
 \method{[}{rds.data.frame}(x, i, j, ..., drop, warn = TRUE)
@@ -34,4 +34,3 @@ r <- as.rds.data.frame(dat)
 r[1:3,] # A valid pruning of the RDS tree.
 r[c(1,5),warn=FALSE] # recruiter.id of last row set to -1 (i.e. a seed) to maintain validity of tree
 }
-

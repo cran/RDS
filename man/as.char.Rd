@@ -14,4 +14,3 @@ as.char(x, ...)
 \description{
 converts to character with minimal loss of precision for numeric variables
 }
-

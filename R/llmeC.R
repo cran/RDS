@@ -103,7 +103,7 @@ memle <-function(network.size,num.recruits,recruit.time=FALSE,recruit.times=rep(
         if(optimism) {
           vtrans <- function(l){c(l[1],exp(l[2]),exp(l[3])+1,exp(l[4]))}
           ltrans <- function(v){c(v[1],log(v[2]),log(v[3]-1),log(v[4]))}
-          gtrans <- function(l){c(exp(l[2]),exp(l[3]),exp(l[4]))}
+          gtrans <- function(l){c(1,exp(l[2]),exp(l[3]),exp(l[4]))}
         }else{
           vtrans <- function(l){c(l[1],exp(l[2]),exp(l[3])+1)}
           ltrans <- function(v){c(v[1],log(v[2]),log(v[3]-1))}

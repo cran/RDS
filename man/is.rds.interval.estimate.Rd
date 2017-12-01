@@ -12,4 +12,3 @@ is.rds.interval.estimate(x)
 \description{
 Is an instance of rds.interval.estimate
 }
-

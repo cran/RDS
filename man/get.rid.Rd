@@ -18,4 +18,3 @@ Get recruiter id
 returns the variable indicated by the 'recruiter.id' attribute, coersing to
 a character vector
 }
-

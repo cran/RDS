@@ -22,4 +22,3 @@ returning an rds.weighted.estimate object}
 \description{
 Calculates estimates at each successive wave of the sampling process
 }
-

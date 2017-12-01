@@ -15,7 +15,8 @@
 #' the weighted contingency table. Weights are calculated using the HCG estimator assuming a large population size.
 #' @examples
 #' data(faux)
-#' bootstrap.contingency.test(faux, "X", "Y", 100, verbose=FALSE)
+#' bootstrap.contingency.test(rds.data=faux, row.var="X", col.var="Y",
+#'   number.of.bootstrap.samples=50, verbose=FALSE)
 #' @export
 bootstrap.contingency.test <- function(rds.data,
                                        row.var,

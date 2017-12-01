@@ -14,4 +14,3 @@ is.rds.interval.estimate.list(x)
 Is an instance of rds.interval.estimate.list
 This is a (typically time ordered) sequence of RDS estimates of a comparable quantity
 }
-

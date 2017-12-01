@@ -17,4 +17,3 @@ Does various checks and throws errors if x is not a valid rds.data.frame
 \details{
 Throws an informative message if x is malformed.
 }
-

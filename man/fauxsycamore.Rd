@@ -42,4 +42,3 @@ Gile, Krista J., Handcock, Mark S., 2009.
 \code{\link{faux}}, \code{\link{fauxmadrona}}
 }
 \keyword{datasets}
-

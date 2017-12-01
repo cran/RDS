@@ -74,4 +74,3 @@ See the manual page on \code{svyglm} for detail of that function.
 }
 \keyword{models}
 \keyword{regression}
-

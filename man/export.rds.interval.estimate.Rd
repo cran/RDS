@@ -14,4 +14,3 @@ export.rds.interval.estimate(x, proportion = TRUE)
 \description{
 Convert the output of print.rds.interval.estimate from a character data.frame to a numeric matrix
 }
-

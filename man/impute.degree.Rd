@@ -4,7 +4,7 @@
 \alias{impute.degree}
 \title{Imputes missing degree values}
 \usage{
-impute.degree(rds.data, trait.variable = NULL, N = NULL,
+\method{impute}{degree}(rds.data, trait.variable = NULL, N = NULL,
   method = c("mean", "quantile"), quantile = 0.5,
   recruitment.lower.bound = TRUE, round.degree = TRUE)
 }
@@ -40,4 +40,3 @@ impute.degree(rds.data)
 impute.degree(rds.data,trait.variable="X")
 impute.degree(rds.data,trait.variable="X",method="quantile")
 }
-

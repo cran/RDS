@@ -27,4 +27,3 @@ fn <- paste0(path.package("RDS"),"/extdata/nyjazz.rdsat")
 rd <- read.rdsat(fn)
 plot(rd)
 }
-

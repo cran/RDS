@@ -56,9 +56,6 @@ RDS.II.estimates(rds.data=faux,outcome.variable='X')
 RDS.II.estimates(rds.data=faux,outcome.variable='X',subset= Y!="blue")
 
 }
-\author{
-Mark S. Handcock and W. Whipple Neely
-}
 \references{
 Gile, Krista J., Handcock, Mark S., 2010,
 \emph{Respondent-driven Sampling: An Assessment of Current Methodology}.
@@ -76,6 +73,8 @@ for Respondent Driven Sampling}. The Journal of Official Statistics 24 (1),
 \seealso{
 \code{\link{RDS.I.estimates}}, \code{\link{RDS.SS.estimates}}
 }
+\author{
+Mark S. Handcock and W. Whipple Neely
+}
 \keyword{manip}
 \keyword{survey}
-

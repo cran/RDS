@@ -16,4 +16,3 @@
 \description{
 Displays an rds.contin.bootstrap
 }
-

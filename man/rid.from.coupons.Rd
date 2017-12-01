@@ -30,4 +30,3 @@ dat$recruiter.id <- rid.from.coupons(dat,"own.coupon",
 #create and rds.data.frame
 rds <- as.rds.data.frame(dat,network.size="network.size")
 }
-

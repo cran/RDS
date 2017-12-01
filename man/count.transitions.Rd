@@ -20,4 +20,3 @@ of the grouping variable.
 data(faux)
 count.transitions(faux,"X")
 }
-
