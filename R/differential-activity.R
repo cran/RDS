@@ -184,8 +184,8 @@ differential.activity.estimates <- function(rds.data,
 #' Prints an differential.activity.estimate object
 #' @param x an differential.activity.estimate object
 #' @param ... unused
-#' @method print differential.activity.estimate
 #' @export
+#' @method print differential.activity.estimate
 print.differential.activity.estimate <- function(x, ...) {
   cat(
     paste(

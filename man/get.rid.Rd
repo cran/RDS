@@ -15,6 +15,6 @@ get.rid(x, check.type = TRUE)
 Get recruiter id
 }
 \details{
-returns the variable indicated by the 'recruiter.id' attribute, coersing to
+returns the variable indicated by the 'recruiter.id' attribute, coercing to
 a character vector
 }

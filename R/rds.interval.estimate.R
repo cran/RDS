@@ -83,8 +83,8 @@ rds.interval.estimate <- function(estimate, outcome.variable,
 #' Prints an \code{rds.interval.estimate} object
 #' @param x an \code{rds.interval.estimate} object
 #' @param ... unused
-#' @method print rds.interval.estimate
 #' @export
+#' @method print rds.interval.estimate
 print.rds.interval.estimate <- function(x, ...) {
   fmt <- function(x,...){
     format(x,...,scientific=FALSE)

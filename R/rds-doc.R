@@ -11,7 +11,7 @@
 #' @importFrom igraph degree.sequence.game
 #' @docType package
 #' @name RDS
-#' @useDynLib RDS
+#' @useDynLib RDS, .registration = TRUE
 NULL
 
 

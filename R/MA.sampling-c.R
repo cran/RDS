@@ -29,6 +29,7 @@
 #   toattr: vector of numbers of referrals to attrsd nodes
 #   tonoattr: vector of number of referrans to unattrsd
 #   nominators: recruiter of each sample
+#' export
 rdssampleC <- function(net,
                        nnodes = network.size(net),
                        nsamp0,

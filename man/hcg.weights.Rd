@@ -4,8 +4,8 @@
 \alias{hcg.weights}
 \title{homophily configuration graph weights}
 \usage{
-hcg.weights(rds.data, outcome.variable, N = NULL, small.fraction = FALSE,
-  ...)
+hcg.weights(rds.data, outcome.variable, N = NULL,
+  small.fraction = FALSE, ...)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame}

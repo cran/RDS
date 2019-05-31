@@ -290,7 +290,7 @@ void bsC (
 	 csample[mm] = nextresp;
 	 countrefs++;
 //      numberfrom is the number of recruits to get for the current recruiter
-	 if((mm<ni)&(countrefs==numberfrom)){
+	 if((mm<ni)&&(countrefs==numberfrom)){
 	  activnode++;                     // move to the next seed (or node)!!! i=i+1
 	  countrefs=0;
 	  rU = unif_rand()*crefs[ni-1];

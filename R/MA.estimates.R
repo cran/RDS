@@ -36,8 +36,7 @@
 #' @param MPLE.samplesize Number of samples to take in the computation of the
 #' maximum pseudolikelihood estimator (MPLE) of the working model parameter.
 #' The default is almost always sufficient.
-#' @param SAN.burnin Burnin used by SAN to center the mean statistics of the
-#' network used for the MPLE computation.
+#' @param SAN.nsteps Number of MCMC proposals for all the annealing runs combined.
 #' @param sim.interval Number of MCMC steps between each of the M1 sampled
 #' networks per iteration.
 #' @param number.of.cross.ties The expected number of ties between those with
@@ -114,20 +113,20 @@
 #' An Assessment of Current Methodology, Sociological Methodology, 40,
 #' 285-327.
 #'
-#' Gile, Krista J., Handcock, Mark S., 2011 Network Model-Assisted
-#' Inference from Respondent-Driven Sampling Data, ArXiv Preprint.
+#' %Gile, Krista J., Handcock, Mark S., 2011 Network Model-Assisted
+#' %Inference from Respondent-Driven Sampling Data, ArXiv Preprint.
 #'
-#' %Neely, W. W., 2009. \emph{Bayesian methods for data from respondent driven
-#' sampling}. Dissertation in-progress, Department of Statistics, University of
-#' Wisconsin, Madison.
+#' %%Neely, W. W., 2009. \emph{Bayesian methods for data from respondent driven
+#' %sampling}. Dissertation in-progress, Department of Statistics, University of
+#' %Wisconsin, Madison.
 #'
 #' %Salganik, M., Heckathorn, D. D., 2004. Sampling and estimation in
-#' hidden populations using respondent-driven sampling. Sociological
-#' Methodology 34, 193-239.
+#' %hidden populations using respondent-driven sampling. Sociological
+#' %Methodology 34, 193-239.
 #'
 #' %Volz, E., Heckathorn, D., 2008. Probability based estimation theory
-#' for Respondent Driven Sampling. The Journal of Official Statistics 24 (1),
-#' 79-97.
+#' %for Respondent Driven Sampling. The Journal of Official Statistics 24 (1),
+#' %79-97.
 #' @keywords survey manip
 #' @examples
 #'
@@ -137,7 +136,7 @@
 #' }
 #'
 #' @export MA.estimates
-#' @importFrom ergm summary.formula
+#' @importFrom ergm summary_formula
 MA.estimates <- function(rds.data,
                          trait.variable,
                          seed.selection = "degree",
@@ -151,7 +150,7 @@ MA.estimates <- function(rds.data,
                          initial.sampling.probabilities = NULL,
                          MPLE.samplesize = 50000,
                          SAN.maxit = 5,
-                         SAN.burnin = 200000,
+                         SAN.nsteps = 2^19,
                          sim.interval = 10000,
                          number.of.cross.ties = NULL,
                          max.degree = NULL,
@@ -349,7 +348,7 @@ MA.estimates <- function(rds.data,
     MPLEsamplesize = MPLE.samplesize,
     maxdeg = max.degree,
     SAN.maxit = SAN.maxit,
-    SAN.burnin = SAN.burnin,
+    SAN.nsteps = SAN.nsteps,
     fixinitial = fixinitial,
     nsamp0 = number.of.seeds,
     coupons = number.of.coupons,

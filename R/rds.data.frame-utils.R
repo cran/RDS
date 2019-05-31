@@ -20,7 +20,7 @@ rid.from.coupons <- function(data, subject.coupon=NULL, coupon.variables,
                              subject.id=NULL,seed.id="seed"){
   max.coupons <- length(coupon.variables)
   column.names <- colnames(data)
-  named.columns <- column.names[column.names != "" && !is.na(column.names)]
+  named.columns <- column.names[column.names != "" & !is.na(column.names)]
   if(is.null(subject.id))
     subject.id <- as.char(1:nrow(data))
   else

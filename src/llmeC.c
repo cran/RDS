@@ -62,7 +62,7 @@ void gllcmpmeC (double *v,
   maxpdf=1.0;
   loglik=1.0;
   iu=2;
-  while ((loglik > eps*maxpdf) & (iu <= Ki) ){
+  while ((loglik > eps*maxpdf) && (iu <= Ki) ){
     u=iu-1.0;
     loglik=exp(u*log(dmean)-scale*lgamma(u+1.0));
     pdf[iu]=loglik;
@@ -155,7 +155,7 @@ void gcmpmepdfC (double *v,
   maxpdf=1.0;
   loglik=1.0;
   iu=2;
-  while ((loglik > eps*maxpdf) & (iu <= Ki) ){
+  while ((loglik > eps*maxpdf) && (iu <= Ki) ){
     u=iu-1.0;
     loglik=exp(u*log(dmean)-scale*lgamma(u+1.0));
     pdf[iu]=loglik;
@@ -241,7 +241,7 @@ void gllnbmeC (double *v,
   pdf[0]=0.0;
   temp=0.0;
   iu=1;
-  while ((temp < 1.0 - eps) & (iu <= Ki) ){
+  while ((temp < 1.0 - eps) && (iu <= Ki) ){
     u=((double)iu)-1.0;
     loglik = dnbinom_mu(u,shape,dmean,give_log0);
     temp+=loglik;
@@ -327,7 +327,7 @@ void gnbmepdfC (double *v,
   pdf[0]=zero;
   temp=zero;
   iu=1;
-  while ((temp < 1.0 - eps) & (iu <= Ki) ){
+  while ((temp < 1.0 - eps) && (iu <= Ki) ){
     u=((double)iu)-1.0;
     sint = dnbinom_mu(u,shape,dmean,give_log0);
     temp+=sint;

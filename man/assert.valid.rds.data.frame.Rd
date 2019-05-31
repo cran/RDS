@@ -9,7 +9,7 @@ assert.valid.rds.data.frame(x, ...)
 \arguments{
 \item{x}{an rds.data.frame}
 
-\item{...}{unsued}
+\item{...}{unused}
 }
 \description{
 Does various checks and throws errors if x is not a valid rds.data.frame

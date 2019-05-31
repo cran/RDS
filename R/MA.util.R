@@ -13,7 +13,7 @@ getnetest <- function(dissample,
                       parallel.type = "MPI",
                       Qstart = NULL,
                       MPLEsamplesize = 50000,
-                      SAN.burnin = 10000,
+                      SAN.nsteps = 2^19,
                       SAN.maxit = 3,
                       fixinitial = 1,
                       nsamp0 = 10,
@@ -35,7 +35,7 @@ getnetest <- function(dissample,
       net %v% "disease" <- as.numeric(net %v% "group")
     }
     crossStat <-
-      ergm::summary.formula(net ~ nodemix("disease", base = c(1, 3)))
+      ergm::summary_formula(net ~ nodemix("disease", levels2 = c(1, 3)))
     degpop <- sapply(net$iel, length) + sapply(net$oel, length)
     maxdeg <- max(degpop)
     dispop <-
@@ -55,10 +55,10 @@ getnetest <- function(dissample,
       "Population homophily= %f\n",
       network.homophily(net, 'disease')
     ))
-    a = ergm::summary.formula(net ~ nodefactor('disease', base = 0))
+    a = ergm::summary_formula(net ~ nodefactor('disease', base = 0))
     cat(
       sprintf(
-        "ergm::summary.formula(net~nodefactor('disease',base=0)): 0=%f 1=%f\n",
+        "ergm::summary_formula(net~nodefactor('disease',base=0)): 0=%f 1=%f\n",
         a[1],
         a[2]
       )
@@ -228,7 +228,7 @@ getnetest <- function(dissample,
         parallel.type = parallel.type,
         MPLEsamplesize = MPLEsamplesize,
         SAN.maxit = SAN.maxit,
-        SAN.burnin = SAN.burnin,
+        SAN.nsteps = SAN.nsteps,
         interval = interval,
         crossStat = crossStat,
         rawCounts = rawCounts,
@@ -499,7 +499,7 @@ oneiteration <- function(sampleTab,
                          short = FALSE,
                          theta0 = -0.79,
                          SAN.maxit = 3,
-                         SAN.burnin = 10000,
+                         SAN.nsteps = 2^19,
                          interval = 10000,
                          parallel = 0,
                          parallel.type = "MPI",
@@ -557,11 +557,11 @@ oneiteration <- function(sampleTab,
   }
   if (verbose) {
     a <-
-      ergm::summary.formula(newPop$initialNet ~ nodefactor('disease', base =
+      ergm::summary_formula(newPop$initialNet ~ nodefactor('disease', base =
                                                              0))
     cat(
       sprintf(
-        "ergm::summary.formula(newPop$initialNet~nodefactor('disease',base=0)): 0=%f 1=%f\n",
+        "ergm::summary_formula(newPop$initialNet~nodefactor('disease',base=0)): 0=%f 1=%f\n",
         a[1],
         a[2]
       )
@@ -578,7 +578,7 @@ oneiteration <- function(sampleTab,
       parallel.type = parallel.type,
       MPLEsamplesize = MPLEsamplesize,
       SAN.maxit = SAN.maxit,
-      SAN.burnin = SAN.burnin,
+      SAN.nsteps = SAN.nsteps,
       maxdeg = maxdeg,
       verbose = verbose
     )
@@ -596,16 +596,16 @@ oneiteration <- function(sampleTab,
       ))
       cat(
         sprintf(
-          "ergm::summary.formula(fit~nodemix('disease'))= %f\n",
-          ergm::summary.formula(initialNet ~ nodemix("disease", base =
+          "ergm::summary_formula(fit~nodemix('disease'))= %f\n",
+          ergm::summary_formula(initialNet ~ nodemix("disease", levels2 =
                                                        c(1, 3)))
         )
       )
-      a = ergm::summary.formula(initialNet ~ nodefactor('disease', base =
+      a = ergm::summary_formula(initialNet ~ nodefactor('disease', base =
                                                           0))
       cat(
         sprintf(
-          "ergm::summary.formula(initialNet~nodefactor('disease',base=0)): 0=%f 1=%f\n",
+          "ergm::summary_formula(initialNet~nodefactor('disease',base=0)): 0=%f 1=%f\n",
           a[1],
           a[2]
         )
@@ -656,8 +656,8 @@ oneiteration <- function(sampleTab,
           if (verbose) {
             cat(
               sprintf(
-                "ergm::summary.formula(sim~nodemix('disease'))= %f\n",
-                ergm::summary.formula(initialNet ~ nodemix("disease", base =
+                "ergm::summary_formula(sim~nodemix('disease'))= %f\n",
+                ergm::summary_formula(initialNet ~ nodemix("disease", levels2 =
                                                              c(1, 3)))
               )
             )
@@ -768,7 +768,7 @@ fitnet.RDS <- function(target.stats,
                        parallel.type = "MPI",
                        MPLEsamplesize = 50000,
                        SAN.maxit = 3,
-                       SAN.burnin = 10000,
+                       SAN.nsteps = 2^19,
                        deltadis = 0.05,
                        maxdeg = 30,
                        verbose = TRUE) {
@@ -779,10 +779,10 @@ fitnet.RDS <- function(target.stats,
     #
     # I wish I knew why this was necessary, but it is and I can't seem to fix it.
     #
-    formula <- initialNet ~ nodemix("disease", base = c(1, 3))
+    formula <- initialNet ~ nodemix("disease", levels2 = c(1, 3))
     #
-    formula <- ergm::ergm.update.formula(formula, initialNet ~ .)
-    dform <- ergm::ergm.update.formula(formula,
+    formula <- statnet.common::nonsimp_update.formula(formula, initialNet ~ .)
+    dform <- statnet.common::nonsimp_update.formula(formula,
                                        as.formula(
                                          paste('. ~ . + degree(0:', maxdeg + 2, ',by="disease")', sep = "")
                                        ))
@@ -809,7 +809,7 @@ fitnet.RDS <- function(target.stats,
         )
       return(fit)
     }
-    obs <- ergm::summary.formula(formula)
+    obs <- ergm::summary_formula(formula)
     obs.prev <- obs + 1
     obs.prev2 <- obs.prev + 1
     if (verbose) {
@@ -820,19 +820,19 @@ fitnet.RDS <- function(target.stats,
       ))
       cat(
         sprintf(
-          "ergm::summary.formula(initialNet~nodemix('disease'))= %f\n",
-          ergm::summary.formula(initialNet ~ nodemix("disease", base =
+          "ergm::summary_formula(initialNet~nodemix('disease'))= %f\n",
+          ergm::summary_formula(initialNet ~ nodemix("disease", levels2 =
                                                        c(1, 3)))
         )
       )
     }
-    while ((obs != obs.prev2) &
+    while (isTRUE(all.equal(obs, obs.prev2)) &
            (srun < SAN.maxit) &
            (sum((obs - target.stats) ^ 2, na.rm = TRUE) > 5)) {
       dd <-
-        ergm::summary.formula(as.formula(
+        ergm::summary_formula(as.formula(
           paste(
-            'initialNet ~ nodemix("disease", base = c(1, 3)) + degree(0:',
+            'initialNet ~ nodemix("disease", levels2 = c(1, 3)) + degree(0:',
             maxdeg + 2,
             ',by="disease")',
             sep = ""
@@ -840,14 +840,11 @@ fitnet.RDS <- function(target.stats,
         ))
       dd[1] <- target.stats
       initialNet <- ergm::san(
-        dform,
+        object=dform,
         target.stats = dd,
-        init = c(theta0, dd[-1] - dd[-1]),
         control = ergm::control.san(
-          coef = dd - dd,
-          SAN.init.maxedges = ergm::summary.formula(initialNet ~ edges) +
-            100,
-          SAN.burnin = SAN.burnin,
+          SAN.init.maxedges = ergm::summary_formula(initialNet ~ edges) + 100,
+          SAN.nsteps = SAN.nsteps,
           parallel = 0
         ),
         verbose = verbose,
@@ -857,15 +854,15 @@ fitnet.RDS <- function(target.stats,
       if (verbose) {
         cat(
           sprintf(
-            "ergm::summary.formula(initialNet~nodemix('disease'))= %f\n",
-            ergm::summary.formula(initialNet ~ nodemix("disease", base =
+            "ergm::summary_formula(initialNet~nodemix('disease'))= %f\n",
+            ergm::summary_formula(initialNet ~ nodemix("disease", levels2 =
                                                          c(1, 3)))
           )
         )
       }
       obs.prev2 <- obs.prev
       obs.prev <- obs
-      obs <- ergm::summary.formula(formula)
+      obs <- ergm::summary_formula(formula)
       obs[is.na(obs)] <- 0
       srun <- srun + 1
       if (verbose) {
@@ -1266,7 +1263,7 @@ network.differential.activity <-
     gv <- match(gv, u)
     y <- network::set.vertex.attribute(y, group.variable, paste(gv))
     mm <- sprintf("y~nodefactor('%s',base=0)", group.variable)
-    mm <- summary(as.formula(mm)) / table(paste(gv))
+    mm <- ergm::summary_formula(as.formula(mm)) / table(paste(gv))
     da <- mm[2] / mm[1]
     da[is.infinite(da) | table(paste(gv))[1] == 0] <- NA
     names(da) <- "differential activity"
@@ -1412,13 +1409,13 @@ network.homophily <- function(net,
   gv <- network::get.vertex.attribute(net, group.variable)
   net <-
     network::set.vertex.attribute(net, group.variable, paste(gv))
-  mf <- ergm::summary.formula(as.formula(sprintf(
+  mf <- ergm::summary_formula(as.formula(sprintf(
     "net~nodefactor('%s',base=0)", group.variable
   )))
   mm = sprintf("net~nodemix('%s')", group.variable)
   mm <- diag(mf)
   mm[col(mm) >= row(mm)] <-
-    ergm::summary.formula(as.formula(sprintf("net~nodemix('%s')", group.variable)))
+    ergm::summary_formula(as.formula(sprintf("net~nodemix('%s')", group.variable)))
   mt = mm + t(mm)
   mm = mm + t(mm) - diag(diag(mm))
   ff <- apply(mt, 1, sum)

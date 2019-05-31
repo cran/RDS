@@ -8,7 +8,7 @@ MA.estimates(rds.data, trait.variable, seed.selection = "degree",
   number.of.seeds = NULL, number.of.coupons = NULL,
   number.of.iterations = 3, N = NULL, M1 = 25, M2 = 20, seed = 1,
   initial.sampling.probabilities = NULL, MPLE.samplesize = 50000,
-  SAN.maxit = 5, SAN.burnin = 2e+05, sim.interval = 10000,
+  SAN.maxit = 5, SAN.nsteps = 2^19, sim.interval = 10000,
   number.of.cross.ties = NULL, max.degree = NULL, parallel = 1,
   parallel.type = snow::getClusterOption("type"), full.output = FALSE,
   verbose = TRUE)
@@ -60,8 +60,7 @@ The default is almost always sufficient.}
 
 \item{SAN.maxit}{A ceiling on the number of simulated annealing iterations.}
 
-\item{SAN.burnin}{Burnin used by SAN to center the mean statistics of the
-network used for the MPLE computation.}
+\item{SAN.nsteps}{Number of MCMC proposals for all the annealing runs combined.}
 
 \item{sim.interval}{Number of MCMC steps between each of the M1 sampled
 networks per iteration.}
@@ -145,6 +144,31 @@ data(faux)
 MA.estimates(rds.data=faux,trait.variable='X')
 }
 
+}
+\references{
+Gile, Krista J. 2011 Improved Inference for
+Respondent-Driven Sampling Data with Application to HIV Prevalence
+Estimation, Journal of the American Statistical Association, 106,
+135-146.
+
+Gile, Krista J., Handcock, Mark S., 2010. Respondent-driven Sampling:
+An Assessment of Current Methodology, Sociological Methodology, 40,
+285-327.
+
+%Gile, Krista J., Handcock, Mark S., 2011 Network Model-Assisted
+%Inference from Respondent-Driven Sampling Data, ArXiv Preprint.
+
+%%Neely, W. W., 2009. \emph{Bayesian methods for data from respondent driven
+%sampling}. Dissertation in-progress, Department of Statistics, University of
+%Wisconsin, Madison.
+
+%Salganik, M., Heckathorn, D. D., 2004. Sampling and estimation in
+%hidden populations using respondent-driven sampling. Sociological
+%Methodology 34, 193-239.
+
+%Volz, E., Heckathorn, D., 2008. Probability based estimation theory
+%for Respondent Driven Sampling. The Journal of Official Statistics 24 (1),
+%79-97.
 }
 \seealso{
 \itemize{

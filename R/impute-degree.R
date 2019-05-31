@@ -19,7 +19,7 @@
 #' impute.degree(rds.data)
 #' impute.degree(rds.data,trait.variable="X")
 #' impute.degree(rds.data,trait.variable="X",method="quantile")
-#' @export
+#' @export impute.degree
 impute.degree <- function(rds.data, trait.variable=NULL, N=NULL, method=c("mean", "quantile"), 
                           quantile=0.50, recruitment.lower.bound=TRUE, round.degree=TRUE){
   assert.valid.rds.data.frame(rds.data)

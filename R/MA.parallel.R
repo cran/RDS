@@ -1,3 +1,4 @@
+#' @keywords internal
 beginparallel <- function(parallel = 1,
            type = "MPI",
            seed = NULL,
@@ -22,6 +23,7 @@ beginparallel <- function(parallel = 1,
     return(cl)
   }
 
+#' @keywords internal
 endparallel <- function(cl,
                         type = "MPI",
                         finalize = FALSE,

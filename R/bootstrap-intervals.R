@@ -298,10 +298,12 @@ RDS.bootstrap.intervals.local <- function(rds.data,
     attr(bs, "is.cts") <- is.cts
     #attr(bs, "is.quantile") <- is.quantile
     attr(bs, "mu") <- observed.estimate
-    if(is.cts)
+    if(is.cts){
       bso <- bs
-    else
+      outclasses <- outcome.variable
+    }else{
       bso <- bs[match(names(bs), outclasses)]
+    }
     estimate <-
       cbind(observed.estimate,
             observed.estimate - crit * bso,

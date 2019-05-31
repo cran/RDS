@@ -15,6 +15,6 @@ get.id(x, check.type = TRUE)
 Get the subject id
 }
 \details{
-returns the variable indicated by the 'id' attribute, coersing to
+returns the variable indicated by the 'id' attribute, coercing to
 a character vector
 }

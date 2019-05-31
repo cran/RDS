@@ -29,9 +29,9 @@ rdsdat$m <- c(NA, "t","t","f",NA,NA,NA,NA,NA,NA)
 
 test_that("rds-MA",{
   v <- MA.estimates(rdsdat,trait.variable = "y", N=100,verbose=FALSE,number.of.coupons = 1)
-  expect_true(v$estimate[1] > .31 && v$estimate[1] < .33)
+  expect_true(v$estimate[1] > .26 && v$estimate[1] < .38)
   v <- MA.estimates(rdsdat,trait.variable = "z", N=100,verbose=FALSE,number.of.coupons = 1)
-  expect_true(v$estimate[1] < .02)
+  expect_true(v$estimate[1] < .05)
   expect_warning(v <- MA.estimates(rdsdat,trait.variable = "m", N=100,verbose=FALSE,number.of.coupons = 1))
   expect_true(v$estimate[1] > .8)
 })
@@ -39,7 +39,7 @@ test_that("rds-MA",{
 
 test_that("rds-hcg",{
   est <- RDS.HCG.estimates(rds.data=rdsdat,outcome.variable='x')
-  expect_true(round(est$estimate,2) < 0.05) 
+  expect_true(round(est$estimate,2) < 0.1) 
   est <- RDS.HCG.estimates(rds.data=rdsdat,outcome.variable='y')
   expect_true(round(est$estimate[1],1) <= .4)   
   est <- RDS.HCG.estimates(rds.data=rdsdat,outcome.variable='z')

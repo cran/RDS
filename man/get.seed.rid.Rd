@@ -2,7 +2,7 @@
 % Please edit documentation in R/rds.data.frame.R
 \name{get.seed.rid}
 \alias{get.seed.rid}
-\title{Gets the recruiter id assosiated with the seeds}
+\title{Gets the recruiter id associated with the seeds}
 \usage{
 get.seed.rid(x, check.type = TRUE)
 }
@@ -12,7 +12,7 @@ get.seed.rid(x, check.type = TRUE)
 \item{check.type}{if true, x is required to be of type rds.data.frame}
 }
 \description{
-Gets the recruiter id assosiated with the seeds
+Gets the recruiter id associated with the seeds
 }
 \details{
 All seed nodes must have the same placeholder recruiter id.

@@ -98,7 +98,7 @@ as.rds.data.frame <- function(df,
   if(!is.null(time)){
     tm <- x[[time]]
     if(is.null(tm)){
-      stop("Recruitement time variable not in dataset")
+      stop("Recruitment time variable not in dataset")
     }
     if(is.factor(tm))
       tm <- as.character(tm)
@@ -109,7 +109,7 @@ as.rds.data.frame <- function(df,
     rtime <- tm[r]
     invalid <- which(tm < rtime)
     if(length(invalid)>0)
-      warning(paste("Some subjects recrutied before their recruiter. ids=", paste(xid[invalid],collapse = ","), "...imputing values..."))
+      warning(paste("Some subjects recruited before their recruiter. ids=", paste(xid[invalid],collapse = ","), "...imputing values..."))
     tm[invalid] <- NA
     x[[time]] <- tm
     attr(x,"time") <- time
@@ -126,7 +126,7 @@ as.rds.data.frame <- function(df,
 #' @param x an rds.data.frame object
 #' @param check.type if true, x is required to be of type rds.data.frame
 #' @export
-#' @details returns the variable indicated by the 'id' attribute, coersing to
+#' @details returns the variable indicated by the 'id' attribute, coercing to
 #' a character vector
 get.id <- function(x,check.type=TRUE){
   if(check.type && !is.rds.data.frame(x))
@@ -141,7 +141,7 @@ get.id <- function(x,check.type=TRUE){
 #' @param x an rds.data.frame object
 #' @param check.type if true, x is required to be of type rds.data.frame
 #' @export
-#' @details returns the variable indicated by the 'recruiter.id' attribute, coersing to
+#' @details returns the variable indicated by the 'recruiter.id' attribute, coercing to
 #' a character vector
 get.rid <- function(x,check.type=TRUE){
   if(check.type && !is.rds.data.frame(x))
@@ -152,7 +152,7 @@ get.rid <- function(x,check.type=TRUE){
   as.char(x[[idn]])
 }
 
-#' Gets the recruiter id assosiated with the seeds
+#' Gets the recruiter id associated with the seeds
 #' @param x an rds.data.frame object
 #' @param check.type if true, x is required to be of type rds.data.frame
 #' @export
@@ -239,7 +239,7 @@ has.recruitment.time <- function(x, check.type=TRUE){
 
 #' Does various checks and throws errors if x is not a valid rds.data.frame
 #' @param x an rds.data.frame
-#' @param ... unsued
+#' @param ... unused
 #' @export
 #' @details Throws an informative message if x is malformed.
 assert.valid.rds.data.frame <- function(x,...){
@@ -275,7 +275,7 @@ assert.valid.rds.data.frame <- function(x,...){
     rtime <- time[r]
     invalid <- which(time < rtime)
     if(length(invalid)>0)
-      stop(paste("Some subjects recrutied before their recruiter. ids=", paste(id[invalid],collapse = ",")))
+      stop(paste("Some subjects recruited before their recruiter. ids=", paste(id[invalid],collapse = ",")))
   }
   TRUE
 }

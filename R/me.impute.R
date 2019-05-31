@@ -47,7 +47,7 @@
 #' By default it is the 95th percentile of the self-reported network sizes.
 #' @param verbose logical; if this is \code{TRUE}, the program will print out additional
 #  information about the fitting process.
-#' @export impute.visibility
+#' @export impute.visibility_mle
 #' @examples
 #' \dontrun{
 #' data(fauxmadrona)
@@ -62,7 +62,7 @@
 #' McLaughlin, K.R., M.S. Handcock, and L.G. Johnston, 2015. 
 #' Inference for the visibility distribution for respondent-driven sampling. 
 #' In JSM Proceedings. Alexandria, VA: American Statistical Association. 2259-2267.
-impute.visibility <-function(rds.data,max.coupons=NULL,
+impute.visibility_mle <-function(rds.data,max.coupons=NULL,
                              type.impute = c("distribution","mode","median","mean"),
                              recruit.time=NULL,include.tree=FALSE, unit.scale=NULL, 
                              unit.model = c("cmp","nbinom"),
