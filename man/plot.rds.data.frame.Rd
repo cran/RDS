@@ -4,9 +4,13 @@
 \alias{plot.rds.data.frame}
 \title{Diagnostic plots for the RDS recruitment process}
 \usage{
-\method{plot}{rds.data.frame}(x, plot.type = c("Recruitment tree",
-  "Network size by wave", "Recruits by wave", "Recruits per seed",
-  "Recruits per subject"), stratify.by = NULL, ...)
+\method{plot}{rds.data.frame}(
+  x,
+  plot.type = c("Recruitment tree", "Network size by wave", "Recruits by wave",
+    "Recruits per seed", "Recruits per subject"),
+  stratify.by = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{An rds.data.frame object.}

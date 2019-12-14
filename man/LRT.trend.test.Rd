@@ -3,11 +3,18 @@
 \name{LRT.trend.test}
 \alias{LRT.trend.test}
 \alias{LRT.trend}
+\alias{LRT.trend.null}
 \title{Compute a test of trend in prevalences based on a likelihood-ratio statistic}
 \usage{
-LRT.trend.test(data, variables = colnames(data), null = "monotone",
-  confidence.level = 0.95, number.of.bootstrap.samples = 5000,
-  plot = NULL, seed = 1)
+LRT.trend.test(
+  data,
+  variables = colnames(data),
+  null = "monotone",
+  confidence.level = 0.95,
+  number.of.bootstrap.samples = 5000,
+  plot = NULL,
+  seed = 1
+)
 }
 \arguments{
 \item{data}{A two row matrix or data.frame of prevalence estimates and

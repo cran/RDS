@@ -1,35 +1,32 @@
-#
-#	Args
-#
-#	net: the network object from which to draw a sample
-#   trait.variable: attribute of interest
-#	nnodes: the number of nodes in the network [at least as default]
-#	nsamp0: the number of seeds to be drawn (i.e. the size of the 0th wave of sampling)
-#	[or a vector? this may be the site of some problems?]
-#	fixinitial: a variable that indicates the distribution from which to draw the initial seeds, if the seeds
-#		variable is NULL and the seed.distribution variable is NULL
-#	nsamp:
-#	replace:
-#	coupons:
-#	select:
-#	bias:
-#	rds.samp:
-#	nsims:
-#	attrall: Whether all the information about the sample should be returned [??]
-#	seed.distribution: a variable [what kind?] that indicates the distribution from which to draw the initial seeds
-#	seeds: an array of seeds. Default is NULL, in which case the function draws the seeds from the nodes of the network.
-#	prob.network.recall: simulates the probability that an individual will remember any particular link
-#	verbose
-#
-#	Returns: A list with the following elements
-#	nsample: vector of indices of sampled nodes
-#   wsample: vector of waves of each sampled node
-#   degsample: vector of degrees of sampled nodes
-#   attrsample: vector of attrs of sampled nodes
-#   toattr: vector of numbers of referrals to attrsd nodes
-#   tonoattr: vector of number of referrans to unattrsd
-#   nominators: recruiter of each sample
-#' export
+#' Create RDS samples with given characteristics
+#' 
+#' @param net the network object from which to draw a sample
+#' @param nnodes the number of nodes in the network [at least as default]
+#' @param nsamp0 the number of seeds to be drawn (i.e. the size of the 0th wave of sampling)
+#' @param fixinitial a variable that indicates the distribution from which to draw the initial seeds, if the seeds
+#' variable is NULL and the seed.distribution variable is NULL
+#' @param nsamp number of individuals in each RDS sample
+#' @param replace sampling with replacement
+#' @param coupons number of coupons
+#' @param select not used
+#' @param bias not used
+#' @param rds.samp not used
+#' @param seed.distribution a variable [what kind?] that indicates the distribution from which to draw the initial seeds
+#' @param attrall Whether all the information about the sample should be returned [??]
+#' @param trait.variable attribute of interest
+#' @param nsims number of RDS samples to draw
+#' @param seeds an array of seeds. Default is NULL, in which case the function draws the seeds from the nodes of the network.
+#' @param prob.network.recall simulates the probability that an individual will remember any particular link
+#' @param verbose Print verbose output
+#' @return A list with the following elements:
+#' nsample: vector of indices of sampled nodes
+#' wsample: vector of waves of each sampled node
+#' degsample: vector of degrees of sampled nodes
+#' attrsample: vector of attrs of sampled nodes
+#' toattr: vector of numbers of referrals to attrsd nodes
+#' tonoattr: vector of number of referrans to unattrsd
+#' nominators: recruiter of each sample
+#' @export
 rdssampleC <- function(net,
                        nnodes = network.size(net),
                        nsamp0,

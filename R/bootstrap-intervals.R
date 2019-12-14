@@ -292,6 +292,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
       N = N,
       cont.breaks=cont.breaks,
       to.factor=to.factor,
+      control = control,
       ...
     )
     

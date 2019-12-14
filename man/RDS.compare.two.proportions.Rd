@@ -4,8 +4,14 @@
 \alias{RDS.compare.two.proportions}
 \title{Compares the rates of two variables against one another.}
 \usage{
-RDS.compare.two.proportions(data, variables, confidence.level = 0.95,
-  number.of.bootstrap.samples = 5000, plot = FALSE, seed = 1)
+RDS.compare.two.proportions(
+  data,
+  variables,
+  confidence.level = 0.95,
+  number.of.bootstrap.samples = 5000,
+  plot = FALSE,
+  seed = 1
+)
 }
 \arguments{
 \item{data}{An object of class \code{rds.interval.estimates.list} with attribute \cr

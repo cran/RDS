@@ -4,12 +4,23 @@
 \alias{bootstrap.incidence}
 \title{Calculates incidence and bootstrap confidence intervals for immunoassay data collected with RDS}
 \usage{
-bootstrap.incidence(rds.data, recent.variable, hiv.variable, N = NULL,
-  weight.type = c("Gile's SS", "RDS-I", "RDS-I (DS)", "RDS-II",
-  "Arithmetic Mean", "HCG"), mean.duration = 200, frr = 0.01,
-  post.infection.cutoff = 730, number.of.bootstrap.samples = 1000,
-  se.mean.duration = 0, se.frr = 0, confidence.level = 0.95,
-  verbose = TRUE, ...)
+bootstrap.incidence(
+  rds.data,
+  recent.variable,
+  hiv.variable,
+  N = NULL,
+  weight.type = c("Gile's SS", "RDS-I", "RDS-I (DS)", "RDS-II", "Arithmetic Mean",
+    "HCG"),
+  mean.duration = 200,
+  frr = 0.01,
+  post.infection.cutoff = 730,
+  number.of.bootstrap.samples = 1000,
+  se.mean.duration = 0,
+  se.frr = 0,
+  confidence.level = 0.95,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{rds.data}{an rds.data.frame}

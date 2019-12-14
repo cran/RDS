@@ -4,8 +4,14 @@
 \alias{differential.activity.estimates}
 \title{Differential Activity between groups}
 \usage{
-differential.activity.estimates(rds.data, outcome.variable,
-  weight.type = "Gile's SS", N = NULL, subset = NULL, ...)
+differential.activity.estimates(
+  rds.data,
+  outcome.variable,
+  weight.type = "Gile's SS",
+  N = NULL,
+  subset = NULL,
+  ...
+)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame object}

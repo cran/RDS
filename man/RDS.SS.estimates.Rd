@@ -4,10 +4,18 @@
 \alias{RDS.SS.estimates}
 \title{Gile's SS Estimates}
 \usage{
-RDS.SS.estimates(rds.data, outcome.variable, N = NULL, subset = NULL,
-  number.ss.samples.per.iteration = 500, number.ss.iterations = 5,
-  control = control.rds.estimates(), hajek = TRUE, empir.lik = TRUE,
-  to.factor = FALSE)
+RDS.SS.estimates(
+  rds.data,
+  outcome.variable,
+  N = NULL,
+  subset = NULL,
+  number.ss.samples.per.iteration = 500,
+  number.ss.iterations = 5,
+  control = control.rds.estimates(),
+  hajek = TRUE,
+  empir.lik = TRUE,
+  to.factor = FALSE
+)
 }
 \arguments{
 \item{rds.data}{An \code{rds.data.frame} that indicates recruitment patterns

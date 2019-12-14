@@ -82,10 +82,14 @@ rds.interval.estimate <- function(estimate, outcome.variable,
 
 #' Prints an \code{rds.interval.estimate} object
 #' @param x an \code{rds.interval.estimate} object
+#' @param as.percentage logical. Print the interval estimates
+#' as percentages (as distinct from proportions). 
+#' The default, NULL, means that it will determine if
+#' the variable is discrete or continuous and only print them as percentages if they are discrete.
 #' @param ... unused
 #' @export
 #' @method print rds.interval.estimate
-print.rds.interval.estimate <- function(x, ...) {
+print.rds.interval.estimate <- function(x, as.percentage=NULL, ...) {
   fmt <- function(x,...){
     format(x,...,scientific=FALSE)
   }
@@ -102,14 +106,33 @@ print.rds.interval.estimate <- function(x, ...) {
   colnames(matest) <- c("point", "lower", "upper", "Design Effect", 
                         "s.e.", "n")
   
+  if(is.null(as.percentage)){
+    as.percentage <- attr(x, "bsresult")[["is.cts"]]
+    as.percentage <- if(is.logical(as.percentage) && (as.percentage==FALSE)){
+           as.percentage <- TRUE
+     }else{as.percentage <- FALSE}
+  }
+
+  if(as.percentage){
+    matest[,c(1,2,3,5)] <- 100*matest[,c(1,2,3,5)]
+  }
+
   nsamples <- sum(matest[,ncol(matest)])
   fmatest <- rbind(matest,"")
   fmatest[nrow(fmatest),ncol(fmatest)-1] <- "Total"
-  fmatest[,ncol(fmatest)] <- fmt(c(matest[,ncol(matest)],nsamples), width = 5, digits = 5)
-  fmatest[-nrow(fmatest),  1] <- fmt(matest[,  1], width = 8, digits=4)
-  fmatest[-nrow(fmatest),2:4] <- fmt(matest[,2:4], width = 8, digits=4)
-  fmatest[-nrow(fmatest),  4] <- fmt(matest[,  4], width = 6, digits=3)
-  fmatest[-nrow(fmatest),  5] <- fmt(matest[,  5], width = 8, digits=3)
+  if(as.percentage){
+    fmatest[,ncol(fmatest)] <- fmt(c(matest[,ncol(matest)],nsamples), width = 5, digits = 5)
+    fmatest[-nrow(fmatest),  1] <- fmt(matest[,  1], width = 8, digits=3)
+    fmatest[-nrow(fmatest),2:4] <- fmt(matest[,2:4], width = 8, digits=3)
+    fmatest[-nrow(fmatest),  4] <- fmt(matest[,  4], width = 6, digits=3)
+    fmatest[-nrow(fmatest),  5] <- fmt(matest[,  5], width = 8, digits=3)
+  }else{
+    fmatest[,ncol(fmatest)] <- fmt(c(matest[,ncol(matest)],nsamples), width = 5, digits = 5)
+    fmatest[-nrow(fmatest),  1] <- fmt(matest[,  1], width = 8, digits=4)
+    fmatest[-nrow(fmatest),2:4] <- fmt(matest[,2:4], width = 8, digits=4)
+    fmatest[-nrow(fmatest),  4] <- fmt(matest[,  4], width = 6, digits=3)
+    fmatest[-nrow(fmatest),  5] <- fmt(matest[,  5], width = 8, digits=3)
+  }
   
   clp <- x$conf.level*100
   tmp <- as.data.frame(fmatest,stringsAsFactors=FALSE)
@@ -120,6 +143,9 @@ print.rds.interval.estimate <- function(x, ...) {
     colnames(fmatest) <- c("Point Estimate", paste0(" ",clp,"% Lower\n Bound"), 
                            paste0(" ",clp,"% Upper\n Bound"), "Estimated\n Design Effect", 
                            "Standard Error", "Sample Size")
+    if(as.percentage){
+      colnames(fmatest)[1] <- "Point Estimate (%)"
+    }
     
     get("print_to_html")(fmatest, caption.placement = "top", digits = c(8, 
                                                                         5, 5, 5, 1, 5, 0), caption = paste(x$weight.type, 
@@ -127,6 +153,9 @@ print.rds.interval.estimate <- function(x, ...) {
                                                                                                            switch(((x$csubset=="")|(x$csubset=="NULL"))+1,paste("[",x$csubset,"]",sep=""),NULL)))
   }
   else {
+    if(as.percentage){
+      colnames(tmp)[1] <- "Estimate (%)"
+    }
     cat(paste(c(x$weight.type, "Estimate for", 
                 x$outcome.variable,
                 switch(((x$csubset=="")|(x$csubset=="NULL"))+1,paste("[",x$csubset,"]",sep=""),NULL),"\n")))

@@ -4,10 +4,15 @@
 \alias{print.rds.interval.estimate}
 \title{Prints an \code{rds.interval.estimate} object}
 \usage{
-\method{print}{rds.interval.estimate}(x, ...)
+\method{print}{rds.interval.estimate}(x, as.percentage = NULL, ...)
 }
 \arguments{
 \item{x}{an \code{rds.interval.estimate} object}
+
+\item{as.percentage}{logical. Print the interval estimates
+as percentages (as distinct from proportions). 
+The default, NULL, means that it will determine if
+the variable is discrete or continuous and only print them as percentages if they are discrete.}
 
 \item{...}{unused}
 }

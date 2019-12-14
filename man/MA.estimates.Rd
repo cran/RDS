@@ -4,14 +4,29 @@
 \alias{MA.estimates}
 \title{MA Estimates}
 \usage{
-MA.estimates(rds.data, trait.variable, seed.selection = "degree",
-  number.of.seeds = NULL, number.of.coupons = NULL,
-  number.of.iterations = 3, N = NULL, M1 = 25, M2 = 20, seed = 1,
-  initial.sampling.probabilities = NULL, MPLE.samplesize = 50000,
-  SAN.maxit = 5, SAN.nsteps = 2^19, sim.interval = 10000,
-  number.of.cross.ties = NULL, max.degree = NULL, parallel = 1,
-  parallel.type = snow::getClusterOption("type"), full.output = FALSE,
-  verbose = TRUE)
+MA.estimates(
+  rds.data,
+  trait.variable,
+  seed.selection = "degree",
+  number.of.seeds = NULL,
+  number.of.coupons = NULL,
+  number.of.iterations = 3,
+  N = NULL,
+  M1 = 25,
+  M2 = 20,
+  seed = 1,
+  initial.sampling.probabilities = NULL,
+  MPLE.samplesize = 50000,
+  SAN.maxit = 5,
+  SAN.nsteps = 2^19,
+  sim.interval = 10000,
+  number.of.cross.ties = NULL,
+  max.degree = NULL,
+  parallel = 1,
+  parallel.type = snow::getClusterOption("type"),
+  full.output = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{rds.data}{An \code{rds.data.frame} that indicates recruitment patterns

@@ -4,8 +4,12 @@
 \alias{get.recruitment.time}
 \title{Returns the recruitment time for each subject}
 \usage{
-get.recruitment.time(x, to.numeric = TRUE, wave.fallback = FALSE,
-  check.type = TRUE)
+get.recruitment.time(
+  x,
+  to.numeric = TRUE,
+  wave.fallback = FALSE,
+  check.type = TRUE
+)
 }
 \arguments{
 \item{x}{the rds.data.frame}

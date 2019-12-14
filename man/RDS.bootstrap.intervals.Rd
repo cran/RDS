@@ -4,12 +4,23 @@
 \alias{RDS.bootstrap.intervals}
 \title{RDS Bootstrap Interval Estimates}
 \usage{
-RDS.bootstrap.intervals(rds.data, outcome.variable, weight.type = NULL,
-  uncertainty = NULL, N = NULL, subset = NULL,
-  confidence.level = 0.95, number.of.bootstrap.samples = NULL,
-  fast = TRUE, useC = TRUE, ci.type = "t",
-  control = control.rds.estimates(), to.factor = FALSE,
-  cont.breaks = 3, ...)
+RDS.bootstrap.intervals(
+  rds.data,
+  outcome.variable,
+  weight.type = NULL,
+  uncertainty = NULL,
+  N = NULL,
+  subset = NULL,
+  confidence.level = 0.95,
+  number.of.bootstrap.samples = NULL,
+  fast = TRUE,
+  useC = TRUE,
+  ci.type = "t",
+  control = control.rds.estimates(),
+  to.factor = FALSE,
+  cont.breaks = 3,
+  ...
+)
 }
 \arguments{
 \item{rds.data}{An \code{rds.data.frame} that indicates recruitment patterns

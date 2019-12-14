@@ -4,9 +4,16 @@
 \alias{gile.ss.weights}
 \title{Weights using Giles SS estimator}
 \usage{
-gile.ss.weights(degs, N, number.ss.samples.per.iteration = 500,
-  number.ss.iterations = 5, hajek = TRUE, SS.infinity = 0.04,
-  se = FALSE, ...)
+gile.ss.weights(
+  degs,
+  N,
+  number.ss.samples.per.iteration = 500,
+  number.ss.iterations = 5,
+  hajek = TRUE,
+  SS.infinity = 0.04,
+  se = FALSE,
+  ...
+)
 }
 \arguments{
 \item{degs}{subjects' degrees (i.e. network sizes).}

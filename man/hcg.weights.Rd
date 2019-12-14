@@ -4,8 +4,16 @@
 \alias{hcg.weights}
 \title{homophily configuration graph weights}
 \usage{
-hcg.weights(rds.data, outcome.variable, N = NULL,
-  small.fraction = FALSE, ...)
+hcg.weights(
+  rds.data,
+  outcome.variable,
+  N = NULL,
+  small.fraction = FALSE,
+  reltol = sqrt(.Machine$double.eps),
+  max.optim = 500,
+  theta.start = NULL,
+  ...
+)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame}
@@ -15,6 +23,14 @@ hcg.weights(rds.data, outcome.variable, N = NULL,
 \item{N}{Population size}
 
 \item{small.fraction}{should a small sample fraction be assumed}
+
+\item{reltol}{Relative convergence tolerance for the HCG estimator.  The algorithm stops if
+it is unable to reduce the log-likelihood by a factor of \code{reltol * (abs(log-likelihood) + reltol)}
+at a step. Defaults to \code{sqrt(.Machine$double.eps)}, typically about \code{1e-8}.}
+
+\item{max.optim}{The number of iterations on the likelihood optimization for the HCG estimator.}
+
+\item{theta.start}{The initial value of theta used in the likelihood optimization for the HCG estimator. If NULL, the default, it is the margin of the table of counts for the transitions.}
 
 \item{...}{Unused}
 }

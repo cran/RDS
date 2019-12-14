@@ -1,7 +1,6 @@
-
 HCG.boostrap <- function(rds.data, group.variable, number.of.bootstrap.samples, N, fun=function(x) x, 
                          small.fraction=is.null(N) || nrow(rds.data) / N < 0.05, 
-                         cont.breaks=3, hcg.est=NULL, verbose=TRUE, ...){
+                         cont.breaks=3, hcg.est=NULL, control=control.rds.estimates(), verbose=TRUE, ...){
   
   if(is(rds.data,"rds.data.frame")){
     stopifnot(group.variable %in% names(rds.data))
@@ -42,7 +41,7 @@ HCG.boostrap <- function(rds.data, group.variable, number.of.bootstrap.samples, 
   if(is.cts){
     out <- .cut2(rds[, group.variable], g=cont.breaks)
     
-    #create a map in each outcome group betwen degrees and continuous outcome values
+    #create a map in each outcome group between degrees and continuous outcome values
     deg.out.map <- list()
     for(i in 1:cont.breaks){
       d <- na.omit(degree[as.numeric(out) == i])
@@ -92,6 +91,8 @@ HCG.boostrap <- function(rds.data, group.variable, number.of.bootstrap.samples, 
   
   results <- list()
   for(j in 1:number.of.bootstrap.samples){
+# bs.fn <- function(i, deg.by.group, nlev, n, outNum, seed, yhat, recruiter.ind,small.fraction, theta,edge.end.by.group,
+#                   degree, is.cts,out,deg.out.map,outs,lev,rds,out.na,group.variable, attr(boot.rds,"network.size.variable")
     running.deg.by.group <- deg.by.group
     samp.edge.end.by.group <- rep(0, nlev)
     out.boot <- rep(NA, n)
@@ -155,12 +156,13 @@ HCG.boostrap <- function(rds.data, group.variable, number.of.bootstrap.samples, 
 HCG.bootstrap.se <- function(rds.data, group.variable,
                                   number.of.bootstrap.samples,estimator.name,N=NULL, 
                              small.fraction=is.null(N) || nrow(rds.data) / N < 0.05,
-                             to.factor=FALSE, cont.breaks=3, ...){
-  estimate <- function(boot){
+                             to.factor=FALSE, control=control.rds.estimates(), cont.breaks=3, ...){
+  estimate <- function(boot,theta){
     #if(estimator.name == "HCG"){
     #  hcg.estimate(get.id(boot), get.rid(boot), get.recruitment.time(boot, wave.fallback=TRUE), get.net.size(boot), 
     #               boot[[group.variable]], N, small.fraction=small.fraction)$yhat
     #}else{
+      control$hcg.theta.start <- theta
       RDS.estimates.local(
         rds.data=boot,
         outcome.variable=group.variable,
@@ -169,6 +171,7 @@ HCG.bootstrap.se <- function(rds.data, group.variable,
         N=N,
         to.factor=to.factor,
         cont.breaks=cont.breaks,
+        control=control,
         ...)@estimate
     #}
   }
@@ -176,8 +179,9 @@ HCG.bootstrap.se <- function(rds.data, group.variable,
     rds.data[[group.variable]] <- as.factor(rds.data[[group.variable]])
   }
   
+  control$hcg.reltol <- control$hcg.BS.reltol
   result <- HCG.boostrap(rds.data, group.variable, number.of.bootstrap.samples, N, fun=estimate,
-                         small.fraction=small.fraction, cont.breaks=cont.breaks, ...)
+                         small.fraction=small.fraction, cont.breaks=cont.breaks, control=control, ...)
   result <- do.call(rbind, result)
   
   result <- result[apply(!is.nan(result),1,all), , drop=FALSE]

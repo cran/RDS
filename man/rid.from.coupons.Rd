@@ -4,8 +4,13 @@
 \alias{rid.from.coupons}
 \title{Determines the recruiter.id from recruitment coupon information}
 \usage{
-rid.from.coupons(data, subject.coupon = NULL, coupon.variables,
-  subject.id = NULL, seed.id = "seed")
+rid.from.coupons(
+  data,
+  subject.coupon = NULL,
+  coupon.variables,
+  subject.id = NULL,
+  seed.id = "seed"
+)
 }
 \arguments{
 \item{data}{a data.frame}

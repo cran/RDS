@@ -4,9 +4,13 @@
 \alias{print.summary.svyglm.RDS}
 \title{Summarizing Generalized Linear Model Fits with Odds Ratios}
 \usage{
-\method{print}{summary.svyglm.RDS}(x, digits = max(3, getOption("digits")
-  - 3), symbolic.cor = x$symbolic.cor,
-  signif.stars = getOption("show.signif.stars"), ...)
+\method{print}{summary.svyglm.RDS}(
+  x,
+  digits = max(3, getOption("digits") - 3),
+  symbolic.cor = x$symbolic.cor,
+  signif.stars = getOption("show.signif.stars"),
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class \code{"summary.svyglm.RDS"}, usually, a result of a

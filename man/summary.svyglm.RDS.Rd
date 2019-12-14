@@ -4,8 +4,7 @@
 \alias{summary.svyglm.RDS}
 \title{Summarizing Generalized Linear Model Fits with Odds Ratios for Survey Data}
 \usage{
-\method{summary}{svyglm.RDS}(object, correlation = FALSE,
-  df.resid = NULL, odds = TRUE, ...)
+\method{summary}{svyglm.RDS}(object, correlation = FALSE, df.resid = NULL, odds = TRUE, ...)
 }
 \arguments{
 \item{object}{an object of class \code{"svyglm"}, usually, a result of a call

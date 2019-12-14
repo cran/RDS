@@ -4,9 +4,16 @@
 \alias{bootstrap.contingency.test}
 \title{Performs a bootstrap test of independance between two categorical variables}
 \usage{
-bootstrap.contingency.test(rds.data, row.var, col.var,
-  number.of.bootstrap.samples = 1000, weight.type = c("HCG", "RDS-II",
-  "Arithmetic Mean"), table.only = FALSE, verbose = TRUE, ...)
+bootstrap.contingency.test(
+  rds.data,
+  row.var,
+  col.var,
+  number.of.bootstrap.samples = 1000,
+  weight.type = c("HCG", "RDS-II", "Arithmetic Mean"),
+  table.only = FALSE,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{rds.data}{an rds.data.frame}

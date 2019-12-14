@@ -5,10 +5,18 @@
 \title{This function computes an estimate of the population homophily and the recruitment homophily based on 
 a categorical variable.}
 \usage{
-homophily.estimates(rds.data, outcome.variable, weight.type = NULL,
-  uncertainty = NULL, recruitment = FALSE, N = NULL,
-  to.group0.variable = NULL, to.group1.variable = NULL,
-  number.ss.samples.per.iteration = NULL, confidence.level = 0.95)
+homophily.estimates(
+  rds.data,
+  outcome.variable,
+  weight.type = NULL,
+  uncertainty = NULL,
+  recruitment = FALSE,
+  N = NULL,
+  to.group0.variable = NULL,
+  to.group1.variable = NULL,
+  number.ss.samples.per.iteration = NULL,
+  confidence.level = 0.95
+)
 }
 \arguments{
 \item{rds.data}{An \code{rds.data.frame} that indicates recruitment patterns by a pair of attributes named ``id'' and ``recruiter.id''.}
@@ -89,7 +97,7 @@ names(fauxmadrona)
 if(require(network)){
 	a=as.sociomatrix(fauxmadrona.network)
 	deg <- apply(a,1,sum)
-	dis <- fauxmadrona.network \\\%v\\\% "disease"
+	dis <- fauxmadrona.network \\%v\\% "disease"
 	deg1 <- apply(a[dis==1,],1,sum)
 	deg0 <- apply(a[dis==0,],1,sum)
 	# differential activity

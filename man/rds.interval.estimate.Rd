@@ -4,8 +4,16 @@
 \alias{rds.interval.estimate}
 \title{An object of class rds.interval.estimate}
 \usage{
-rds.interval.estimate(estimate, outcome.variable, weight.type, uncertainty,
-  weights, N = NULL, conf.level = 0.95, csubset = "")
+rds.interval.estimate(
+  estimate,
+  outcome.variable,
+  weight.type,
+  uncertainty,
+  weights,
+  N = NULL,
+  conf.level = 0.95,
+  csubset = ""
+)
 }
 \arguments{
 \item{estimate}{The numerical point estimate of proportion of the

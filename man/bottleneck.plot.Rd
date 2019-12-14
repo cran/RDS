@@ -4,8 +4,14 @@
 \alias{bottleneck.plot}
 \title{Bottleneck Plot}
 \usage{
-bottleneck.plot(rds.data, outcome.variable, est.func = RDS.II.estimates,
-  as.factor = FALSE, n.eval.points = 25, ...)
+bottleneck.plot(
+  rds.data,
+  outcome.variable,
+  est.func = RDS.II.estimates,
+  as.factor = FALSE,
+  n.eval.points = 25,
+  ...
+)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame.}

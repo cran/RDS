@@ -4,8 +4,14 @@
 \alias{RDS.II.estimates}
 \title{RDS-II Estimates}
 \usage{
-RDS.II.estimates(rds.data, outcome.variable, N = NULL, subset = NULL,
-  empir.lik = TRUE, to.factor = FALSE)
+RDS.II.estimates(
+  rds.data,
+  outcome.variable,
+  N = NULL,
+  subset = NULL,
+  empir.lik = TRUE,
+  to.factor = FALSE
+)
 }
 \arguments{
 \item{rds.data}{An \code{rds.data.frame} that indicates recruitment patterns

@@ -25,6 +25,13 @@ utils::globalVariables(c(".control.rds.estimates"))
 #' @param number.of.bootstrap.samples The number of bootstrap samples to take
 #' in estimating the uncertainty of the estimator. If \code{NULL} it defaults
 #' to the number necessary to compute the standard error to accuracy 0.001.
+#' @param hcg.reltol Relative convergence tolerance for the HCG estimator.  The algorithm stops if
+#' it is unable to reduce the log-likelihood by a factor of \code{reltol * (abs(log-likelihood) + reltol)}
+#' at a step. Defaults to \code{sqrt(.Machine$double.eps)}, typically about \code{1e-8}.
+#' @param hcg.BS.reltol Relative convergence tolerance for the bootstrap of the HCG estimator. 
+#' It has the same interpretation as \code{hcg.reltol} except it is applied to each bootstrap sample.
+#' It is typically the same or larger than \code{hcg.reltol}.
+#' @param hcg.max.optim The number of iterations on the likelihood optimization for the HCG estimator.
 #' @param seed Seed value (integer) for the random number generator.  See
 #' \code{\link[base]{set.seed}}
 #' @return A list with arguments as components.
@@ -47,6 +54,9 @@ control.rds.estimates <- function(confidence.level = 0.95,
                                   discrete.cutoff = 0.8,
                                   useC = TRUE,
                                   number.of.bootstrap.samples = NULL,
+                                  hcg.reltol=sqrt(.Machine$double.eps),
+                                  hcg.BS.reltol=100000*sqrt(.Machine$double.eps),
+                                  hcg.max.optim=500,
                                   seed = NULL) {
   formal.args <- formals(sys.function())
   if (!exists(".control.rds.estimates")) {
@@ -74,10 +84,19 @@ control.rds.estimates <- function(confidence.level = 0.95,
       control[["number.of.bootstrap.samples"]] <-
         number.of.bootstrap.samples
     }
+    if (!missing(hcg.reltol)) {
+      control[["hcg.reltol"]] <- hcg.reltol
+    }
+    if (!missing(hcg.BS.reltol)) {
+      control[["hcg.BS.reltol"]] <- hcg.BS.reltol
+    }
+    if (!missing(hcg.max.optim)) {
+      control[["hcg.max.optim"]] <- hcg.max.optim
+    }
     if (!missing(seed)) {
       control[["seed"]] <- seed
     }
   }
   
-  set.control.class()
+  RDS::set.control.class("control.rds.estimates")
 }

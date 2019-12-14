@@ -155,7 +155,7 @@ bootstrap.contingency.test <- function(rds.data,
 	  result
   }
   
-  stat <- chi.squared.func(rds, TRUE)
+  stat <- chi.squared.func(rds, with.names=TRUE)
   tbl <- attr(stat,"table")
   attr(stat,"table") <- NULL
   if(table.only){

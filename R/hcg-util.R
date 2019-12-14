@@ -1,5 +1,6 @@
 
-hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fraction=FALSE, tol=.00005, max.iter=50){
+hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fraction=FALSE, tol=.00005, max.iter=50, 
+                         reltol=sqrt(.Machine$double.eps), BS.reltol=sqrt(.Machine$double.eps), max.optim=500, theta.start=NULL){
   rds <- data.frame(subject, recruiter, time, degree, out)
   rds <- rds[order(rds$time),]
   rInd <- match(rds$recruiter, rds$subject)
@@ -133,7 +134,11 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
          theta=theta))
   }
   t <- t + 1
-  theta <- prop.table(t,1)
+  if(is.null(theta.start)){
+    theta <- prop.table(t,1)
+  }else{
+    theta <- theta.start
+  }
   dbar <- tapply(dg[!seed & outNotMiss],out[!seed & outNotMiss],function(x) length(x) / sum(1/x))
   if(anyNA(dbar)){
     dbar[is.na(dbar)] <- sum(length(dg)) / sum(1/dg, na.rm=TRUE)
@@ -157,20 +162,20 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
       dbar[is.na(dbar)] <- sum(length(dg)) / sum(1/dg, na.rm=TRUE)
     }
     dbar <- pmax(dbar, totSampDeg / (yhat*N))
-    #browser()
+#   browser()
     tflat <- flattenTheta(theta)
-    tr <- try(opt <- optim(tflat,llik))
+    tr <- try(opt <- optim(par=tflat,fn=llik,control=list(reltol=reltol,maxit=max.optim)))
     if(inherits(tr,"try-error") || opt$convergence != 0){
-      tr <- try(opt <- optim(tflat,llik,method="BFGS"))
+      tr <- try(opt <- optim(par=tflat,fn=llik,method="BFGS",control=list(reltol=reltol,maxit=max.optim)))
       if(inherits(tr,"try-error") || opt$convergence != 0){
         warning("Optimization failed to converge, trying coordinate descent.")
         #browser()
         for(j in 1:nlev){
           inds <- ((i-1)*(nlev-1)+1):(i*(nlev-1))
-          opt <- optim(tflat[inds],function(x){
+          opt <- optim(par=tflat[inds],fn=function(x){
             tflat[inds] <- x
             llik(tflat)
-          })
+          }, control=list(reltol=reltol,maxit=max.optim))
           tflat[inds] <- opt$par
         }
       }
@@ -182,6 +187,7 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
       break
     yhatLast <- yhat
   }
+#print(sprintf("Used %d of %d iterations.",i,max.iter))
   weights <- rep(0,length(out))
   for(i in 1:nlev){
     w <- wts[[i]] / sum(wts[[i]])

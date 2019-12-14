@@ -70,7 +70,8 @@ compute.weights <- function(rds.data,
                     `RDS-I (DS)` = rds.I.weights(rds.data,N=N,smoothed=TRUE,...),
                     `RDS-II` = vh.weights(degs = deg, N=N),
                     `Arithmetic Mean` = rep(ifelse(is.null(N),1,N)/n, n),
-                    `HCG` = hcg.weights(rds.data, N = N, ...),
+                    `HCG` = hcg.weights(rds.data, N = N,
+                      reltol=control$hcg.reltol, max.optim=control$hcg.max.optim, theta.start=control$hcg.theta.start,...),
                     `Gile's SS` = gile.ss.weights(degs = deg, N = N, SS.infinity=control$SS.infinity, ...)
   )
   se <- substitute(subset)
@@ -226,13 +227,18 @@ gile.ss.weights<-function(degs,N,number.ss.samples.per.iteration=500,number.ss.i
 #' @param outcome.variable The variable used to base the weights on.
 #' @param N Population size
 #' @param small.fraction should a small sample fraction be assumed
+#' @param reltol Relative convergence tolerance for the HCG estimator.  The algorithm stops if
+#' it is unable to reduce the log-likelihood by a factor of \code{reltol * (abs(log-likelihood) + reltol)}
+#' at a step. Defaults to \code{sqrt(.Machine$double.eps)}, typically about \code{1e-8}.
+#' @param max.optim The number of iterations on the likelihood optimization for the HCG estimator.
+#' @param theta.start The initial value of theta used in the likelihood optimization for the HCG estimator. If NULL, the default, it is the margin of the table of counts for the transitions.
 #' @param ... Unused
 #' @examples 
 #' data(fauxtime)
 #' hcg.weights(fauxtime,"var1",N=3000)
 #' fauxtime$NETWORK[c(1,100,40,82,77)] <- NA
 #' @export
-hcg.weights<-function(rds.data, outcome.variable, N=NULL,small.fraction=FALSE,...){
+hcg.weights<-function(rds.data, outcome.variable, N=NULL,small.fraction=FALSE, reltol=sqrt(.Machine$double.eps), max.optim=500, theta.start=NULL,...){
   if(is.null(rds.data[[outcome.variable]])){
     stop(paste("RDS-I outcome.variable", outcome.variable,"not present in data"))
   }
@@ -255,7 +261,7 @@ hcg.weights<-function(rds.data, outcome.variable, N=NULL,small.fraction=FALSE,..
   }
   
   hcg.result <- hcg.estimate(get.id(rds.data), get.rid(rds.data), time, 
-                      degree, out, N, small.fraction)
+                      degree, out, N, small.fraction, reltol=reltol, max.optim=max.optim, theta.start=theta.start)
 
   weights <- hcg.result$weights
   if(!is.null(N)){

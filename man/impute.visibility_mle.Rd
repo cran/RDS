@@ -6,11 +6,21 @@
  number of their (direct) recruits. It uses the time the person was recruited as a factor in 
  determining the number of recruits they produce.}
 \usage{
-impute.visibility_mle(rds.data, max.coupons = NULL,
+impute.visibility_mle(
+  rds.data,
+  max.coupons = NULL,
   type.impute = c("distribution", "mode", "median", "mean"),
-  recruit.time = NULL, include.tree = FALSE, unit.scale = NULL,
-  unit.model = c("cmp", "nbinom"), optimism = FALSE, guess = NULL,
-  reflect.time = TRUE, maxit = 100, K = NULL, verbose = TRUE)
+  recruit.time = NULL,
+  include.tree = FALSE,
+  unit.scale = NULL,
+  unit.model = c("cmp", "nbinom"),
+  optimism = FALSE,
+  guess = NULL,
+  reflect.time = TRUE,
+  maxit = 100,
+  K = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame}

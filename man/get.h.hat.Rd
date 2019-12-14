@@ -5,8 +5,11 @@
 \title{Get Horvitz-Thompson estimator assuming inclusion probability proportional
 to the inverse of network.var (i.e. degree).}
 \usage{
-get.h.hat(rds.data, group.variable, network.var = attr(rds.data,
-  "network.size"))
+get.h.hat(
+  rds.data,
+  group.variable,
+  network.var = attr(rds.data, "network.size")
+)
 }
 \arguments{
 \item{rds.data}{An rds.data.from}

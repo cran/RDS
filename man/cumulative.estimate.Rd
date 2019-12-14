@@ -4,8 +4,13 @@
 \alias{cumulative.estimate}
 \title{Calculates estimates at each successive wave of the sampling process}
 \usage{
-cumulative.estimate(rds.data, outcome.variable,
-  est.func = RDS.II.estimates, n.eval.points = 25, ...)
+cumulative.estimate(
+  rds.data,
+  outcome.variable,
+  est.func = RDS.II.estimates,
+  n.eval.points = 25,
+  ...
+)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame}

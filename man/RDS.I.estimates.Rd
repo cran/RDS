@@ -4,9 +4,16 @@
 \alias{RDS.I.estimates}
 \title{Compute RDS-I Estimates}
 \usage{
-RDS.I.estimates(rds.data, outcome.variable, N = NULL, subset = NULL,
-  smoothed = FALSE, empir.lik = TRUE, to.factor = FALSE,
-  cont.breaks = 3)
+RDS.I.estimates(
+  rds.data,
+  outcome.variable,
+  N = NULL,
+  subset = NULL,
+  smoothed = FALSE,
+  empir.lik = TRUE,
+  to.factor = FALSE,
+  cont.breaks = 3
+)
 }
 \arguments{
 \item{rds.data}{An \code{rds.data.frame} that indicates recruitment patterns

@@ -4,8 +4,7 @@
 \alias{rds.I.weights}
 \title{RDS-I weights}
 \usage{
-rds.I.weights(rds.data, outcome.variable, N = NULL, smoothed = FALSE,
-  ...)
+rds.I.weights(rds.data, outcome.variable, N = NULL, smoothed = FALSE, ...)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame}

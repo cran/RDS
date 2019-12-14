@@ -4,11 +4,20 @@
 \alias{reingold.tilford.plot}
 \title{Plots the recruitment network using the Reingold Tilford algorithm.}
 \usage{
-reingold.tilford.plot(x, vertex.color = NULL,
-  vertex.color.scale = hue_pal(), vertex.size = 2,
-  vertex.size.range = c(1, 5), edge.arrow.size = 0,
-  vertex.label.cex = 0.2, vertex.frame.color = NA,
-  vertex.label = get.id(x), show.legend = TRUE, plot = TRUE, ...)
+reingold.tilford.plot(
+  x,
+  vertex.color = NULL,
+  vertex.color.scale = hue_pal(),
+  vertex.size = 2,
+  vertex.size.range = c(1, 5),
+  edge.arrow.size = 0,
+  vertex.label.cex = 0.2,
+  vertex.frame.color = NA,
+  vertex.label = get.id(x),
+  show.legend = TRUE,
+  plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{An rds.data.frame}

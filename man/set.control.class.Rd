@@ -4,13 +4,13 @@
 \alias{set.control.class}
 \title{Set the class of the control list}
 \usage{
-set.control.class(myname = {     sc <- sys.calls()    
-  as.character(sc[[length(sc) - 1]][[1]]) }, control = get("control", pos
-  = parent.frame()))
+set.control.class(
+  myname = as.character(RDS::ult(sys.calls(), 2)[[1L]]),
+  control = get("control", pos = parent.frame())
+)
 }
 \arguments{
-\item{myname}{Name of the class to set. Defaults to the name of the calling
-function.}
+\item{myname}{Name of the class to set.}
 
 \item{control}{Control list. Defaults to the \code{control} variable in the
 calling function.}

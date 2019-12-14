@@ -4,8 +4,14 @@
 \alias{convergence.plot}
 \title{Convergence Plots}
 \usage{
-convergence.plot(rds.data, outcome.variable, est.func = RDS.II.estimates,
-  as.factor = FALSE, n.eval.points = 25, ...)
+convergence.plot(
+  rds.data,
+  outcome.variable,
+  est.func = RDS.II.estimates,
+  as.factor = FALSE,
+  n.eval.points = 25,
+  ...
+)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame.}
