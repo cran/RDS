@@ -107,7 +107,7 @@ print.rds.interval.estimate <- function(x, as.percentage=NULL, ...) {
                         "s.e.", "n")
   
   if(is.null(as.percentage)){
-    as.percentage <- attr(x, "bsresult")[["is.cts"]]
+    as.percentage <- attr(x, "is.cts")
     as.percentage <- if(is.logical(as.percentage) && (as.percentage==FALSE)){
            as.percentage <- TRUE
      }else{as.percentage <- FALSE}

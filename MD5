@@ -1,4 +1,4 @@
-cc7b318ab4c7b65aa5c75e0b7141a9ae *DESCRIPTION
+974fabd3d07410098f100c799d9a5f51 *DESCRIPTION
 5ceb9f7bac63a2ec738edd311431fadd *NAMESPACE
 13cbf8fe25a32ee2abbbde1a28c01dba *R/LRT.trend.R
 e62c4cde88ecae286fba038400f58d3d *R/MA.estimates.R
@@ -7,7 +7,7 @@ e62c4cde88ecae286fba038400f58d3d *R/MA.estimates.R
 2d8a2912cce386b77b50ac07e37e5cfa *R/MA.util.R
 2c8dffae3945120ee0aaf7c6f2c8125b *R/RDS.compare.proportions.R
 80bca0af28393156fa9f770ef43e574b *R/bgk_kde.R
-26d53059fe15fb2a68804b2e04832357 *R/bootstrap-intervals.R
+af8ca0af67e999a49f6d17398a8a1dc0 *R/bootstrap-intervals.R
 8280ef82b99465aab29f434de88c0576 *R/bootstrap.contingency.test.R
 d5070e7df2aaf2f37fa18b3756de5f33 *R/control.rds.estimates.R
 b6e4d7ea1620749c96fcd6660a98b843 *R/control.utilities.R
@@ -35,7 +35,7 @@ b2971d57a5a16cda6c35e4e4d29103dd *R/rds-doc.R
 ee30c2425f12ad703a13d80604e97940 *R/rds.data.frame-utils.R
 ff961fb20ea453cec5734546dc5a7c66 *R/rds.data.frame.R
 c77b3723a6f4afc8979fffbd051cab4b *R/rds.estimates.local.R
-a9df6bda74ddf1d463490029298bc426 *R/rds.interval.estimate.R
+223971499afe42c5c08bf0807a545bc2 *R/rds.interval.estimate.R
 6d7e763e9aef0e3d0164bf75a4a5e05e *R/rds.weighted.estimate-class.R
 81098027e8e1592bc2d6ac4c2efe66e8 *R/robust.inverse.R
 e68bf1060c60d5aecba007739e62a10b *R/salganik-bootstrap.R
@@ -48,7 +48,7 @@ b2115e08d579afdc2d459a0f40cf53e0 *R/treeboot.R
 2f42742bf65847a64a428704d0a9f719 *data/fauxmadrona.RData
 acc01b6915f4d637f3fc325dd8805b62 *data/fauxsycamore.RData
 bf6fbb71a3d7c0cba2a0cf412eff3c68 *data/fauxtime.RData
-335687b2b051969048854c1f57621fe5 *inst/CITATION
+b0716b576d5eaf2d0005da7de8b924bd *inst/CITATION
 fc301884bf80307ae9f56baa8f9e2eab *inst/extdata/nyjazz.csv
 fc8a86b8fb5302ab7ba697b9f9cdf601 *inst/extdata/nyjazz.rdsat
 f7212afb0dd2f2dd64e4935f0c8e46ed *man/LRT.trend.test.Rd

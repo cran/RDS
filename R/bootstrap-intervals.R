@@ -615,8 +615,10 @@ RDS.bootstrap.intervals.local <- function(rds.data,
     estimate <- as.numeric(estimate)
     names(estimate)[1:g] <- outclasses[1:g]
   }
-  if (exists("bs"))
+  if (exists("bs")){
     attr(estimate, "bsresult") <- attr(bs, "bsresult")
+    attr(estimate, "is.cts") <- attr(bs, "is.cts")
+  }
   
   result <- rds.interval.estimate(
     estimate,
@@ -629,6 +631,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
     conf.level = confidence.level
   )
   attr(result, "bsresult") <- attr(estimate, "bsresult")
+  attr(result, "is.cts") <- attr(estimate, "is.cts")
   
   return(result)
 }
