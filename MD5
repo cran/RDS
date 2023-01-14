@@ -1,10 +1,10 @@
-974fabd3d07410098f100c799d9a5f51 *DESCRIPTION
+115e75a4dae75e83f3bbe552dff70fc1 *DESCRIPTION
 5ceb9f7bac63a2ec738edd311431fadd *NAMESPACE
 13cbf8fe25a32ee2abbbde1a28c01dba *R/LRT.trend.R
 e62c4cde88ecae286fba038400f58d3d *R/MA.estimates.R
 9cde6d81570abba074a1bb1ca77293be *R/MA.parallel.R
 06be015a836517d7e8d3015cf93b566a *R/MA.sampling-c.R
-2d8a2912cce386b77b50ac07e37e5cfa *R/MA.util.R
+148e6389cda779c962f9de7d971c9da6 *R/MA.util.R
 2c8dffae3945120ee0aaf7c6f2c8125b *R/RDS.compare.proportions.R
 80bca0af28393156fa9f770ef43e574b *R/bgk_kde.R
 af8ca0af67e999a49f6d17398a8a1dc0 *R/bootstrap-intervals.R
@@ -31,7 +31,7 @@ a96f5ec3dc85688bb86e50a49be5f96f *R/rds-HCG.R
 7dc53201e62a95a8da185c63f6dd4263 *R/rds-II.R
 b2971d57a5a16cda6c35e4e4d29103dd *R/rds-doc.R
 99800ac3751a771e18fb534908cc9f04 *R/rds-ss.R
-1002d0a40c191d0d06d7e0c88f1928a3 *R/rds.data.frame-plots.R
+4ac19e692a4c7df4f2730f9ac1ea3899 *R/rds.data.frame-plots.R
 ee30c2425f12ad703a13d80604e97940 *R/rds.data.frame-utils.R
 ff961fb20ea453cec5734546dc5a7c66 *R/rds.data.frame.R
 c77b3723a6f4afc8979fffbd051cab4b *R/rds.estimates.local.R
@@ -42,13 +42,13 @@ e68bf1060c60d5aecba007739e62a10b *R/salganik-bootstrap.R
 8c829349ca01ff5cb717f45232dbc64c *R/summary.odds.R
 b2115e08d579afdc2d459a0f40cf53e0 *R/treeboot.R
 658e63d7cbc83b145e3a0fb85a190375 *R/utils.R
-34c7a33750f6034d497a20ed8eb6e1c5 *R/weights.R
+7dba5b3b8a78d60daa5f6e8114375763 *R/weights.R
 2c6596475e4c242aef6760f1dbb1b225 *R/wtd.stats.R
 7cf84ef7690bb7a8e0a2b5e5b34d2c30 *data/faux.RData
 2f42742bf65847a64a428704d0a9f719 *data/fauxmadrona.RData
 acc01b6915f4d637f3fc325dd8805b62 *data/fauxsycamore.RData
 bf6fbb71a3d7c0cba2a0cf412eff3c68 *data/fauxtime.RData
-b0716b576d5eaf2d0005da7de8b924bd *inst/CITATION
+b31bbbf6419603f12aadc9704e2c1049 *inst/CITATION
 fc301884bf80307ae9f56baa8f9e2eab *inst/extdata/nyjazz.csv
 fc8a86b8fb5302ab7ba697b9f9cdf601 *inst/extdata/nyjazz.rdsat
 f7212afb0dd2f2dd64e4935f0c8e46ed *man/LRT.trend.test.Rd
@@ -125,7 +125,7 @@ a1677bc00ecee80aa187548a7b3e1aef *man/write.graphviz.Rd
 e38d9b6830483628fbafa543ba920aa2 *man/write.netdraw.Rd
 ca7e6f60dd8965f10a339dce5688171f *man/write.rdsat.Rd
 b2c202f2d370742a4230986e3c5ad847 *man/write.rdsobj.Rd
-4ab7e75444d0e4ea19a30fd4ba0f8f07 *src/RDSSample.c
+feae9699dcfa317267c729f501651235 *src/RDSSample.c
 64d9a2c6db049039b42052054e8cd32e *src/RDSSample.h
 7cc7c463e65eb3934823c668fa8ea58b *src/R_init.c
 5bbcaf78ee574cfebee1b0a1eb06ef79 *src/bsC.c

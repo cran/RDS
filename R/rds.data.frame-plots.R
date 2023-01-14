@@ -158,20 +158,39 @@ reingold.tilford.plot <-function(x,
     color.var <- factor(x[[vertex.color]])
     levs <- levels(color.var)
     ncol <- length(levs)
-    cols <- vertex.color.scale(ncol)
-    color <- cols[as.integer(color.var)]
-  }else
-    color <- NULL
+    if(is.function(vertex.color.scale)){
+      cols <- vertex.color.scale(ncol)
+      color <- cols[as.integer(color.var)]
+    }else{
+      cols <- vertex.color.scale
+      color <- as.integer(color.var)
+      color <- rep(cols,length(color))[color]
+    }
+  }else{
+    if(missing(vertex.color.scale)){
+      cols <- igraph::categorical_pal(1)
+    }else{
+      cols <- vertex.color.scale
+    }
+    color <- rep(cols[1],nrow(x))
+    color.name <- ""
+    show.legend <- FALSE
+  }
   
   if(is.character(vertex.size)){
     vertex.size.name <- vertex.size
+    if(is.factor(x[[vertex.size]])){
+      vertex.levels <- levels(x[[vertex.size]])
+    }else{
+      vertex.levels <- as.numeric(x[[vertex.size]])
+    }
     vertex.size <- as.numeric(x[[vertex.size]])
   }else{
     vertex.size.name <- deparse(substitute(vertex.size))
   }
   if(length(vertex.size)>1){
     vrange <- range(vertex.size,na.rm=TRUE)
-    vertex.size <-vertex.size + vrange[1]
+    vertex.size <- vertex.size - vrange[1]/2
     vertex.size <- vertex.size / vrange[2]
     vertex.size <- vertex.size*(vertex.size.range[2]-vertex.size.range[1]) + vertex.size.range[1]
     vertex.size[is.na(vertex.size)] <- 0
@@ -331,18 +350,19 @@ reingold.tilford.plot <-function(x,
                           vertex.color=vcol,
                           vertex.label=vlab,
                           ...)	
-      if(show.legend)
+      if(show.legend){
         graphics::legend("bottomleft",legend=levs,col=cols,pch=16,
                          title=color.name,horiz=TRUE,box.col=NA)
+      }
     }
     if(length(vsize)>1 && show.legend){
-      levs <- paste(vrange," ")
+      levs <- paste(vertex.levels," ")
       s <- vertex.size.range
       lg <- graphics::legend("bottomright",legend=levs,pt.cex=c(0,0),pch=16,
                              title=vertex.size.name,horiz=TRUE,box.col=NA, x.intersp = 2)		
       t <- lg$text
       s <- s/200
-      graphics::symbols(x=t$x-.075,y=t$y,circles=s,add=TRUE,inches=FALSE,bg="SkyBlue2")
+      graphics::symbols(x=t$x-.075,y=t$y,circles=s,add=TRUE,inches=FALSE,bg=cols)
     }
   }
   invisible(t)

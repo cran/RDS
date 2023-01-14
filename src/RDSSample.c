@@ -207,11 +207,11 @@ void initializeSample(RDSEdge * candidateEdges, int *recruitedSample, int *recru
     //log event
     if((*logResults) == 1){
       if(*fileIndex == *maxLog){
-        sprintf(logfile[(*maxLog)-1], "STOP");
+        snprintf(logfile[(*maxLog)-1], 58, "STOP");
         (*logResults) = 0;
       } else {
         event++;
-        sprintf(logfile[*fileIndex], "%d 0 %d seed 0 0", event, seeds[i]);
+        snprintf(logfile[*fileIndex], 58,  "%d 0 %d seed 0 0", event, seeds[i]);
         (*fileIndex)++;
       }
     }
@@ -333,11 +333,11 @@ void Reseed(RDSEdge *candidateEdges, double *seeddist, int *recruitedSample, int
   //log event
   if((*logResults) == 1){
     if(*fileIndex == *maxLog){
-      sprintf(logfile[(*maxLog)-1], "STOP");
+      snprintf(logfile[(*maxLog)-1], 58, "STOP");
       (*logResults) = 0;
     } else {
       event++;
-      sprintf(logfile[*fileIndex], "%d %f %d reseed 0 0", event, time, new_node); 
+      snprintf(logfile[*fileIndex], 58, "%d %f %d reseed 0 0", event, time, new_node); 
       (*fileIndex)++;
     }
   }
@@ -422,13 +422,13 @@ void CompleteSurvey(Network *nwp, RDSEdge *candidateEdges, int *recruitedSample,
   //log event
   if((*logResults) == 1){
     if(*fileIndex == *maxLog){
-      sprintf(logfile[(*maxLog)-1], "STOP");
+      snprintf(logfile[(*maxLog)-1], 58, "STOP");
       (*logResults) = 0;
     } else {
       event++;
-      sprintf(logfile[*fileIndex], "%d %f %d interview 0 0", event, now, recruiter);
-      //sprintf(logfile[*fileIndex], "whatever");
-      // sprintf(logfile[*fileIndex], "%d", event);
+      snprintf(logfile[*fileIndex], 58, "%d %f %d interview 0 0", event, now, recruiter);
+      //snprintf(logfile[*fileIndex], 58, "whatever");
+      // snprintf(logfile[*fileIndex], 58, "%d", event);
       (*fileIndex)++;
     }
   }
@@ -436,11 +436,11 @@ void CompleteSurvey(Network *nwp, RDSEdge *candidateEdges, int *recruitedSample,
   if(n_R_nbrs == 0){
     if((*logResults) == 1){
       if(*fileIndex == *maxLog){
-        sprintf(logfile[(*maxLog)-1], "STOP");
+        snprintf(logfile[(*maxLog)-1], 58, "STOP");
         (*logResults) = 0;
       } else {
         event++;
-        sprintf(logfile[*fileIndex], "%d %f %d no_neighbors 0 0", event, now, recruiter);
+        snprintf(logfile[*fileIndex], 58, "%d %f %d no_neighbors 0 0", event, now, recruiter);
         (*fileIndex)++;
       }
     }
@@ -507,13 +507,13 @@ void RecruitOne(RDSEdge *candidateEdges, int *sampleSize, int *candidateIndex, i
   //  if(Coupons[recruiter - 1] == 0) {
   if(Used[recruited - 1] == 1) {
     //event++;
-    //sprintf(logfile[*fileIndex], "%d %f %d no_coupons %d 0", event, now, recruiter, recruited);
+    //snprintf(logfile[*fileIndex], 58, "%d %f %d no_coupons %d 0", event, now, recruiter, recruited);
     //(*fileIndex)++;
     recruited = 0;
   }
   if(Coupons[recruiter - 1] == 0){
     //event++;
-    //sprintf(logfile[*fileIndex], "%d %f %d node_used %d 0", event, now, recruiter, recruited);
+    //snprintf(logfile[*fileIndex], 58, "%d %f %d node_used %d 0", event, now, recruiter, recruited);
     //(*fileIndex)++;
     recruited = 0;
   }
@@ -528,11 +528,11 @@ void RecruitOne(RDSEdge *candidateEdges, int *sampleSize, int *candidateIndex, i
     //log event
     if((*logResults) == 1){
       if(*fileIndex == *maxLog){
-        sprintf(logfile[(*maxLog)-1], "STOP");
+        snprintf(logfile[(*maxLog)-1], 58, "STOP");
         (*logResults) = 0;
         //            } else {
         //                event++;
-        //                sprintf(logfile[*fileIndex], "%d %f %d exchange %d %d", event, now, recruiter, recruited, Coupons[recruiter - 1]);
+        //                snprintf(logfile[*fileIndex], 58, "%d %f %d exchange %d %d", event, now, recruiter, recruited, Coupons[recruiter - 1]);
         //                (*fileIndex)++;
       }
     }

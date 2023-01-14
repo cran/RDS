@@ -19,7 +19,7 @@ bibentry(bibtype="Manual",
          textVersion = 
          paste("Mark S. Handcock, Ian E. Fellows, Krista J. Gile (2012) ", 
                paste(meta$Package,": ", meta$Title, sep=""),
-               ", Version ", meta$Version, ". Project home page at http://wiki.stat.ucla.edu/hpmrg/",
+               ", Version ", meta$Version, ". Project home page at https://hpmrg.org",
                ",", " URL https://CRAN.R-project.org/package=RDS.",
                sep="")
          )

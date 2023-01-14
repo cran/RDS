@@ -1278,7 +1278,7 @@ as.edgelist.compressed.rds <-
            attrname = NULL,
            force.bipartite = FALSE) {
     #In case of lists, process independently
-    if (is.list(x) && (!("network" %in% class(x))))
+    if (is.list(x) && (!(is(x,"network"))))
       return(
         lapply(
           x,
@@ -1288,7 +1288,7 @@ as.edgelist.compressed.rds <-
         )
       )
     #Begin with network objects
-    if ("network" %in% class(x)) {
+    if (is(x,"network")) {
       out <- network::as.matrix.network.edgelist(x, attrname = attrname)
       if (NCOL(out) == 2)
         #If needed, add edge values
@@ -1374,7 +1374,7 @@ as.network.uncompressed.rds <- function(x,
                                         na.rm = FALSE,
                                         edge.check = FALSE) {
   #Initialize the network object
-  if ("network" %in% class(x)) {
+  if (is(x,"network")) {
     return(x)
   }
   if (is.null(attr(x, "vnames"))) {

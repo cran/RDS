@@ -76,7 +76,7 @@ compute.weights <- function(rds.data,
   )
   se <- substitute(subset)
   if(!is.null(se)){
-    if(class(se)!="name") subset <- eval(subset, rds.data, parent.frame())
+    if(is(se,"name")) subset <- eval(subset, rds.data, parent.frame())
     subset[is.na(subset)] <- FALSE
     a <- weights[subset]
     if(weight.type=="Gile's SS"){
