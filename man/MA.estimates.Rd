@@ -23,7 +23,7 @@ MA.estimates(
   number.of.cross.ties = NULL,
   max.degree = NULL,
   parallel = 1,
-  parallel.type = snow::getClusterOption("type"),
+  parallel.type = "PSOCK",
   full.output = FALSE,
   verbose = TRUE
 )
@@ -91,7 +91,7 @@ trait (i.e. \code{ties.not.to.trait.variable}).}
 \item{parallel}{Number of processors to use in the computations. The default
 is 1, that is no parallel processing.}
 
-\item{parallel.type}{The type of cluster to start. e.g. 'sock', 'MPI', etc.}
+\item{parallel.type}{The type of cluster to start. e.g. 'PSOCK', 'MPI', etc.}
 
 \item{full.output}{More verbose output}
 

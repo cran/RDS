@@ -211,7 +211,7 @@ getsamples.RDS.C <- function(sim,
            coupons,
            dummydis,
            parallel = 0,
-           parallel.type = "MPI",
+           parallel.type = "PSOCK",
            seed = 1,
            seed.indices = NULL,
            verbose = TRUE) {

@@ -46,7 +46,7 @@
 #' trait (i.e. \code{ties.not.to.trait.variable}).
 #' @param parallel Number of processors to use in the computations. The default
 #' is 1, that is no parallel processing.
-#' @param parallel.type The type of cluster to start. e.g. 'sock', 'MPI', etc.
+#' @param parallel.type The type of cluster to start. e.g. 'PSOCK', 'MPI', etc.
 #' @param max.degree Impose ceiling on degree size.
 #' @param verbose Should verbose diagnostics be printed while the algorithm is
 #' running.
@@ -155,7 +155,7 @@ MA.estimates <- function(rds.data,
                          number.of.cross.ties = NULL,
                          max.degree = NULL,
                          parallel = 1,
-                         parallel.type = snow::getClusterOption("type"),
+                         parallel.type = "PSOCK",
                          full.output = FALSE,
                          verbose = TRUE)
 {

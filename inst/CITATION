@@ -1,16 +1,20 @@
 #cat("'RDS Analyst' is a suite of packages for the statistical modeling of network data.\n")
 #cat('Please read the license using license.statnet()\n')
 
-citHeader("If you are using 'RDS' for research that will be published, we request that you acknowledge this with the following citation:")
+citHeader(paste0("If you are using", sQuote("RDS"), "for research that will be published, we request that you acknowledge this by citing the following.\n",
+    "For BibTeX format, use toBibtex(citation(\"", "RDS", "\"))."))
 
 # auts <- eval(parse(text=meta$`Authors@R`))
 # auts <- auts[sapply(auts, function(aut) "aut" %in% aut$role)]
 
 bibentry(bibtype="Manual",
-         title = paste(meta$Package,": ", meta$Title, sep=""),
-         author = personList(as.person("Mark S. Handcock"),
-                             as.person("Ian E. Fellows"),
-                             as.person("Krista J. Gile")),
+  title = paste(meta$Package,": ", meta$Title, sep=""),
+  author = structure(list(
+   list(given = "Mark S.", family = "Handcock", role = c("aut", "cre"), email = "handcock@stat.ucla.edu",
+        comment = c(ORCID = "0000-0002-9985-2785")),
+   list(given = "Ian E.", family = "Fellows", role = "aut", email = "gile@math.umass.edu", comment = NULL),
+   list(given = "Krista J.", family = "Gile", role = "aut", email = "ian@fellstat.com", comment = NULL)
+       ), class="person"),
          year         = substr(meta$Date,1,4),
          note         = paste("R package version ", meta$Version, sep=""),
          address      = "Los Angeles, CA",

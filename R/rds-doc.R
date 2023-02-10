@@ -1,8 +1,12 @@
-
-#' This package provides functionality for carrying out estimation
-#'     with data collected using Respondent-Driven Sampling. This includes
-#'     Heckathorn's RDS-I and RDS-II estimators as well as Gile's Sequential
-#'     Sampler estimator.
+#' Respondent-Driven Sampling
+#'
+#' Provides functionality for carrying out estimation
+#'  with data collected using Respondent-Driven Sampling. This includes
+#'  Heckathorn's RDS-I and RDS-II estimators as well as Gile's Sequential
+#'  Sampling estimator. The package is part of the "RDS Analyst" suite of
+#'  packages for the analysis of respondent-driven sampling data.
+#'  See Gile and Handcock (2010) <doi:10.1111/j.1467-9531.2010.01223.x> and
+#'  Gile and Handcock (2015) <doi:10.1111/rssa.12091>.
 #' @import ggplot2 reshape2 gridExtra methods network ergm parallel
 #' @importFrom stats chisq.test na.omit rbinom as.formula constrOptim approx coef fft median optim pnorm printCoefmat pt qnorm qt quantile resid residuals rnorm runif sd spline symnum uniroot var vcov xtabs
 #' @importFrom graphics abline axis hist legend lines par plot points segments strwidth symbols
@@ -11,6 +15,7 @@
 #' @importFrom igraph degree.sequence.game
 #' @docType package
 #' @name RDS
+#' @author Mark S. Handcock <handcock@stat.ucla.edu>
 #' @useDynLib RDS, .registration = TRUE
 NULL
 

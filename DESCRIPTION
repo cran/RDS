@@ -1,8 +1,8 @@
 Package: RDS
 Type: Package
 Title: Respondent-Driven Sampling
-Version: 0.9-5
-Date: 2023-01-14
+Version: 0.9-6
+Date: 2023-02-08
 Authors@R: c(person("Mark S.", "Handcock", role=c("aut","cre"), email="handcock@stat.ucla.edu"),
 	person("Krista J.", "Gile", role=c("aut"), email="gile@math.umass.edu"),
 	person("Ian E.", "Fellows", role=c("aut"), email="ian@fellstat.com"),
@@ -22,12 +22,12 @@ Suggests: survey, testthat
 Imports: gridExtra, ggplot2 (>= 2.0.0), network, igraph, reshape2,
         scales, anytime, Hmisc, statnet.common, ergm, isotone
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.2.3
 NeedsCompilation: yes
-Packaged: 2023-01-14 20:26:41 UTC; handcock
+Packaged: 2023-02-10 16:07:21 UTC; handcock
 Author: Mark S. Handcock [aut, cre],
   Krista J. Gile [aut],
   Ian E. Fellows [aut],
   W. Whipple Neely [aut]
 Repository: CRAN
-Date/Publication: 2023-01-14 21:20:07 UTC
+Date/Publication: 2023-02-10 18:20:02 UTC

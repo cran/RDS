@@ -5,7 +5,9 @@
 \alias{fauxsycamore}
 \alias{fauxsycamore.network}
 \title{A Simulated RDS Data Set with extreme seed dependency}
-\format{An rds.data.frame plus the original network as a network object}
+\format{
+An rds.data.frame plus the original network as a network object
+}
 \description{
 This is a faux set used to demonstrate RDS functions and analysis.  The
 population had N=715 nodes.  In this case, the sample size is 500 so that

@@ -4,7 +4,9 @@
 \name{faux}
 \alias{faux}
 \title{A Simulated RDS Data Set}
-\format{An rds.data.frame object}
+\format{
+An rds.data.frame object
+}
 \description{
 This is a faux set used to demonstrate RDS functions and analysis.
 It is used is some simple examples and has categorical variables "X", "Y" and "Z".

@@ -1,6 +1,6 @@
 #' @keywords internal
 beginparallel <- function(parallel = 1,
-           type = "MPI",
+           type = "PSOCK",
            seed = NULL,
            packagenames = c("RDS"),
            verbose = TRUE) {
@@ -25,7 +25,7 @@ beginparallel <- function(parallel = 1,
 
 #' @keywords internal
 endparallel <- function(cl,
-                        type = "MPI",
+                        type = "PSOCK",
                         finalize = FALSE,
                         verbose = TRUE) {
   parallel::stopCluster(cl)

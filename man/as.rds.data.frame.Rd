@@ -7,16 +7,28 @@
 as.rds.data.frame(
   df,
   id = if (is.null(attr(df, "id"))) "id" else attr(df, "id"),
-  recruiter.id = if (is.null(attr(df, "recruiter.id"))) {     "recruiter.id" } else
+  recruiter.id = if (is.null(attr(df, "recruiter.id"))) {
+     "recruiter.id"
+ } else
     attr(df, "recruiter.id"),
-  network.size = if (is.null(attr(df, "network.size.variable"))) {    
-    "network.size.variable" } else attr(df, "network.size.variable"),
-  population.size = if (all(is.na(get.population.size(df, FALSE)))) {     NULL } else
+  network.size = if (is.null(attr(df, "network.size.variable"))) {
+    
+    "network.size.variable"
+ } else attr(df, "network.size.variable"),
+  population.size = if (all(is.na(get.population.size(df, FALSE)))) {
+     NULL
+ } else
     get.population.size(df, FALSE),
-  max.coupons = if (is.null(attr(df, "max.coupons"))) {     NULL } else attr(df,
+  max.coupons = if (is.null(attr(df, "max.coupons"))) {
+     NULL
+ } else attr(df,
     "max.coupons"),
-  notes = if (is.null(attr(df, "notes"))) {     NULL } else attr(df, "time"),
-  time = if (is.null(attr(df, "time"))) {     NULL } else attr(df, "time"),
+  notes = if (is.null(attr(df, "notes"))) {
+     NULL
+ } else attr(df, "time"),
+  time = if (is.null(attr(df, "time"))) {
+     NULL
+ } else attr(df, "time"),
   check.valid = TRUE
 )
 }

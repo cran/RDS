@@ -5,7 +5,9 @@
 \alias{fauxmadrona}
 \alias{fauxmadrona.network}
 \title{A Simulated RDS Data Set with no seed dependency}
-\format{An \code{rds.data.frame}}
+\format{
+An \code{rds.data.frame}
+}
 \source{
 The original network is included as
 \code{fauxmadrona.network} as a \code{network} object.  \cr The data set
