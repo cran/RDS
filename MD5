@@ -1,10 +1,11 @@
-ba58f807d1c02479a7d89d8c26d85a11 *DESCRIPTION
+68a77c370918107c2df710f19aff23cd *DESCRIPTION
 5ceb9f7bac63a2ec738edd311431fadd *NAMESPACE
 13cbf8fe25a32ee2abbbde1a28c01dba *R/LRT.trend.R
 badecc53b237beebf8960f58b54cb05b *R/MA.estimates.R
 a756e0f43edd34e066db5c78d9f77557 *R/MA.parallel.R
-1d8ef6eaa1444abaf71008f8f20847e7 *R/MA.sampling-c.R
-5883465bac9768ddac32736fdbf74e5b *R/MA.util.R
+385a521db97d65f7d896031d6eef0462 *R/MA.sampling-c.R
+1584ff911732cca36678c0ad4ac41e16 *R/MA.util.R
+280d8b1d6efd7826a8853aaaffd4599c *R/RDS-package.R
 2c8dffae3945120ee0aaf7c6f2c8125b *R/RDS.compare.proportions.R
 80bca0af28393156fa9f770ef43e574b *R/bgk_kde.R
 af8ca0af67e999a49f6d17398a8a1dc0 *R/bootstrap-intervals.R
@@ -29,7 +30,7 @@ d196f56e38c497747f12862cac93842c *R/homophily.R
 a96f5ec3dc85688bb86e50a49be5f96f *R/rds-HCG.R
 721b577ef96426a239a72aaebdbb45f8 *R/rds-I.R
 7dc53201e62a95a8da185c63f6dd4263 *R/rds-II.R
-f57260d3522030ec62ffff56a8b9d895 *R/rds-doc.R
+2ea7fed8617b863cc78fae30889e9248 *R/rds-doc.R
 99800ac3751a771e18fb534908cc9f04 *R/rds-ss.R
 4ac19e692a4c7df4f2730f9ac1ea3899 *R/rds.data.frame-plots.R
 ee30c2425f12ad703a13d80604e97940 *R/rds.data.frame-utils.R
@@ -43,7 +44,8 @@ e68bf1060c60d5aecba007739e62a10b *R/salganik-bootstrap.R
 b2115e08d579afdc2d459a0f40cf53e0 *R/treeboot.R
 658e63d7cbc83b145e3a0fb85a190375 *R/utils.R
 7dba5b3b8a78d60daa5f6e8114375763 *R/weights.R
-2c6596475e4c242aef6760f1dbb1b225 *R/wtd.stats.R
+1236f6701ea313250d30620567114c36 *R/wtd.stats.R
+7080893e02c49cd296d4424b9be55069 *build/partial.rdb
 7cf84ef7690bb7a8e0a2b5e5b34d2c30 *data/faux.RData
 2f42742bf65847a64a428704d0a9f719 *data/fauxmadrona.RData
 acc01b6915f4d637f3fc325dd8805b62 *data/fauxsycamore.RData
@@ -54,10 +56,10 @@ fc8a86b8fb5302ab7ba697b9f9cdf601 *inst/extdata/nyjazz.rdsat
 f7212afb0dd2f2dd64e4935f0c8e46ed *man/LRT.trend.test.Rd
 c78345febb73c287b37f9461ed9ab001 *man/LRT.value.trend.Rd
 dd1852f62808e23c0e6e890f2dd80093 *man/MA.estimates.Rd
+4f9182fb9df84edc7d06eb9bbb61f831 *man/RDS-package.Rd
 4494368f6b3493ef169eea0129fcdb75 *man/RDS.HCG.estimates.Rd
 1f2f70a041777dc950a3ab7f9928ebc6 *man/RDS.I.estimates.Rd
 c4327565e176acc77fc8d0c4d35403c1 *man/RDS.II.estimates.Rd
-1a3036ced337441f5b15c0b7e01e128b *man/RDS.Rd
 e1228fd88d03096375fc15da003f38da *man/RDS.SS.estimates.Rd
 65f0174e5edbd66a5155d5d7dbe8ee20 *man/RDS.bootstrap.intervals.Rd
 f718b8f0e9a0d785a2d457aa81590687 *man/RDS.compare.proportions.Rd

@@ -1,12 +1,12 @@
 Package: RDS
 Type: Package
 Title: Respondent-Driven Sampling
-Version: 0.9-6
-Date: 2023-02-08
-Authors@R: c(person("Mark S.", "Handcock", role=c("aut","cre"), email="handcock@stat.ucla.edu"),
+Version: 0.9-7
+Date: 2023-08-19
+Authors@R: c(person("Mark S.", "Handcock", role=c("aut","cre"), email="handcock@stat.ucla.edu", comment=c(ORCID="0000-0002-9985-2785")),
 	person("Krista J.", "Gile", role=c("aut"), email="gile@math.umass.edu"),
 	person("Ian E.", "Fellows", role=c("aut"), email="ian@fellstat.com"),
-	person("W. Whipple", "Neely", role=c("aut"), email="wwneely@stat.washington.edu"))
+	person("W. Whipple", "Neely", role=c("ctb"), email="wwneely@stat.washington.edu"))
 Maintainer: Mark S. Handcock <handcock@stat.ucla.edu>
 Description: Provides functionality for carrying out estimation
     with data collected using Respondent-Driven Sampling. This includes
@@ -24,10 +24,10 @@ Imports: gridExtra, ggplot2 (>= 2.0.0), network, igraph, reshape2,
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 NeedsCompilation: yes
-Packaged: 2023-02-10 16:07:21 UTC; handcock
-Author: Mark S. Handcock [aut, cre],
+Packaged: 2023-08-20 03:18:17 UTC; handcock
+Author: Mark S. Handcock [aut, cre] (<https://orcid.org/0000-0002-9985-2785>),
   Krista J. Gile [aut],
   Ian E. Fellows [aut],
-  W. Whipple Neely [aut]
+  W. Whipple Neely [ctb]
 Repository: CRAN
-Date/Publication: 2023-02-10 18:20:02 UTC
+Date/Publication: 2023-08-20 05:22:31 UTC

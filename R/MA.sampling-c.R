@@ -45,7 +45,7 @@ rdssampleC <- function(net,
                        prob.network.recall = 1,
                        verbose = TRUE) {
   #via Coupons to the C function and minor changes there.
-  net <- as.network.uncompressed.rds(net)
+  net <- as_network_uncompressed_rds(net)
   attrs <- network::get.vertex.attribute(net, trait.variable)
   if (is.null(attrs) || all(is.na(attrs))) {
     stop(sprintf("No variable called %s appears in the data.", trait.variable))
@@ -246,8 +246,8 @@ getsamples.RDS.C <- function(sim,
     )
     sfn <- function(j, data) {
       # SAN Next for sim version
-      #         net<-as.network.uncompressed.rds(data$sim[[j]])
-      net <- as.network.uncompressed.rds(data$sim[[1]])
+      #         net<-as_network_uncompressed_rds(data$sim[[j]])
+      net <- as_network_uncompressed_rds(data$sim[[1]])
       deg <- sapply(net$iel, length) + sapply(net$oel, length)
       deg[deg > data$maxdeg] <- data$maxdeg
       disease <- network::get.vertex.attribute(net, "disease")

@@ -113,7 +113,7 @@ wtd.table <- function(x, weights=NULL,
     if(!length(names(weights)))
       stop('program logic error')
     
-    x <- all.is.numeric(names(weights))
+    x <- all_is_numeric(names(weights))
     
     names(weights) <- NULL
     return(list(x=x, sum.of.weights=weights))
@@ -125,7 +125,7 @@ wtd.table <- function(x, weights=NULL,
        else xx, 
        sum.of.weights=weights)
 }
-all.is.numeric <- function(x, extras=c('.','NA'))
+all_is_numeric <- function(x, extras=c('.','NA'))
 {
   x <- sub('[[:space:]]+$', '', x)
   x <- sub('^[[:space:]]+', '', x)

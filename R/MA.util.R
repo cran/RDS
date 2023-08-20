@@ -620,12 +620,12 @@ oneiteration <- function(sampleTab,
     }
     if (is.null(net)) {
       sfn <- function(i, fit, interval) {
-        as.edgelist.compressed.rds(fit$newnetwork)
+        as_edgelist_compressed_rds(fit$newnetwork)
       }
     } else{
       fit <- net
       sfn <- function(i, fit, interval) {
-        as.edgelist.compressed.rds(fit)
+        as_edgelist_compressed_rds(fit)
       }
     }
     if (F) {
@@ -652,7 +652,7 @@ oneiteration <- function(sampleTab,
         }
         for (j in 1:M1) {
           sim[[j]] <- sfn(j, fit, interval)
-          initialNet = as.network.uncompressed(sim[[j]])
+          initialNet = as_network_uncompressed(sim[[j]])
           if (verbose) {
             cat(
               sprintf(
@@ -720,7 +720,7 @@ oneiteration <- function(sampleTab,
       verbose=verbose
     )
   
-  net <- as.network.uncompressed.rds(sim[[1]])
+  net <- as_network_uncompressed_rds(sim[[1]])
   deg <- sapply(net$iel, length) + sapply(net$oel, length)
   deg[deg > maxdeg] <- maxdeg
   disease <- net %v% "disease"
@@ -1257,7 +1257,7 @@ reedmolloy <- function(deg,
 
 network.differential.activity <-
   function(y, group.variable = "disease") {
-    y <- as.network.uncompressed.rds(y)
+    y <- as_network_uncompressed_rds(y)
     gv <- network::get.vertex.attribute(y, group.variable)
     u <- sort(unique(gv))
     gv <- match(gv, u)
@@ -1273,7 +1273,7 @@ network.differential.activity <-
 #Force the input into edgelist form.  Network size, directedness, and vertex
 #names are stored as attributes, since they cannot otherwise be included
 #A copy of as.edgelist.sna
-as.edgelist.compressed.rds <-
+as_edgelist_compressed_rds <-
   function(x,
            attrname = NULL,
            force.bipartite = FALSE) {
@@ -1282,7 +1282,7 @@ as.edgelist.compressed.rds <-
       return(
         lapply(
           x,
-          as.edgelist.compressed.rds,
+          as_edgelist_compressed_rds,
           attrname = attrname,
           force.bipartite = force.bipartite
         )
@@ -1310,10 +1310,10 @@ as.edgelist.compressed.rds <-
         network::get.network.attribute(x, "bipartite")
       else if (force.bipartite)
         out <-
-        as.edgelist.compressed.rds(out, attrname = attrname, force.bipartite = force.bipartite)
+        as_edgelist_compressed_rds(out, attrname = attrname, force.bipartite = force.bipartite)
     } else{
       warning(
-        "as.edgelist.compressed.rds input must be network, or list thereof.\n Returning the original object.\n"
+        "as_edgelist_compressed_rds input must be network, or list thereof.\n Returning the original object.\n"
       )
       return(x)
     }
@@ -1322,8 +1322,8 @@ as.edgelist.compressed.rds <-
   }
 
 ###############################################################################
-# The <as.network.uncompressed> function is basically the inverse of the above
-# <as.edgelist.compressed> function
+# The <as_network_uncompressed> function is basically the inverse of the above
+# <as_edgelist_compressed> function
 #
 # --PARAMETERS--
 #   x         : a compressed network or a network
@@ -1340,7 +1340,7 @@ as.edgelist.compressed.rds <-
 #   g: the uncompressed version of x
 #
 ###############################################################################
-as.network.uncompressed <- function(x,
+as_network_uncompressed <- function(x,
                                     na.rm = FALSE,
                                     edge.check = FALSE,
                                     ...) {
@@ -1350,7 +1350,7 @@ as.network.uncompressed <- function(x,
   }
   if (is.null(attr(x, "vnames"))) {
     warning(
-      "as.network.uncompressed input must be a compressed network, or a network.\n Returning the original object.\n"
+      "as_network_uncompressed input must be a compressed network, or a network.\n Returning the original object.\n"
     )
     return(x)
   }
@@ -1370,7 +1370,7 @@ as.network.uncompressed <- function(x,
   g
 }
 
-as.network.uncompressed.rds <- function(x,
+as_network_uncompressed_rds <- function(x,
                                         na.rm = FALSE,
                                         edge.check = FALSE) {
   #Initialize the network object
@@ -1379,7 +1379,7 @@ as.network.uncompressed.rds <- function(x,
   }
   if (is.null(attr(x, "vnames"))) {
     warning(
-      "as.network.uncompressed.rds input must be a compressed network, or a network.\n Returning the original object.\n"
+      "as_network_uncompressed_rds input must be a compressed network, or a network.\n Returning the original object.\n"
     )
     return(x)
   }
@@ -1405,7 +1405,7 @@ network.homophily <- function(net,
                               group.variable = "disease",
                               return.finite = TRUE,
                               alpha = FALSE) {
-  net <- as.network.uncompressed.rds(net)
+  net <- as_network_uncompressed_rds(net)
   gv <- network::get.vertex.attribute(net, group.variable)
   net <-
     network::set.vertex.attribute(net, group.variable, paste(gv))
