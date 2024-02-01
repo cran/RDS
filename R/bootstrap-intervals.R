@@ -152,7 +152,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
   }else{
     nsamplesbyoutcome <- length(outcome)
   }
-  g <- length(na.omit(unique(rds.data.nomiss[[outcome.variable]])))
+  g <- length(stats::na.omit(unique(rds.data.nomiss[[outcome.variable]])))
   if (g == 1) {
     warning(paste(outcome.variable, "has only one level. Skipping..."))
     return(invisible(NULL))
@@ -208,7 +208,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
   #
   #  Confidence intervals
   #
-  crit <- qnorm((1 - confidence.level) / 2, lower.tail = FALSE)
+  crit <- stats::qnorm((1 - confidence.level) / 2, lower.tail = FALSE)
   if (uncertainty == "Salganik") {
     bs <- salganik.bootstrap.se(
       rds.data = rds.data.nomiss,
@@ -715,8 +715,14 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 #' Estimation}, \emph{Journal of the American Statistical Association}, 106,
 #' 135-146.
 #'
-#' Gile, Krista J., Handcock, Mark S., 2010 \emph{Respondent-driven Sampling:
-#' An Assessment of Current Methodology}. Sociological Methodology 40, 285-327.
+#' Gile, Krista J., Handcock, Mark S., 2010. Respondent-driven Sampling:
+#' An Assessment of Current Methodology, Sociological Methodology, 40,
+#' 285-327. <doi:10.1111/j.1467-9531.2010.01223.x>
+#'
+#' Gile, Krista J., Beaudry, Isabelle S. and Handcock, Mark S., 2018 
+#' Methods for Inference from Respondent-Driven Sampling Data,
+#' Annual Review of Statistics and Its Application
+#' <doi:10.1146/annurev-statistics-031017-100704>.
 #'
 #' @keywords survey manip
 #' @examples

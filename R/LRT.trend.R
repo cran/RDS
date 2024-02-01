@@ -156,7 +156,7 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
     plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
          ylab="Density",
          xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
-    abline(v=obsL[3],lty=2)
+    graphics::abline(v=obsL[3],lty=2)
     maxl <- stats::quantile(L[,1],0.95)
     gpdf=bgk_kde(L[,1],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,1]))
     maxl <- max(1.1*obsL[1],maxl)
@@ -177,7 +177,7 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
       plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
            ylab="Density",
            xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
-      abline(v=obsL[1],lty=2)
+      graphics::abline(v=obsL[1],lty=2)
     }
     maxl <- stats::quantile(L[,2],0.95)
     gpdf=bgk_kde(L[,2],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,2]))
@@ -199,7 +199,7 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
       plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
            ylab="Density",
            xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
-      abline(v=obsL[2],lty=2)
+      graphics::abline(v=obsL[2],lty=2)
     }
     maxl <- stats::quantile(L[,4],0.95)
     gpdf=bgk_kde(L[,4],n=2^(ceiling(maxl/log(2))),MIN=0,MAX=1.1*max(L[,4]))
@@ -216,7 +216,7 @@ LRT.trend <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.level=
       plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
            ylab="Density",
            xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
-      abline(v=obsL[4],lty=2)
+      graphics::abline(v=obsL[4],lty=2)
     }
   }
   invisible(list(pvalue.increasing=mean(obsL[1] <= L[,1]),
@@ -374,7 +374,7 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
       plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
            ylab="Density",
            xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
-      abline(v=obsL[7],lty=2)
+      graphics::abline(v=obsL[7],lty=2)
     }
     if(var(L[,5]) > 0){
       maxl <- stats::quantile(L[,5],0.95)
@@ -396,7 +396,7 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
       plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
            ylab="Density",
            xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
-      abline(v=obsL[5],lty=2)
+      graphics::abline(v=obsL[5],lty=2)
     }
     if(var(L[,6]) > 0){
       maxl <- stats::quantile(L[,6],0.95)
@@ -418,7 +418,7 @@ LRT.trend.null <- function(x,sigma,number.of.bootstrap.samples=5000,confidence.l
       plot(x=r,y=gpdf,xlim=c(0,maxl), type="l",
            ylab="Density",
            xlab="Likelihood Ratio Statistic",main=mainm,cex.main=1,sub="The vertical line is the observed likelihood ratio statistic")
-      abline(v=obsL[6],lty=2)
+      graphics::abline(v=obsL[6],lty=2)
     }
   }
   invisible(list(pvalue.increasing=mean(obsL[5] <= L[,5]),

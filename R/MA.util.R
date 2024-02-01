@@ -163,7 +163,7 @@ getnetest <- function(dissample,
   #also, initialize transformation of todis and tonodis according to dummy categories
   todistab <- rep(0, length(dummy))
   tonodistab <- rep(0, length(dummy))
-  nonnullindices <- tapply(indices, indices, median)
+  nonnullindices <- tapply(indices, indices, stats::median)
   todistab[nonnullindices] <- tapply(todisall, indices, sum)
   tonodistab[nonnullindices] <- tapply(tonodisall, indices, sum)
   
@@ -286,7 +286,7 @@ getnetest <- function(dissample,
   varestBS <-
     list(
       BSest = finalstuff$bsprev,
-      var = var(finalstuff$bsprev),
+      var = stats::var(finalstuff$bsprev),
       BSmean = finalstuff$bsmean
     )
   
@@ -432,9 +432,9 @@ varBSGHT <- function(Q, dummy, bsdegsamples, bsdissamples) {
     w = 1 / (Qi * Ne)
     e[j] = sum(bsdissamples[j,] * w)
   }
-  list(var = var(e),
+  list(var = stats::var(e),
        BSest = e,
-       median = median(e))
+       median = stats::median(e))
 }
 
 varNBSGHT <-
@@ -478,7 +478,7 @@ varNBSGHT <-
     }
     
     list(
-      var = var(e),
+      var = stats::var(e),
       mse = mean((e - prev) ^ 2),
       bsprev = mean(e),
       prev = prev
@@ -783,7 +783,7 @@ fitnet.RDS <- function(target.stats,
     #
     formula <- statnet.common::nonsimp_update.formula(formula, initialNet ~ .)
     dform <- statnet.common::nonsimp_update.formula(formula,
-                                       as.formula(
+                                       stats::as.formula(
                                          paste('. ~ . + degree(0:', maxdeg + 2, ',by="disease")', sep = "")
                                        ))
     dis <- network::get.vertex.attribute(initialNet, "disease")
@@ -830,7 +830,7 @@ fitnet.RDS <- function(target.stats,
            (srun < SAN.maxit) &
            (sum((obs - target.stats) ^ 2, na.rm = TRUE) > 5)) {
       dd <-
-        ergm::summary_formula(as.formula(
+        ergm::summary_formula(stats::as.formula(
           paste(
             'initialNet ~ nodemix("disease", levels2 = c(1, 3)) + degree(0:',
             maxdeg + 2,
@@ -1263,7 +1263,7 @@ network.differential.activity <-
     gv <- match(gv, u)
     y <- network::set.vertex.attribute(y, group.variable, paste(gv))
     mm <- sprintf("y~nodefactor('%s',base=0)", group.variable)
-    mm <- ergm::summary_formula(as.formula(mm)) / table(paste(gv))
+    mm <- ergm::summary_formula(stats::as.formula(mm)) / table(paste(gv))
     da <- mm[2] / mm[1]
     da[is.infinite(da) | table(paste(gv))[1] == 0] <- NA
     names(da) <- "differential activity"
@@ -1409,13 +1409,13 @@ network.homophily <- function(net,
   gv <- network::get.vertex.attribute(net, group.variable)
   net <-
     network::set.vertex.attribute(net, group.variable, paste(gv))
-  mf <- ergm::summary_formula(as.formula(sprintf(
+  mf <- ergm::summary_formula(stats::as.formula(sprintf(
     "net~nodefactor('%s',base=0)", group.variable
   )))
   mm = sprintf("net~nodemix('%s')", group.variable)
   mm <- diag(mf)
   mm[col(mm) >= row(mm)] <-
-    ergm::summary_formula(as.formula(sprintf("net~nodemix('%s')", group.variable)))
+    ergm::summary_formula(stats::as.formula(sprintf("net~nodemix('%s')", group.variable)))
   mt = mm + t(mm)
   mm = mm + t(mm) - diag(diag(mm))
   ff <- apply(mt, 1, sum)

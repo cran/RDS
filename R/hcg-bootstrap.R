@@ -1,4 +1,4 @@
-HCG.boostrap <- function(rds.data, group.variable, number.of.bootstrap.samples, N, fun=function(x) x, 
+HCG.bootstrap <- function(rds.data, group.variable, number.of.bootstrap.samples, N, fun=function(x) x, 
                          small.fraction=is.null(N) || nrow(rds.data) / N < 0.05, 
                          cont.breaks=3, hcg.est=NULL, control=control.rds.estimates(), verbose=TRUE, ...){
   
@@ -44,8 +44,8 @@ HCG.boostrap <- function(rds.data, group.variable, number.of.bootstrap.samples, 
     #create a map in each outcome group between degrees and continuous outcome values
     deg.out.map <- list()
     for(i in 1:cont.breaks){
-      d <- na.omit(degree[as.numeric(out) == i])
-      o <- na.omit(rds[as.numeric(out) == i, group.variable])
+      d <- stats::na.omit(degree[as.numeric(out) == i])
+      o <- stats::na.omit(rds[as.numeric(out) == i, group.variable])
       lis <- list()
       for(j in seq_along(d)){
         if(length(lis) <= d[j] || is.null(lis[[d[j]]])){
@@ -180,7 +180,7 @@ HCG.bootstrap.se <- function(rds.data, group.variable,
   }
   
   control$hcg.reltol <- control$hcg.BS.reltol
-  result <- HCG.boostrap(rds.data, group.variable, number.of.bootstrap.samples, N, fun=estimate,
+  result <- HCG.bootstrap(rds.data, group.variable, number.of.bootstrap.samples, N, fun=estimate,
                          small.fraction=small.fraction, cont.breaks=cont.breaks, control=control, ...)
   result <- do.call(rbind, result)
   

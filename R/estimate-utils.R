@@ -39,10 +39,10 @@ EL.se.new<-function(weights,outcome,N=NULL, use.second.order=FALSE, homophily=1)
   nas <- nas | is.infinite(weights)|is.infinite(outcome)
   if(use.second.order){
     wi <- weights[!nas]
-    wi[wi > 10*median(wi)] <- 10*median(wi)
+    wi[wi > 10*stats::median(wi)] <- 10*stats::median(wi)
     wij <- outer(weights[!nas],weights[!nas],"*")
     #     wij <- wij * (1+(homophily-1)*outer(outcome[!nas],outcome[!nas],"!="))
-    wij[wij > 10*median(wij)] <- 10*median(wij)
+    wij[wij > 10*stats::median(wij)] <- 10*stats::median(wij)
     #     Compute the EL standard error (if available)
     iLj <-  row(wij) >col(wij)
     iLjn <- row(wij)!=col(wij)

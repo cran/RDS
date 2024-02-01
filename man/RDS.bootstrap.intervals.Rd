@@ -127,8 +127,14 @@ Respondent-Driven Sampling Data with Application to HIV Prevalence
 Estimation}, \emph{Journal of the American Statistical Association}, 106,
 135-146.
 
-Gile, Krista J., Handcock, Mark S., 2010 \emph{Respondent-driven Sampling:
-An Assessment of Current Methodology}. Sociological Methodology 40, 285-327.
+Gile, Krista J., Handcock, Mark S., 2010. Respondent-driven Sampling:
+An Assessment of Current Methodology, Sociological Methodology, 40,
+285-327. <doi:10.1111/j.1467-9531.2010.01223.x>
+
+Gile, Krista J., Beaudry, Isabelle S. and Handcock, Mark S., 2018 
+Methods for Inference from Respondent-Driven Sampling Data,
+Annual Review of Statistics and Its Application
+<doi:10.1146/annurev-statistics-031017-100704>.
 }
 \keyword{manip}
 \keyword{survey}

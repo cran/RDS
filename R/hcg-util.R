@@ -54,7 +54,7 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
       eqFun <- function(par) sum(par)
       ui <- matrix(0,length(ybar),length(ybar))
       diag(ui) <- 1
-      tr <- try(par <- constrOptim((ub+lb)/2, f=opt,grad=grad, ui=ui, ci=lb)$par)
+      tr <- try(par <- stats::constrOptim((ub+lb)/2, f=opt,grad=grad, ui=ui, ci=lb)$par)
       if(inherits(tr,"try-error")){
         warning("Unable to find par value satisfying constraints.")
         print(tr)

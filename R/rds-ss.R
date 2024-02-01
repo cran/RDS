@@ -14,10 +14,10 @@
 #' @param N An estimate of the number of members of the population being
 #' sampled. If \code{NULL} it is read as the \code{population.size.mid} attribute of
 #' the \code{rds.data} frame. If that is missing it defaults to 1000.
-#' @param subset An optional criterion to subset \code{rds.data} by. It is a
-#' character string giving an R expression which, when evaluated, subset the
-#' data. In plain English, it can be something like \code{"seed > 0"} to
-#' exclude seeds. It can be the name of a logical vector of the same length of
+#' @param subset An optional criterion to subset \code{rds.data} by. It is
+#' an R expression which, when evaluated, subset the
+#' data. In plain English, it can be something like \code{subset = seed > 0} to
+#' exclude seeds. It can also be the name of a logical vector of the same length of
 #' the outcome variable where TRUE means include it in the analysis. If
 #' \code{NULL} then no subsetting is done.
 #' @param number.ss.samples.per.iteration The number of samples to take in
@@ -57,10 +57,14 @@
 #' Data with Application to HIV Prevalence Estimation}, \emph{Journal of the
 #' American Statistical Association}, 106, 135-146.
 #' 
-#' Gile, Krista J., Handcock, Mark S., 2010 \emph{Respondent-driven Sampling:
-#' An Assessment of Current Methodology}, \emph{Sociological Methodology}, 40,
-#' 285-327.
-#' 
+#' Gile, Krista J., Handcock, Mark S., 2010. Respondent-driven Sampling:
+#' An Assessment of Current Methodology, Sociological Methodology, 40,
+#' 285-327. <doi:10.1111/j.1467-9531.2010.01223.x>
+#'
+#' Gile, Krista J., Beaudry, Isabelle S. and Handcock, Mark S., 2018 
+#' Methods for Inference from Respondent-Driven Sampling Data,
+#' Annual Review of Statistics and Its Application
+#' <doi:10.1146/annurev-statistics-031017-100704>.
 #' Gile, Krista J., Handcock, Mark S., 2011 \emph{Network Model-Assisted
 #' Inference from Respondent-Driven Sampling Data}, \emph{ArXiv Preprint}.
 #' 

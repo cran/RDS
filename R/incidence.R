@@ -125,11 +125,11 @@ bootstrap.incidence <- function(rds.data, recent.variable, hiv.variable,  N=NULL
     
     #bootstrap these estimates
     if(boot.frr)
-      frr.boot <- max(0, rnorm(1, frr, se.frr))
+      frr.boot <- max(0, stats::rnorm(1, frr, se.frr))
     else
       frr.boot <- frr
     if(boot.mean.duration)
-      mean.duration.boot <- max(1, rnorm(1, mean.duration, se.mean.duration))
+      mean.duration.boot <- max(1, stats::rnorm(1, mean.duration, se.mean.duration))
     else
       mean.duration.boot <- mean.duration
     
@@ -147,7 +147,7 @@ bootstrap.incidence <- function(rds.data, recent.variable, hiv.variable,  N=NULL
   # Perform bootstrap
   boot.stats <-
     unlist(
-      HCG.boostrap(
+      HCG.bootstrap(
         rds,
         varname,
         number.of.bootstrap.samples,
@@ -157,9 +157,9 @@ bootstrap.incidence <- function(rds.data, recent.variable, hiv.variable,  N=NULL
         verbose = verbose
       )
     )
-  boot.var <- var(boot.stats)
+  boot.var <- stats::var(boot.stats)
   
-  mult <- -qnorm((1 - confidence.level) / 2)
+  mult <- -stats::qnorm((1 - confidence.level) / 2)
   result <- data.frame(Incidence=estimate, SE=sqrt(boot.var),
                        Lower=max(0, estimate - mult*sqrt(boot.var)),
                        Upper=estimate + mult*sqrt(boot.var))

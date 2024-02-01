@@ -25,7 +25,12 @@ RDS.HCG.estimates(
 taken to be the population.size.mid attribute of the data and if that is not set, no finite population
 correction is used.}
 
-\item{subset}{An expression defining a subset of rds.data.}
+\item{subset}{An optional criterion to subset \code{rds.data} by. It is
+an R expression which, when evaluated, subset the
+data. In plain English, it can be something like \code{subset = seed > 0} to
+exclude seeds. It can also be the name of a logical vector of the same length of
+the outcome variable where TRUE means include it in the analysis. If
+\code{NULL} then no subsetting is done.}
 
 \item{small.fraction}{Should a small sample fraction be assumed}
 

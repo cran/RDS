@@ -14,7 +14,12 @@
 #' sampled. If \code{NULL} it is read as the \code{population.size.mid} attribute of
 #' the \code{rds.data} frame. If that is missing, the weights will sum to 1. Note that
 #' this parameter is required for Gile's SS.
-#' @param subset A logical expression subsetting rds.data.
+#' @param subset An optional criterion to subset \code{rds.data} by. It is
+#' an R expression which, when evaluated, subset the
+#' data. In plain English, it can be something like \code{subset = seed > 0} to
+#' exclude seeds. It can also be the name of a logical vector of the same length of
+#' the outcome variable where TRUE means include it in the analysis. If
+#' \code{NULL} then no subsetting is done.
 #' @param control A list of control parameters for algorithm
 #' tuning. Constructed using\cr
 #' \code{\link{control.rds.estimates}}.

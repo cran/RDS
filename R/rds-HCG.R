@@ -9,7 +9,12 @@
 #' @param rds.data An \code{rds.data.frame} with recruitment time set.
 #' @param outcome.variable A string giving the name of the variable in the
 #' \code{rds.data} that contains a categorical variable to be analyzed.
-#' @param subset An expression defining a subset of rds.data.
+#' @param subset An optional criterion to subset \code{rds.data} by. It is
+#' an R expression which, when evaluated, subset the
+#' data. In plain English, it can be something like \code{subset = seed > 0} to
+#' exclude seeds. It can also be the name of a logical vector of the same length of
+#' the outcome variable where TRUE means include it in the analysis. If
+#' \code{NULL} then no subsetting is done.
 #' @param small.fraction Should a small sample fraction be assumed
 #' @param empir.lik Should confidence intervals be estimated using 
 #' empirical likelihood.

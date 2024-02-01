@@ -62,7 +62,7 @@ bgk_kde <- function(data, n, MIN, MAX, smooth = 4) {
   # if data has repeated observations use the N below
   # N=length(as.numeric(names(table(data))));
   # bin the data uniformly using the grid defined above;
-  w <- hist(x = data, breaks = xmesh, plot = FALSE)
+  w <- graphics::hist(x = data, breaks = xmesh, plot = FALSE)
   initial_data <- (w$counts) / N
   
   initial_data <- initial_data / sum(initial_data)

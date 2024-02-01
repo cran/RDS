@@ -161,10 +161,10 @@ SSBS.estimates <- function(rds.data,trait.variable,
   }
   
   observed.estimate <- result$point_estimate
-  crit <- qnorm((1-confidence.level)/2,lower.tail=FALSE)
+  crit <- stats::qnorm((1-confidence.level)/2,lower.tail=FALSE)
   a <- cbind(observed.estimate,
-             observed.estimate-crit*apply(result$bsests, 2, sd,na.rm=TRUE),
-             observed.estimate+crit*apply(result$bsests, 2, sd,na.rm=TRUE))
+             observed.estimate-crit*apply(result$bsests, 2, stats::sd,na.rm=TRUE),
+             observed.estimate+crit*apply(result$bsests, 2, stats::sd,na.rm=TRUE))
   colnames(a)[1] <- trait.variable
   
   attr(a,"bsresult") <- result

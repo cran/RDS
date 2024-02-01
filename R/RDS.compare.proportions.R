@@ -108,7 +108,7 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
   #
   x <- as.numeric( sapply(vars,function(x) {x$interval[2]}) )
   sigma <- as.numeric( sapply(vars,function(x) {x$interval[10]}) )
-  if ('par' %in% plot) {par(mfrow = c(1,2))} else {par(mfrow = c(1,1))}
+  if ('par' %in% plot) {graphics::par(mfrow = c(1,2))} else {graphics::par(mfrow = c(1,1))}
   
   #  obsL <- diff(x)
   obsL <- 0
@@ -129,7 +129,7 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
     gpdf <- gpdf * scalef
     #   maxl <- r[which.max(cumsum(gpdf)>binn*0.99)]
     plot(x=r,y=gpdf,xlim=c(minl,maxl), type="l", ylab="Density", xlab="Difference in Proportions",main="Distribution of the Difference in Proportions",sub="The vertical line is the hypothesis of no difference in proportions")
-    abline(v=obsL,lty=2)
+    graphics::abline(v=obsL,lty=2)
   }
   
   if("estimates" %in% plot){

@@ -4,7 +4,7 @@
 #' @importFrom graphics abline axis hist legend lines par plot points segments strwidth symbols
 #' @importFrom scales hue_pal
 #' @importFrom Hmisc cut2
-#' @importFrom igraph degree.sequence.game
+#' @importFrom igraph degree.sequence.game get.edgelist categorical_pal layout.reingold.tilford graph.empty V graph.disjoint.union plot.igraph
 #' @useDynLib RDS, .registration = TRUE
 "_PACKAGE"
 

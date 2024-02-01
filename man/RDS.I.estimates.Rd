@@ -26,7 +26,12 @@ by a pair of attributes named ``id'' and ``recruiter.id''.}
 taken to be the population.size.mid attribute of the data and if that is not set, no finite population
 correction is used.}
 
-\item{subset}{An expression defining a subset of rds.data.}
+\item{subset}{An optional criterion to subset \code{rds.data} by. It is
+an R expression which, when evaluated, subset the
+data. In plain English, it can be something like \code{subset = seed > 0} to
+exclude seeds. It can also be the name of a logical vector of the same length of
+the outcome variable where TRUE means include it in the analysis. If
+\code{NULL} then no subsetting is done.}
 
 \item{smoothed}{Logical, if TRUE then the ``data smoothed'' version of RDS-I is used,
 where it is assumed that the observed Markov process is reversible.}
@@ -63,9 +68,14 @@ RDS.I.estimates(rds.data=faux,outcome.variable='X')
 RDS.I.estimates(rds.data=faux,outcome.variable='X',smoothed=TRUE)
 }
 \references{
-Gile, Krista J., Handcock, Mark S., 2010,
-\emph{Respondent-driven Sampling: An Assessment of Current Methodology}.
-Sociological Methodology 40, 285-327.
+Gile, Krista J., Handcock, Mark S., 2010. Respondent-driven Sampling:
+An Assessment of Current Methodology, Sociological Methodology, 40,
+285-327. <doi:10.1111/j.1467-9531.2010.01223.x>
+
+Gile, Krista J., Beaudry, Isabelle S. and Handcock, Mark S., 2018 
+Methods for Inference from Respondent-Driven Sampling Data,
+Annual Review of Statistics and Its Application
+<doi:10.1146/annurev-statistics-031017-100704>.
 
 Neely, W. W., 2009. \emph{Bayesian methods for data from respondent driven
 sampling}. Dissertation in-progress, Department of Statistics, University of

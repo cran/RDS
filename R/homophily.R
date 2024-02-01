@@ -43,7 +43,7 @@ setMethod("show",signature="homophily.estimate",
               cat("Homophily =",attr(object@estimate,"homophily"),"\n\n")
               print(object@estimate)
               cat("\n")
-              print(summary.h.table(object@estimate))
+              print(summary_h_table(object@estimate))
               cat("\n")
             }else{
               cat("Population Homophily Estimate for",object@outcome.variable,"\n")
@@ -448,7 +448,7 @@ homophily.estimates <- function(rds.data,outcome.variable,weight.type=NULL,uncer
 }
 
 
-summary.h.table <- function (object, ...) 
+summary_h_table <- function (object, ...) 
 {
   if (!inherits(object, "table")) 
     stop("'object' must inherit from class \"table\"")

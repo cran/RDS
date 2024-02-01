@@ -150,7 +150,7 @@ bootstrap.contingency.test <- function(rds.data,
     if(is.null(dim(tab)) || ncol(tab) < 2 || nrow(tab) < 2)
       result <- structure(NA, .Names = "X-squared")
     else
-      result <- suppressWarnings(chisq.test(tab, correct = FALSE)$statistic)
+      result <- suppressWarnings(stats::chisq.test(tab, correct = FALSE)$statistic)
 	  attr(result,"table") <- tab
 	  result
   }
@@ -165,7 +165,7 @@ bootstrap.contingency.test <- function(rds.data,
   # Perform bootstrap
   boot.stats <-
     unlist(
-      HCG.boostrap(
+      HCG.bootstrap(
         rds,
         varname,
         number.of.bootstrap.samples,

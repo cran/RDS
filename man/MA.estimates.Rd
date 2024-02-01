@@ -104,49 +104,55 @@ of the mean is returned, otherwise a vector of proportion estimates is
 returned. If \code{full.output=TRUE} this leads to:
 
 If \code{full.output=FALSE} this leads to an object of class
-\code{rds.interval.estimate} which is a list with components \itemize{
-\item{estimate}{the numerical point estimate of proportion of
-the\code{trait.variable}. } \item{interval}{a matrix with size columns and one
-row per category of \code{trait.variable}:\itemize{ \item{point estimate}{ The
-HT estimate of the population mean.}  \item{95\% Lower Bound}{Lower 95\%
-confidence bound} \item{95\% Upper Bound}{Upper 95\% confidence bound}}
-\item{Design Effect}{The design effect of the RDS} \item{s.e.}{standard error}
-\item{n}{count of the number of sample values with that value of the trait} } }
-  rds.data An \code{rds.data.frame} that indicates recruitment
-patterns by a pair of attributes named ``id'' and ``recruiter.id''.
-  N An estimate of the number of members of the population being
-sampled. If \code{NULL} it is read as the \code{pop.size.mid} attribute of
-the \code{rds.data} frame. If that is missing it defaults to 1000.
-  M1 The number of networked populations generated at each
-iteration.
-  M2 The number of (full) RDS populations generated for each
-networked population at each iteration.
-  seed The random number seed used to initiate the computations.
-  seed.selection An estimate of the mechanism guiding the choice
-of seeds.  The choices are \describe{ \item{"allwithtrait"}{indicating that
-all the seeds had the trait;} \item{"random"}{meaning they were, as if, a
-simple random sample of individuals from the population;}
-\item{"sample"}{indicating that the seeds are taken as those in the sample
-(and resampled for the population with that composition if necessary);}
-\item{"degree"}{is proportional to the degree of the individual;}
-\item{"allwithtraitdegree"}{indicating that all the seeds had the trait and
-the probability of being a seed is proportional to the degree of the
-respondent.} }
-  number.of.seeds The number of seeds chosen to initiate the
-sampling.
-  number.of.coupons The number of coupons given to each
-respondent.
-  number.of.iterations The number of iterations used at the core
-of the algorithm.
-  outcome.variable The name of the outcome variable
-  weight.type The type of weighting used (i.e. MA)
-  uncertainty The type of weighting used (i.e. MA)
-  details A list of other diagnostic output from the computations.
-  varestBS Output from the bootstrap procedure. A list with two
-elements: \code{var} is the bootstrap variance, and \code{BSest} is the
-vector of bootstrap estimates themselves.
-  coefficient estimate of the parameter of the ERGM for the
-network.
+\code{rds.interval.estimate} which is a list with component
+\describe{
+  \item{estimate}{the numerical point estimate of proportion of the\code{trait.variable}.}
+  \item{interval}{a matrix with size columns and one row per category of \code{trait.variable}:
+    \describe{
+      \item{point estimate}{ The HT estimate of the population mean.}
+      \item{95\% Lower Bound}{Lower 95\% confidence bound}
+      \item{95\% Upper Bound}{Upper 95\% confidence bound}
+      \item{Design Effect}{The design effect of the RDS}
+      \item{s.e.}{standard error}
+      \item{n}{count of the number of sample values with that value of the trait}
+    }
+  }
+  \item{rds.data}{an \code{rds.data.frame} that indicates recruitment
+     patterns by a pair of attributes named ``id'' and ``recruiter.id''.}
+  \item{N}{an estimate of the number of members of the population being
+    sampled. If \code{NULL} it is read as the \code{pop.size.mid} attribute of
+    the \code{rds.data} frame. If that is missing it defaults to 1000.}
+  \item{M1}{the number of networked populations generated at each iteration.}
+  \item{M2}{the number of (full) RDS populations generated for each
+    networked population at each iteration.}
+  \item{seed}{the random number seed used to initiate the computations.}
+  \item{seed.selection}{an estimate of the mechanism guiding the choice
+    of seeds.  The choices are 
+    \describe{
+      \item{"allwithtrait"}{indicating that
+        all the seeds had the trait;} \item{"random"}{meaning they were, as if, a
+        simple random sample of individuals from the population;}
+      \item{"sample"}{indicating that the seeds are taken as those in the sample
+        (and resampled for the population with that composition if necessary);}
+      \item{"degree"}{is proportional to the degree of the individual;}
+      \item{"allwithtraitdegree"}{indicating that all the seeds had the trait and
+        the probability of being a seed is proportional to the degree of the
+        respondent.}
+    }
+  }
+  \item{number.of.seeds}{The number of seeds chosen to initiate the sampling.}
+  \item{number.of.coupons}{The number of coupons given to each respondent.}
+  \item{number.of.iterations}{The number of iterations used at the core of the algorithm.}
+  \item{outcome.variable}{The name of the outcome variable}
+  \item{weight.type}{The type of weighting used (i.e. MA)}
+  \item{uncertainty}{The type of weighting used (i.e. MA)}
+  \item{details}{A list of other diagnostic output from the computations.}
+  \item{varestBS}{Output from the bootstrap procedure. A list with two
+    elements: \code{var} is the bootstrap variance, and \code{BSest} is the
+    vector of bootstrap estimates themselves.}
+  \item{coefficient}{estimate of the parameter of the ERGM for the
+    network.}
+}
 }
 \description{
 This function computes the sequential sampling (MA) estimates for a
@@ -168,7 +174,12 @@ Estimation, Journal of the American Statistical Association, 106,
 
 Gile, Krista J., Handcock, Mark S., 2010. Respondent-driven Sampling:
 An Assessment of Current Methodology, Sociological Methodology, 40,
-285-327.
+285-327. <doi:10.1111/j.1467-9531.2010.01223.x>
+
+Gile, Krista J., Beaudry, Isabelle S. and Handcock, Mark S., 2018 
+Methods for Inference from Respondent-Driven Sampling Data,
+Annual Review of Statistics and Its Application
+<doi:10.1146/annurev-statistics-031017-100704>.
 
 %Gile, Krista J., Handcock, Mark S., 2011 Network Model-Assisted
 %Inference from Respondent-Driven Sampling Data, ArXiv Preprint.
@@ -186,9 +197,7 @@ An Assessment of Current Methodology, Sociological Methodology, 40,
 %79-97.
 }
 \seealso{
-\itemize{
-\item{RDS.I.estimates}{\code{\link{RDS.I.estimates}}}
-\item{RDS.II.estimates}{\code{\link{RDS.I.estimates}}}}
+\code{\link{RDS.I.estimates}}, \code{\link{RDS.I.estimates}}
 }
 \author{
 Krista J. Gile with help from Mark S. Handcock

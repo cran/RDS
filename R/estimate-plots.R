@@ -13,7 +13,7 @@
 cumulative.estimate <- function(rds.data, outcome.variable, est.func=RDS.II.estimates, n.eval.points=25, ...){
   if(has.recruitment.time(rds.data)){
     wave <- get.recruitment.time(rds.data)
-	breaks <- unique(quantile(wave,  probs = seq(0, 1, length.out=n.eval.points+1)))
+	breaks <- unique(stats::quantile(wave,  probs = seq(0, 1, length.out=n.eval.points+1)))
 	if(length(breaks) > 1)
 	    wave <- as.numeric(cut(wave, 
                            breaks = breaks, 

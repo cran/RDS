@@ -14,7 +14,7 @@
 #' @param uncertainty A string giving the type of uncertainty estimator to use.
 #' The options are \code{"SRS"}, \code{"Gile"} and \code{"Salganik"}. This is
 #' usually determined by \code{weight.type} to be consistent with the
-#' estimator's origins. The estimators RDS-I, RDS-I (DS), and RDS-II default to
+#' estimator's origins. The estimators \code{"RDS-I"}, \code{"RDS-I (DS)"}, \code{"RDS-II"} default to
 #' \code{"Salganik"}, "Arithmetic Mean" defaults to \code{"SRS"} and "Gile's
 #' SS" defaults to the \code{"Gile"} bootstrap.
 #' @param weights A numerical vector of sampling weights for the sample, in
@@ -40,13 +40,14 @@
 #' trait.  } }
 #' @export
 #' @author Mark S. Handcock
-#' \itemize{ 
-#' 		\item{RDS.II.estimates}{\code{\link{RDS.II.estimates}}}
-#' 		\item{RDS.SS.estimates}{\code{\link{RDS.SS.estimates}}}
-#' }
-#' @references Gile, Krista J., Handcock, Mark S., 2010,
-#' \emph{Respondent-driven Sampling: An Assessment of Current Methodology}.
-#' Sociological Methodology 40, 285-327.
+#' @references Gile, Krista J., Handcock, Mark S., 2010. Respondent-driven Sampling:
+#' An Assessment of Current Methodology, Sociological Methodology, 40,
+#' 285-327. <doi:10.1111/j.1467-9531.2010.01223.x>
+#'
+#' Gile, Krista J., Beaudry, Isabelle S. and Handcock, Mark S., 2018 
+#' Methods for Inference from Respondent-Driven Sampling Data,
+#' Annual Review of Statistics and Its Application
+#' <doi:10.1146/annurev-statistics-031017-100704>.
 #' 
 #' Salganik, M., Heckathorn, D. D., 2004. \emph{Sampling and estimation in
 #' hidden populations using respondent-driven sampling}. Sociological
