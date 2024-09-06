@@ -53,7 +53,7 @@ compute.weights <- function(rds.data,
   weight.type <- match.arg(weight.type,
                            c("Gile's SS","RDS-I", "RDS-II", "RDS-I (DS)","Arithmetic Mean","HCG"))
   if(is.na(weight.type)) { # User typed an unrecognizable name
-    stop(paste('You must specify a valid weight.type. The valid types are "Gile\'s SS","RDS-I", "RDS-II", "RDS-I (DS)", "HCG" and "Arithmetic Mean"'), call.=FALSE)
+    stop(paste('You must specify a valid weight.type. The valid types are "Gile\'s SS","RDS-I", "RDS-II", "RDS-I (DS)", "HCG", and "Arithmetic Mean"'), call.=FALSE)
   }
   if(weight.type %in% c("Gile's SS") && is.null(N)){
     stop(paste(weight.type,"estimator requires an estimated population size (N)"))
@@ -163,7 +163,6 @@ vh.weights<-function(degs, N=NULL){
   weights
 }
 
-
 #was spps_weights
 #' Weights using Giles SS estimator
 #' @param degs subjects' degrees (i.e. network sizes).
@@ -237,13 +236,16 @@ gile.ss.weights<-function(degs,N,number.ss.samples.per.iteration=500,number.ss.i
 #' at a step. Defaults to \code{sqrt(.Machine$double.eps)}, typically about \code{1e-8}.
 #' @param max.optim The number of iterations on the likelihood optimization for the HCG estimator.
 #' @param theta.start The initial value of theta used in the likelihood optimization for the HCG estimator. If NULL, the default, it is the margin of the table of counts for the transitions.
+#' @param weights.include.seeds logical Should the weights be computed including the influence of the seeds? 
 #' @param ... Unused
 #' @examples 
 #' data(fauxtime)
 #' hcg.weights(fauxtime,"var1",N=3000)
 #' fauxtime$NETWORK[c(1,100,40,82,77)] <- NA
 #' @export
-hcg.weights<-function(rds.data, outcome.variable, N=NULL,small.fraction=FALSE, reltol=sqrt(.Machine$double.eps), max.optim=500, theta.start=NULL,...){
+hcg.weights<-function(rds.data, outcome.variable, N=NULL,small.fraction=FALSE, 
+                      reltol=sqrt(.Machine$double.eps), max.optim=500, theta.start=NULL,
+                      weights.include.seeds = TRUE, ...){
   if(is.null(rds.data[[outcome.variable]])){
     stop(paste("RDS-I outcome.variable", outcome.variable,"not present in data"))
   }
@@ -266,7 +268,8 @@ hcg.weights<-function(rds.data, outcome.variable, N=NULL,small.fraction=FALSE, r
   }
   
   hcg.result <- hcg.estimate(get.id(rds.data), get.rid(rds.data), time, 
-                      degree, out, N, small.fraction, reltol=reltol, max.optim=max.optim, theta.start=theta.start)
+                      degree, out, N, small.fraction, reltol=reltol, 
+                      max.optim=max.optim, theta.start=theta.start, weights.include.seeds=weights.include.seeds)
 
   weights <- hcg.result$weights
   if(!is.null(N)){

@@ -397,6 +397,8 @@ void CompleteSurvey(Network *nwp, RDSEdge *candidateEdges, int *recruitedSample,
   Vertex *neighbors;
   
   
+  // VIP
+  // recruit the earliest person who is given a coupon
   now = candidateEdges[earliest].timeIndex;
   recruiter = candidateEdges[earliest].Recruited;
   parent = candidateEdges[earliest].Recruiter;
@@ -432,6 +434,7 @@ void CompleteSurvey(Network *nwp, RDSEdge *candidateEdges, int *recruitedSample,
       (*fileIndex)++;
     }
   }
+  // n_R_nbrs is the number of neighbors of the recruiter
   n_R_nbrs = nwp->indegree[recruiter]+nwp->outdegree[recruiter];
   if(n_R_nbrs == 0){
     if((*logResults) == 1){
@@ -451,6 +454,7 @@ void CompleteSurvey(Network *nwp, RDSEdge *candidateEdges, int *recruitedSample,
     candidateEdges[earliest].Survey =  candidateEdges[*candidateIndex].Survey ;
     (*candidateIndex)++; 
   } else {
+    /*identify the neighbors of the recruiter*/
     neighbors = (Vertex *) malloc(n_R_nbrs*sizeof(Vertex));
     i = 0;
     STEP_THROUGH_OUTEDGES(recruiter,e,v) {
@@ -463,6 +467,8 @@ void CompleteSurvey(Network *nwp, RDSEdge *candidateEdges, int *recruitedSample,
     }
     
     //note: looks like the RDSEdge representing visit to the survey center is replaced entirely
+    //
+    // recruit the first neighbor of the recruiter
     candidateEdges[earliest].Recruited = neighbors[0];
     candidateEdges[earliest].Recruiter = recruiter;
     candidateEdges[earliest].timeIndex = now + GetTime();

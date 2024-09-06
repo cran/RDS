@@ -6,7 +6,7 @@
 \alias{RDS-package}
 \title{RDS: Respondent-Driven Sampling}
 \description{
-Provides functionality for carrying out estimation with data collected using Respondent-Driven Sampling. This includes Heckathorn's RDS-I and RDS-II estimators as well as Gile's Sequential Sampling estimator. The package is part of the "RDS Analyst" suite of packages for the analysis of respondent-driven sampling data. See Gile and Handcock (2010) \doi{10.1111/j.1467-9531.2010.01223.x}, Gile and Handcock (2015) \doi{10.1111/rssa.12091} and Gile and Beaudry and Handcock and Ott (2018) \doi{10.1146/annurev-statistics-031017-100704}.
+Provides functionality for carrying out estimation with data collected using Respondent-Driven Sampling. This includes Heckathorn's RDS-I and RDS-II estimators as well as Gile's Sequential Sampling estimator. The package is part of the "RDS Analyst" suite of packages for the analysis of respondent-driven sampling data. See Gile and Handcock (2010) \doi{10.1111/j.1467-9531.2010.01223.x}, Gile and Handcock (2015) \doi{10.1111/rssa.12091} and Gile, Beaudry, Handcock and Ott (2018) \doi{10.1146/annurev-statistics-031017-100704}.
 }
 \seealso{
 Useful links:

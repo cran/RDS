@@ -1,6 +1,7 @@
 
 hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fraction=FALSE, tol=.00005, max.iter=50, 
-                         reltol=sqrt(.Machine$double.eps), BS.reltol=sqrt(.Machine$double.eps), max.optim=500, theta.start=NULL){
+                         reltol=sqrt(.Machine$double.eps), BS.reltol=sqrt(.Machine$double.eps), max.optim=500, 
+                         theta.start=NULL, weights.include.seeds = TRUE){
   rds <- data.frame(subject, recruiter, time, degree, out)
   rds <- rds[order(rds$time),]
   rInd <- match(rds$recruiter, rds$subject)
@@ -54,10 +55,10 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
       eqFun <- function(par) sum(par)
       ui <- matrix(0,length(ybar),length(ybar))
       diag(ui) <- 1
-      tr <- try(par <- stats::constrOptim((ub+lb)/2, f=opt,grad=grad, ui=ui, ci=lb)$par)
+      tr <- try(par <- stats::constrOptim((ub+lb)/2, f=opt,grad=grad, ui=ui, ci=lb)$par, silent = TRUE)
       if(inherits(tr,"try-error")){
-        warning("Unable to find par value satisfying constraints.")
-        print(tr)
+        #warning("Unable to find par value satisfying constraints.")
+        #print(tr)
         return(ybar)
       }
       #cat("\nsum:", sum(par))
@@ -164,9 +165,9 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
     dbar <- pmax(dbar, totSampDeg / (yhat*N))
 #   browser()
     tflat <- flattenTheta(theta)
-    tr <- try(opt <- optim(par=tflat,fn=llik,control=list(reltol=reltol,maxit=max.optim)))
+    tr <- try(opt <- optim(par=tflat,fn=llik,control=list(reltol=reltol,maxit=max.optim)), silent = TRUE)
     if(inherits(tr,"try-error") || opt$convergence != 0){
-      tr <- try(opt <- optim(par=tflat,fn=llik,method="BFGS",control=list(reltol=reltol,maxit=max.optim)))
+      tr <- try(opt <- optim(par=tflat,fn=llik,method="BFGS",control=list(reltol=reltol,maxit=max.optim)), silent = TRUE)
       if(inherits(tr,"try-error") || opt$convergence != 0){
         warning("Optimization failed to converge, trying coordinate descent.")
         #browser()
@@ -187,11 +188,28 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
       break
     yhatLast <- yhat
   }
-#print(sprintf("Used %d of %d iterations.",i,max.iter))
-  weights <- rep(0,length(out))
-  for(i in 1:nlev){
-    w <- wts[[i]] / sum(wts[[i]])
-    weights[ outNotMiss & outNum==i & !seed] <- (w * yhat[i])
+  
+  if(weights.include.seeds){
+    wts <- lapply(1:nlev,function(i) {
+      dd <- dg[outNotMiss & outNum==i]
+      if(length(unique(dd)) == 1)
+        return(rep(1, sum(outNotMiss & outNum==i)))
+      w <- gile.ss.weights(dd, max(tots[i],ceiling(yhat[i]*N)))
+      if(is.null(w))
+        w <- rep(1, sum(outNotMiss & outNum==i))
+      w
+    })
+    weights <- rep(0,length(out))
+    for(i in 1:nlev){
+      w <- wts[[i]] / sum(wts[[i]])
+      weights[ outNotMiss & outNum==i] <- (w * yhat[i])
+    }
+  }else{
+    weights <- rep(0,length(out))
+    for(i in 1:nlev){
+      w <- wts[[i]] / sum(wts[[i]])
+      weights[ outNotMiss & outNum==i & !seed] <- (w * yhat[i])
+    }
   }
   weights <- weights / sum(weights)
   orgOrder <- match(subject, rds$subject)

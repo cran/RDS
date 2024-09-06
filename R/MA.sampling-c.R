@@ -115,6 +115,7 @@ rdssampleC <- function(net,
       ))
     }
   }
+  
   n <- network.size(net)
   
   target_num_recruits <- rep(coupons, n)
@@ -126,6 +127,7 @@ rdssampleC <- function(net,
     bipartite = FALSE,
     ndyads = n * (n - 1) / 2
   )
+  
   e <-
     as.edgelist(net, attrname = NULL) # Ensures that for undirected networks, tail<head
   if (length(e) == 0) {
@@ -134,25 +136,27 @@ rdssampleC <- function(net,
   if (!is.matrix(e)) {
     e <- matrix(e, ncol = 2)
   }
+  
   Clist$nedges <- dim(e)[1]
   Clist$tails <- e[, 1]
   Clist$heads <- e[, 2]
   
-  my.recruitedSampleAll <- c(rep(0, nsims * nsamp))
-  my.recruitersAll <-  c(rep(0, nsims * nsamp))
-  my.recruitTimesAll <- c(rep(0, nsims * nsamp))
+  my.recruitedSampleAll <- c(rep(0, nsims * nsamp * 10))
+  my.recruitersAll <-  c(rep(0, nsims * nsamp * 10))
+  my.recruitTimesAll <- c(rep(0, nsims * nsamp * 10))
   
-  my.recruitedSample <- c(rep(0, nsamp))
-  my.recruiters <- c(rep(0, nsamp))
-  my.recruitTimes <- c(rep(0, nsamp))
-  max.log <- 1500
+  my.recruitedSample <- c(rep(0, nsamp * 10))
+  my.recruiters <- c(rep(0, nsamp * 10))
+  my.recruitTimes <- c(rep(0, nsamp * 10))
+  max.log <- 15000
   my.log <-
     c(rep("                                                          ", max.log))
   my.seeds0 <-
     c(rep(0, nsamp0)) #just added this (Maggie), also changed call to .C
   log.length <- 0
   #call to the C function
-  result <- .C(
+  
+   result <- .C(
     "CRDSSample",
     as.integer(Clist$tails),
     as.integer(Clist$heads),
@@ -178,7 +182,7 @@ rdssampleC <- function(net,
     as.integer(max.log),
     as.integer(log.length),
     PACKAGE = "RDS"
-  )
+   )
   init.deg <- degs[result[[9]]]
   #simulates imperfect recall using the binomial distribution
   if (prob.network.recall == 1) {
@@ -189,8 +193,7 @@ rdssampleC <- function(net,
       degree <- c(degree, rbinom(1, init.deg[i], prob.network.recall))
     }
   }
-  
-  allsamples <- list(
+    allsamples <- list(
       nsample = result[[9]],
       nominators = result[[11]],
       degsample = degree,

@@ -83,7 +83,7 @@ RDS.estimates.local <- function(rds.data,
         prop <- sum(tmp.wts * subset)
         N <- round(N * prop)
         if (N < sum(subset))
-          stop("Estimated sub-population size smaller than subset.")
+          stop(sprintf("Estimated sub-population size, %f, smaller than subsets size, %f.", N, sum(subset)))
       }
       
       #This subsets setting orphaned children to be seeds

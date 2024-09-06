@@ -233,7 +233,7 @@ get.stationary.distribution <- function(mle){
   values.close.to.minus.one <- abs(eigen(t(mle))$values + 1.0) < 
     sqrt(.Machine$double.eps)
   if(sum(values.close.to.minus.one) == 1){
-    cat(" Markov chain apears to be periodic.\n")
+    cat(" Markov chain appears to be periodic.\n")
     stat.dist <- rep(NA,nrow(mle))
     attr(stat.dist,'status') <- "Periodic Markov MLE"
     return(stat.dist)

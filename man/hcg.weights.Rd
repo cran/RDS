@@ -12,6 +12,7 @@ hcg.weights(
   reltol = sqrt(.Machine$double.eps),
   max.optim = 500,
   theta.start = NULL,
+  weights.include.seeds = TRUE,
   ...
 )
 }
@@ -31,6 +32,8 @@ at a step. Defaults to \code{sqrt(.Machine$double.eps)}, typically about \code{1
 \item{max.optim}{The number of iterations on the likelihood optimization for the HCG estimator.}
 
 \item{theta.start}{The initial value of theta used in the likelihood optimization for the HCG estimator. If NULL, the default, it is the margin of the table of counts for the transitions.}
+
+\item{weights.include.seeds}{logical Should the weights be computed including the influence of the seeds?}
 
 \item{...}{Unused}
 }

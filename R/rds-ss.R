@@ -65,9 +65,9 @@
 #' Methods for Inference from Respondent-Driven Sampling Data,
 #' Annual Review of Statistics and Its Application
 #' <doi:10.1146/annurev-statistics-031017-100704>.
-#' Gile, Krista J., Handcock, Mark S., 2011 \emph{Network Model-Assisted
-#' Inference from Respondent-Driven Sampling Data}, \emph{ArXiv Preprint}.
-#' 
+#'
+#' Gile, Krista J., Handcock, Mark S., 2015 \emph{Network Model-Assisted
+#' Inference from Respondent-Driven Sampling Data}, Journal of the Royal Statistical Society, A. <doi:10.1111/rssa.12091>.
 #' 
 #' Salganik, M., Heckathorn, D. D., 2004. \emph{Sampling and estimation in
 #' hidden populations using respondent-driven sampling}. Sociological

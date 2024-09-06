@@ -58,9 +58,9 @@ RDS.bootstrap.intervals.local <- function(rds.data,
   }
   
   if (is.null(uncertainty)) {
-    if (weight.type %in% c("Gile's SS")) {
+    if (weight.type == "Gile's SS") {
       uncertainty <- "Gile"
-    } else if (weight.type %in% c("HCG", "RDS-I", "RDS-I (DS)", "RDS-II")) {
+    } else if (weight.type %in% c("RDS-I", "RDS-I (DS)", "RDS-II")) {
       uncertainty <- "Salganik"
     } else if (weight.type == "Arithmetic Mean") {
       uncertainty <- "SRS"
@@ -114,12 +114,13 @@ RDS.bootstrap.intervals.local <- function(rds.data,
     subset[is.na(subset)] <- FALSE
     if (!is.null(N)) {
       #use VH estimator to adjust population size to sub-population
+      # defined by subset
       tmp.wts <- vh.weights(rds.data.nomiss[[network.size]])
       tmp.wts <- tmp.wts / sum(tmp.wts)
       prop <- sum(tmp.wts * subset)
       N <- N * prop
       if (N < sum(subset))
-        stop("Estimated sub-population size smaller than subset.")
+        stop(sprintf("Estimated sub-population size, %f, smaller than subsets size, %f.", N, sum(subset)))
     }
     
     #This subsets setting orphaned children to be seeds
@@ -284,6 +285,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
       }
     )
   } else if (uncertainty == "HCG") {
+
     bs <- HCG.bootstrap.se(
       rds.data = rds.data.nomiss,
       group.variable = outcome.variable,

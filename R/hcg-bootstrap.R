@@ -90,32 +90,36 @@ HCG.bootstrap <- function(rds.data, group.variable, number.of.bootstrap.samples,
   out.na <- is.na(out)
   
   results <- list()
-  for(j in 1:number.of.bootstrap.samples){
-# bs.fn <- function(i, deg.by.group, nlev, n, outNum, seed, yhat, recruiter.ind,small.fraction, theta,edge.end.by.group,
-#                   degree, is.cts,out,deg.out.map,outs,lev,rds,out.na,group.variable, attr(boot.rds,"network.size.variable")
+  doboot <- function(){
     running.deg.by.group <- deg.by.group
     samp.edge.end.by.group <- rep(0, nlev)
     out.boot <- rep(NA, n)
-    
-    out.boot[seed] <- outNum[seed]
-    if(any(is.na(out.boot[seed]))){
-      isna <- is.na(out.boot[seed])
-      out.boot[seed][isna] <- sample.int(nlev, size=sum(isna),prob=yhat)
-    }
     deg.boot <- rep(NA, n)
-    deg.boot[seed] <- degree[seed]
+    
+    out.boot[seed] <- sample.int(nlev, size=length(seed), prob=yhat, replace = TRUE)#outNum[seed]#
+    for(s in seed){
+      d <- na.omit(degree[out == levels(out)[out.boot[s]]])
+      deg.boot[s] <- sample(d,size = 1,prob = d)
+    }
+    #if(any(is.na(out.boot[seed]))){
+    #  isna <- is.na(out.boot[seed])
+    #  out.boot[seed][isna] <- sample.int(nlev, size=sum(isna),prob=yhat, replace = TRUE)
+    #}
+    #deg.boot[seed] <- degree[seed]
     for(i in (1:n)[-seed]){
       from <- out.boot[recruiter.ind[i]]
       if(small.fraction)
         trans.prob <- theta[from,]
       else
         trans.prob <- pmax(0, theta[from,] * (edge.end.by.group - samp.edge.end.by.group) / edge.end.by.group)
+      trans.prob[!is.finite(trans.prob)] <- 0 # handle factor levels with no observations
       to <- out.boot[i] <- sample.int(nlev, size = 1, prob = trans.prob)
       deg.ind <- try(sample.int(nrow(deg.by.group[[to]]), size = 1, 
-                            prob=running.deg.by.group[[to]]$deg.count * running.deg.by.group[[to]]$deg.value), silent=TRUE)
-      if(inherits(deg.ind, "try-error"))
-        deg.boot[i] <- sample(degree,size = 1,prob = degree)
-      else
+                                prob=running.deg.by.group[[to]]$deg.count * running.deg.by.group[[to]]$deg.value), silent=TRUE)
+      if(inherits(deg.ind, "try-error")){
+        d <- na.omit(degree[out == to])
+        deg.boot[i] <- sample(d,size = 1,prob = d)
+      }else
         deg.boot[i] <- running.deg.by.group[[to]]$deg.value[deg.ind]
       
       if(!small.fraction){
@@ -142,7 +146,18 @@ HCG.bootstrap <- function(rds.data, group.variable, number.of.bootstrap.samples,
     
     boot.rds[[group.variable]] <- out.boot
     boot.rds[[attr(boot.rds,"network.size.variable")]] <- deg.boot
-    results[[j]] <- fun(boot.rds)
+    #results[[j]] <- fun(boot.rds)
+    fun(boot.rds)
+  }
+  for(j in 1:number.of.bootstrap.samples){
+    for(k in 1:10){
+      tr <- try(results[[j]] <- doboot(), silent = TRUE)
+      if(!inherits(tr,"try-error"))
+        break
+    }
+    if(inherits(tr,"try-error"))
+      stop(tr)
+
     if(verbose) {
       if(j == trunc(j/(number.of.bootstrap.samples/10))*(number.of.bootstrap.samples/10)){
         cat(paste((100/10)*trunc(j/(number.of.bootstrap.samples/10)),'% completed ...\n',sep=""))
@@ -162,7 +177,8 @@ HCG.bootstrap.se <- function(rds.data, group.variable,
     #  hcg.estimate(get.id(boot), get.rid(boot), get.recruitment.time(boot, wave.fallback=TRUE), get.net.size(boot), 
     #               boot[[group.variable]], N, small.fraction=small.fraction)$yhat
     #}else{
-      control$hcg.theta.start <- theta
+      if(!missing(theta))
+        control$hcg.theta.start <- theta
       RDS.estimates.local(
         rds.data=boot,
         outcome.variable=group.variable,
