@@ -36,10 +36,13 @@ and \code{"Arithemic Mean"}. If \code{NULL} it defaults to \code{"Gile's
 SS"}.}
 
 \item{uncertainty}{A string giving the type of uncertainty estimator to use.
-The options are \code{"SRS"}, \code{"Gile"} and \code{"Salganik"}. This is usually
+The options are \code{"SRS"}, \code{"Salganik"}, \code{"Treeboot"},
+\code{"Gile"} and \code{"HCG"}; see \code{\link{RDS.bootstrap.mechanics}}
+for how each resampling procedure works and what it assumes. This is usually
 determined by \code{weight.type} to be consistent with the estimator's
 origins. The estimators RDS-I, RDS-I (DS), and RDS-II default to \code{"Salganik"},  "Arithmetic
-Mean" defaults to \code{"SRS"} and "Gile's SS" defaults to the \code{"Gile"} bootstrap.}
+Mean" defaults to \code{"SRS"}, "Gile's SS" defaults to the \code{"Gile"}
+bootstrap and "HCG" defaults to the \code{"HCG"} bootstrap.}
 
 \item{N}{An estimate of the number of members of the population being
 sampled. If \code{NULL} it is read as the \code{population.size.mid} attribute of
@@ -135,6 +138,11 @@ Gile, Krista J., Beaudry, Isabelle S. and Handcock, Mark S., 2018
 Methods for Inference from Respondent-Driven Sampling Data,
 Annual Review of Statistics and Its Application
 <doi:10.1146/annurev-statistics-031017-100704>.
+}
+\seealso{
+\code{\link{RDS.bootstrap.mechanics}} for a description of each
+bootstrap procedure, and \code{\link{control.rds.estimates}} for tuning
+parameters.
 }
 \keyword{manip}
 \keyword{survey}

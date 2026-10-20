@@ -39,35 +39,27 @@ wtd.var <- function(x, weights=NULL, normwt=FALSE, na.rm=TRUE,
 }
 
 
-wtd.quantile <- function(x, weights=NULL, probs=c(0, .25, .5, .75, 1), 
-                         normwt=FALSE, na.rm=TRUE)
-{
+wtd.quantile <- function(x, weights=NULL, probs=c(0,.25,.5,.75,1), na.rm=TRUE){
   if(!length(weights))
     return(stats::quantile(x, probs=probs, na.rm=na.rm))
-  
   if(any(probs < 0 | probs > 1))
     stop("Probabilities must be between 0 and 1 inclusive")
+  if(na.rm){ 
+    s <- !is.na(x + weights)
+    x <- x[s]
+    weights <- weights[s]
+  }
+  keep <- weights > 0
+  x <- x[keep]
+  weights <- weights[keep] 
   
-  nams <- paste(format(round(probs * 100, if(length(probs) > 1) 
-    2 - log10(diff(range(probs))) else 2)), 
-    "%", sep = "")
-  
-  w <- wtd.table(x, weights, na.rm=na.rm, normwt=normwt)
-  x     <- w$x
-  wts   <- w$sum.of.weights
-  n     <- sum(wts)
-  order <- 1 + (n - 1) * probs
-  low   <- pmax(floor(order), 1)
-  high  <- pmin(low + 1, n)
-  order <- order %% 1
-  ## Find low and high order statistics
-  ## These are minimum values of x such that the cum. freqs >= c(low,high)
-  allq <- approx(cumsum(wts), x, xout=c(low,high), 
-                 method='constant', f=1, rule=2)$y
-  k <- length(probs)
-  quantiles <- (1 - order)*allq[1:k] + order*allq[-(1:k)]
-  names(quantiles) <- nams
-  return(quantiles)
+  o <- order(x)
+  x <- x[o]
+  weights <- weights[o]
+  cw <- cumsum(weights) / sum(weights)                      # normalized weighted ECDF => scale-invariant
+  q  <- x[vapply(probs, function(p) which(cw >= p - 1e-9)[1], integer(1L))]
+  names(q) <- paste0(format(round(probs * 100, 2)), "%")
+  q
 }
 
 wtd.table <- function(x, weights=NULL, 

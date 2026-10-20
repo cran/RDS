@@ -25,7 +25,7 @@ as.rds.data.frame(
     "max.coupons"),
   notes = if (is.null(attr(df, "notes"))) {
      NULL
- } else attr(df, "time"),
+ } else attr(df, "notes"),
   time = if (is.null(attr(df, "time"))) {
      NULL
  } else attr(df, "time"),

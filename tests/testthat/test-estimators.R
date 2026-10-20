@@ -17,10 +17,10 @@ df <- structure(list(id = 1:10,
                          0.202097220140023, -0.778286503628266, 1.32036321437896, 0.264852950094362
                      ), 
                      y = structure(c(1L, 2L, 1L, 2L, 2L, 2L, 2L, 1L, 2L, 1L), 
-                                   .Label = c("FALSE",  "TRUE"), class = "factor"), 
+                                   levels = c("FALSE",  "TRUE"), class = "factor"), 
                      z = structure(c(1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L), 
-                                   .Label = c("a", "b"), class = "factor")), 
-                .Names = c("id", "recruiter.id", "degree", "x", "y", "z"), 
+                                   levels = c("a", "b"), class = "factor")), 
+                names = c("id", "recruiter.id", "degree", "x", "y", "z"), 
                 row.names = c(NA, -10L), 
                 class = "data.frame")
 df$time <- 1:10
@@ -39,9 +39,9 @@ test_that("rds-MA",{
 
 test_that("rds-hcg",{
   est <- RDS.HCG.estimates(rds.data=rdsdat,outcome.variable='x')
-  expect_true(round(est$estimate,2) < 0.1) 
+  expect_true(round(est@estimate,2) < 0.1) 
   est <- RDS.HCG.estimates(rds.data=rdsdat,outcome.variable='y')
-  expect_true(round(est$estimate[1],1) <= .4)   
+  expect_true(round(est@estimate[1],1) <= .4)   
   est <- RDS.HCG.estimates(rds.data=rdsdat,outcome.variable='z')
   
   rdsdat2 <- rdsdat

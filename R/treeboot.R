@@ -20,7 +20,7 @@ treeboot <- function(seed.rows, recruits, network.size, outcomes, population.siz
       result <- list(c(node.row, id, recr.id, wave))
     }
     for(i in seq_along(recr)){
-      result <- c(result, sample.id(recr[i], paste0(id,i), id, wave + 1))
+      result <- c(result, sample.id(recr[i], paste0(id,".",i), id, wave + 1))
     }
     result
   }
@@ -30,7 +30,7 @@ treeboot <- function(seed.rows, recruits, network.size, outcomes, population.siz
     boot.n <- 0
     while(TRUE){
       seed <- resample(seed.rows, 1)
-      tree <- sample.id(seed, as.character(boot.seeds), "_", 0)
+      tree <- sample.id(seed, paste0("s",as.character(boot.seeds)), "_", 0)
       if(boot.n + length(tree) > n){
         wave <- sapply(tree,function(x) as.numeric(x[4]))
         for(i in max(wave):1){
@@ -84,6 +84,11 @@ treeboot.bootstrap.estimates <- function(rds.data, group.variable, number.of.boo
   # NB: if one wants to treat missing values as a separate group,
   # then the following will need to be changed. 
   group.names <- group.names[!is.na(group.names)]
+  .assert.complete.outcome(group.memberships)
+  # Output columns cover the observed groups only; the internal excluded
+  # group (if present) is carried through the resampled tree and removed
+  # from replicate estimates by RDS.estimates.local.
+  group.names <- group.names[group.names != .rds.excluded]
   
   id <- get.id(rds.data)
   recruiter.id <- get.rid(rds.data)   
@@ -114,8 +119,8 @@ treeboot.bootstrap.estimates <- function(rds.data, group.variable, number.of.boo
       rds.data=boot,
       outcome.variable=group.variable,
       weight.type=estimator.name,
-      empir.lik=FALSE,
       N=N,
+      hcg.wave.fallback=TRUE,
       ...)@estimate
   }
   bs.results <- replicate(number.of.bootstrap.samples, f())
@@ -124,6 +129,7 @@ treeboot.bootstrap.estimates <- function(rds.data, group.variable, number.of.boo
   colnames(value) <- group.names
   colnames(value)[colnames(value)=="NA.NA"] <- "NA"
   if(is.matrix(bs.results)){
+    colnames(value) <- rownames(bs.results) 
     for(i in 1:nrow(bs.results)){
       value[,i] <-  unlist(bs.results[i,])
     }
@@ -155,7 +161,7 @@ treeboot.bootstrap.se <- function(rds.data,group.variable,
     N=N,
     ...)
   
-  result <- result[apply(!is.nan(result),1,all),]
+  result <- result[apply(!is.nan(result),1,all), , drop = FALSE]
   if(nrow(result)>1){
     a=(sqrt(diag(stats::var(result))))	
   }else{

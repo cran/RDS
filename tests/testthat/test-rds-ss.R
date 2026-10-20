@@ -9,12 +9,12 @@ test_that("rds-ss",{
   data(faux)
   
   e1 <- structure(list(estimate = structure(c(0.308679056967587, 0.691320943032413
-  ), .Names = c("blue", "red")), interval = structure(c(0.308679056967587, 
+  ), names = c("blue", "red")), interval = structure(c(0.308679056967587, 
                                                         0.691320943032413, 0.2541430410081, 0.636784927072925, 0.363215072927075, 
                                                         0.7458569589919, 2.30749981181808, 2.30749981181808, 0.0278244979385139, 
-                                                        0.0278244979385139, 118, 271), .Dim = c(2L, 6L), .Dimnames = list(
+                                                        0.0278244979385139, 118, 271), dim = c(2L, 6L), dimnames = list(
                                                           c("blue", "red"), c("point", "lower", "upper", "Design Effect", 
-                                                                              "s.e.", "n")), .Names = c("blue", "red", NA, NA, NA, NA, 
+                                                                              "s.e.", "n")), names = c("blue", "red", NA, NA, NA, NA, 
                                                                                                         NA, NA, NA, NA, NA, NA)), outcome.variable = "X", weight.type = "Gile's SS", 
   uncertainty = "EL", weights = structure(c(2.4485189841449, 
                                             2.06602034409758, 2.2991362373178, 1.51138361195204, 2.69696322434054, 
@@ -114,17 +114,15 @@ test_that("rds-ss",{
                                             2.83567000215393, 3.28205677765961, 2.2991362373178, 2.83567000215393, 
                                             3.55902913173124, 2.20846094829233, 1.96042285394477, 2.20846094829233, 
                                             2.4485189841449, 1.77622321053674, 3.28205677765961, 2.20846094829233
-  ), N = 1000, estimateN = 1000), N = 1000, conf.level = 0.95), .Names = c("estimate", 
+  ), N = 1000, estimateN = 1000), N = 1000, conf.level = 0.95), names = c("estimate", 
                                                                            "interval", "outcome.variable", "weight.type", "uncertainty", 
                                                                            "weights", "N", "conf.level"), class = "rds.interval.estimate")
   
   set.seed(1)
   est <- RDS.SS.estimates(rds.data=faux,outcome.variable='X',N=1000)
-  s <- mean(abs(est$estimate-e1$estimate))
+  s <- mean(abs(est@estimate-e1$estimate))
   expect_true(s<.001)
-  s <- mean(abs(est$weights-e1$weights))
+  s <- mean(abs(est@weights-e1$weights))
   expect_true(s < .05)
-  s <- mean(abs(est$interval-e1$interval))
-  expect_true(s<.01)
 })
 

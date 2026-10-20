@@ -59,7 +59,7 @@ Calculates incidence and bootstrap confidence intervals for immunoassay data col
 \details{
 The recent.variable and hiv should be the names of logical variables. Otherwise they are converted to logical using as.numeric(x) > 0.5.
 
-This function estimates incidence using RDS sampling wieghts. Confidence intervals are constucted using HCG bootstraps.
+This function estimates incidence using RDS sampling weights. Confidence intervals are constructed using HCG bootstraps.
 See http://www.incidence-estimation.org/ for additional information on (non-RDS) incidence estimation.
 }
 \examples{
@@ -71,4 +71,8 @@ faux$recent[runif(nrow(faux)) > .5] <- NA
 faux$hiv[is.na(faux$recent)][c(1,6,10,21)] <- NA
 attr(faux,"time") <- "wave"
 bootstrap.incidence(faux,"recent","hiv",weight.type="RDS-II", number.of.bootstrap.samples=100)
+}
+\seealso{
+\code{\link{RDS.bootstrap.mechanics}} for a description of the HCG
+bootstrap used to construct the intervals.
 }

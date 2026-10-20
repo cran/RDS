@@ -14,6 +14,7 @@
 #' first column are the HCG weights for the observed sample.
 #'
 #' @examples
+#' \donttest{
 #' data("fauxmadrona")
 #' set.seed(1)
 #' # Generate replicate weights
@@ -26,6 +27,7 @@
 #'   svymean(~disease, design) |> print()
 #'   RDS.bootstrap.intervals(fauxmadrona, "disease", "HCG", "HCG", 
 #'   number.of.bootstrap.samples = 500) |> print()
+#' }
 #' }
 #' 
 #' @export
@@ -51,17 +53,7 @@ hcg.replicate.weights <- function(rds.data, outcome.variable,
   mdeg <- is.na(degree)
   out <- rds.data[[outcome.variable]]
   if(any(mdeg)){
-    warning(paste(sum(mdeg),"subjects missing degree. Imputing within group median."))
-    levs <- na.omit(unique(out))
-    med <- median(degree, na.rm = TRUE)
-    for(i in 1:length(levs)){
-      group.median <- median(degree[out==levs[i]], na.rm=TRUE)
-      degree[out==levs[i] & mdeg] <- group.median
-    }
-    mdeg <- is.na(degree)
-    if(any(mdeg)){
-      degree[mdeg] <- med
-    }
+    degree <- .impute.degree.group.median(degree, out)
     rds.data[[net.size.variable]] <- degree
   }
   
@@ -71,7 +63,8 @@ hcg.replicate.weights <- function(rds.data, outcome.variable,
     d <- get.net.size(rds.data)
     gb <- x[[outcome.variable]]
     db <- get.net.size(x)
-    wts <- hcg.weights(x, outcome.variable, N=N, small.fraction = small.fraction, weights.include.seeds = TRUE)
+    wts <- hcg.weights(x, outcome.variable, N=N, small.fraction = small.fraction, weights.include.seeds = TRUE,
+                       hcg.wave.fallback = TRUE)
     wts <- wts / sum(wts)
     wts2 <- rep(0,length(g))
     for(i in 1:length(gb)){
@@ -91,7 +84,7 @@ hcg.replicate.weights <- function(rds.data, outcome.variable,
   names(res) <- paste0("rep_wts",1:ncol(res))
   if(include.sample.weights){
     wts <- hcg.weights(rds.data, outcome.variable, N=N, small.fraction = small.fraction, 
-                       weights.include.seeds = TRUE)
+                       weights.include.seeds = TRUE, hcg.wave.fallback = TRUE)
     wts <- wts / sum(wts)
     res <- cbind(wts=wts, res)
   }

@@ -1,8 +1,8 @@
 Package: RDS
 Type: Package
 Title: Respondent-Driven Sampling
-Version: 0.9-10
-Date: 2024-09-05
+Version: 0.9-11
+Date: 2026-10-10
 Authors@R: c(person("Mark S.", "Handcock", role=c("aut","cre"), email="handcock@stat.ucla.edu", comment=c(ORCID="0000-0002-9985-2785")),
 	person("Krista J.", "Gile", role=c("aut"), email="gile@math.umass.edu"),
 	person("Ian E.", "Fellows", role=c("aut"), email="ian@fellstat.com"),
@@ -18,17 +18,18 @@ Description: Provides functionality for carrying out estimation
     Gile, Beaudry, Handcock and Ott (2018) <doi:10.1146/annurev-statistics-031017-100704>.
 License: LGPL-2.1
 URL: https://hpmrg.org
-Depends: R (>= 2.5.1), methods
+Depends: R (>= 4.1.0), methods
 Suggests: survey, sspse, testthat
 Imports: gridExtra, ggplot2 (>= 2.0.0), network, igraph, reshape2,
-        scales, anytime, Hmisc, statnet.common, ergm, isotone
+        scales, anytime, Hmisc, statnet.common, ergm, isotone, parallel
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 NeedsCompilation: yes
-Packaged: 2024-09-05 16:12:34 UTC; handcock
-Author: Mark S. Handcock [aut, cre] (<https://orcid.org/0000-0002-9985-2785>),
+Packaged: 2026-10-20 22:04:06 UTC; ianfellows
+Author: Mark S. Handcock [aut, cre] (ORCID:
+    <https://orcid.org/0000-0002-9985-2785>),
   Krista J. Gile [aut],
   Ian E. Fellows [aut],
   W. Whipple Neely [ctb]
 Repository: CRAN
-Date/Publication: 2024-09-06 08:00:06 UTC
+Date/Publication: 2026-10-20 23:10:02 UTC

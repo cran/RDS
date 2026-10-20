@@ -10,7 +10,7 @@
 #' \deqn{H_0 : p_1 = \ldots = p_K}
 #' vs
 #' \deqn{H_1 : p_1 \ge p_2 \ldots \ge p_K}
-#' with at least one equality strict. The alternatie hypothesis is for a monotone decreasing trend.
+#' with at least one equality strict. The alternative hypothesis is for a monotone decreasing trend.
 #' A likelihood ratio statistic for this test has 
 #' been derived (Bartholomew 1959).
 #' The null distribution of the likelihood ratio statistic is very complex 

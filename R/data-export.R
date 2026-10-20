@@ -22,10 +22,10 @@ write.graphviz <- function(x, file) {
   id <- as.char(get.id(x))
   rid <- as.char(get.rid(x))
   sid <- as.char(get.seed.rid(x))
-  w <- get.wave(x)
+  #w <- get.wave(x)
   el <- cbind(rid, id)
-  el <- el[order(w), ]
-  el <- el[rid != sid, ]
+  #el <- el[order(w), ]
+  el <- el[rid != sid, , drop=FALSE]
   
   cat("digraph rds {\nsize=\"8.5,8.5\";\nlayout=neato;\nmode=\"hier\";",
       file = file)
@@ -51,6 +51,7 @@ write.graphviz <- function(x, file) {
 write.netdraw <- function(x,
                           file = NULL,
                           by.seed = FALSE) {
+  xname <- deparse(substitute(x)) 
   rds.data <- as.rds.data.frame(x)
   
   id <- get.id(rds.data)
@@ -104,7 +105,7 @@ write.netdraw <- function(x,
   ############################################################################
   #   #  Now we create the temporary DL file.
   if (is.null(file)) {
-    file.base <- paste(getwd(), substitute(rds.data), sep = "/")
+    file.base <- paste(getwd(), xname, sep = "/")
   } else{
     file.base <- file
   }
@@ -231,6 +232,7 @@ write.netdraw <- function(x,
 #' @export
 write.rdsat <- function(x,
                         file = NULL) {
+  xname <- deparse(substitute(x)) 
   rds.data <- as.rds.data.frame(x)
   
   id <- get.id(rds.data)
@@ -240,7 +242,7 @@ write.rdsat <- function(x,
   ############################################################################
   #   #  Now we create the temporary RDSAT file.
   if (is.null(file)) {
-    file.base <- paste(getwd(), substitute(rds.data), sep = "/")
+    file.base <- paste(getwd(), xname, sep = "/")
   } else{
     file.base <- file
   }

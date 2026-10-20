@@ -85,7 +85,8 @@ impute.visibility_mle <-function(rds.data,max.coupons=NULL,
   nr <- get.number.of.recruits(rds.data)
   nw <- get.wave(rds.data)
   ns <- get.seed.id(rds.data)
-  is.seed <- (get.rid(rds.data)=="seed")
+  seed_id <- get.seed.rid(rds.data)
+  is.seed <- (get.rid(rds.data)==seed_id)
   
   if(is.null(max.coupons)){
     max.coupons <- attr(rds.data,"max.coupons")
@@ -123,6 +124,9 @@ impute.visibility_mle <-function(rds.data,max.coupons=NULL,
       recruit.times <- recruit.time
     }
     recruit.time <- TRUE
+  }
+  if(all(!is.finite(recruit.times))){
+    stop("No valid recruitment times.")
   }
   if(any(is.na(recruit.times))){
     med.index <- cbind(c(2,1:(n-1)),c(3,3:n,n))
@@ -191,7 +195,8 @@ impute.visibility_mle <-function(rds.data,max.coupons=NULL,
     print(summary(fit))
   }
   
-  a=dmepdf(fit$coef,nsize,nr,fit$recruit.time,recruit.times,unit.scale=unit.scale,unit.model=unit.model,optimism=optimism,gmean=gmean)
+  a=dmepdf(fit$coef,nsize,nr,fit$recruit.time,recruit.times,unit.scale=unit.scale,
+           unit.model=unit.model,optimism=optimism,gmean=gmean, K=K)
   
   is <- switch(type.impute, 
                `distribution` = {
@@ -284,7 +289,8 @@ llmeall <- function(v,x,network.size,num.recruits,recruit.time,max.coupons=3,cut
 #
 ################################################################################
 
-summary.me <- function (object, ..., 
+#' @exportS3Method summary me
+summary.me <- function (object, ...,
                         digits = max(3, getOption("digits") - 3),
                         correlation=FALSE, covariance=FALSE,
                         total.variation=TRUE,
@@ -353,8 +359,8 @@ summary.me <- function (object, ...,
                                    format(c(dyads, rdf), digits = digits)," degrees of freedom\n"), 
                              1, paste, collapse = " "),"\n")
   
-  ans$aic <- -2*mle.lik +2*(dyads) #AIC(mle.lik)
-  ans$bic <- -2*mle.lik +log(df)*(dyads) #BIC(mle.lik)
+  ans$aic <- -2 * mle.lik + 2 * df #AIC(mle.lik)
+  ans$bic <- -2 * mle.lik + log(dyads) * (df) #BIC(mle.lik)
   
   ans$coefs <- as.data.frame(tempmatrix)
   ans$asycov <- asycov
@@ -386,7 +392,8 @@ summary.me <- function (object, ...,
 #
 ###############################################################################
 
-print.summary.me <- function (x, 
+#' @exportS3Method print summary.me
+print.summary.me <- function (x,
                               digits = max(3, getOption("digits") - 3),
                               correlation=FALSE, covariance=FALSE,
                               signif.stars= getOption("show.signif.stars"),

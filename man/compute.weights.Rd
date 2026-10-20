@@ -11,6 +11,9 @@ compute.weights(
   N = NULL,
   subset = NULL,
   control = control.rds.estimates(),
+  outcome.variable = NULL,
+  hcg.wave.fallback = FALSE,
+  cont.breaks = 3,
   ...
 )
 }
@@ -39,11 +42,25 @@ the outcome variable where TRUE means include it in the analysis. If
 tuning. Constructed using\cr
 \code{\link{control.rds.estimates}}.}
 
+\item{outcome.variable}{The name of the variable defining the groups. Required
+for the group-model weight types ("RDS-I", "RDS-I (DS)" and "HCG").}
+
+\item{hcg.wave.fallback}{Logical. Internal use: allows the HCG weights to fall
+back to recruitment-wave ordering when recruitment times are absent. Used by
+the bootstrap machinery; direct HCG weight computations require recruitment
+time unless \code{small.fraction=TRUE}.}
+
+\item{cont.breaks}{The number of groups a continuous outcome is discretized
+into for the group-model weight types.}
+
 \item{...}{Additional parameters passed to the individual weighting algorithms.}
 }
 \value{
 A vector of weights for each of the respondents. It is of the same
-size as the number of rows in \code{rds.data}.
+size as the number of rows in \code{rds.data}. Subjects with missing outcome
+values receive weight 0 for the group-model weight types; they are retained
+internally (as their own group) while the weights are fit, so that
+recruitment chains passing through them are preserved.
 }
 \description{
 Compute estimates of the sampling weights of the respondent's observations

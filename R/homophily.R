@@ -63,7 +63,7 @@ setMethod("show",signature="homophily.estimate",
 
 
 homophily.estimates.local <- function(rds.data,outcome.variable,
-                                      weight.type,uncertainty,recruitment,N,to.group0.variable,to.group1.variable,subset,
+                                      weight.type,recruitment,N,to.group0.variable,to.group1.variable,
                                       number.ss.samples.per.iteration, confidence.level){
   
   # The purpose of rds.data.frame is that it enforces the required
@@ -188,7 +188,8 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
     recruiter.id <- as.character(rds.data.nomiss[["recruiter.id"]])[wave.order]
     degrees <- data.frame(rds.data.nomiss)[wave.order,network.size]    
     wave <- wave[wave.order]
-    
+    if(all(wave != 1))
+      stop("No recruitment: homophily undefined")
     # Now rationalize the recruiter.id information so that it corresponds to recruiter
     # row.
     
@@ -248,8 +249,7 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
                                       number.ss.samples.per.iteration=number.ss.samples.per.iteration,
                                       hajek=TRUE)
     
-    weights.all <- rep(0,length=nrow(rds.data.nomiss))
-    weights.all[subset] <- weights.nomiss
+    weights.all <- weights.nomiss
     outcome <- as.vector(rds.data.nomiss[[outcome.variable]])
     if(length(unique(outcome)) == 2){
       outcome <- as.numeric(outcome==max(outcome,na.rm=TRUE))
@@ -338,7 +338,6 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
 #' @param outcome.variable A string giving the name of the variable in the \code{rds.data} that contains a categorical or numeric variable to be analyzed.
 #' @param weight.type A string giving the type of estimator to use. The options are\cr
 #' \code{"Gile's SS"}, \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, \code{"Good-Fellows"} and \code{"Arithemic Mean"}. If \code{NULL} it defaults to \code{"Gile's SS"}.
-#' @param uncertainty A string giving the type of uncertainty estimator to use. The options are \code{"Gile's SS"} and \code{"Salganik"}. This is usually determined by \code{weight.type} to be consistent with the estimator's origins (e.g., for \code{"Gile's SS"}, \code{"RDS-I"}, \code{"RDS-II"}, \code{"RDS-I/DS"}, and \code{"Arithemic Mean"}). Hence it's current functionality is limited. If \code{NULL} it defaults to \code{"Gile's SS"}.
 #' @param recruitment A logical indicating if the homophily in the recruitment chains should be computed also. The default is FALSE.
 #' @param N An estimate of  the number of members of the population being sampled. If \code{NULL} it is read as the \code{population.size.mid} attribute of the \code{rds.data} frame. If that is missing it defaults to 1000.
 #' @param to.group0.variable The number in the network of each survey respondent who have group variable value 0. Usually this is not available. The default is to not use this variable.
@@ -414,11 +413,10 @@ homophily.estimates.local <- function(rds.data,outcome.variable,
 #'   N=1000,weight.type="RDS-II")
 #' }
 #'@export
-homophily.estimates <- function(rds.data,outcome.variable,weight.type=NULL,uncertainty=NULL,
+homophily.estimates <- function(rds.data,outcome.variable,weight.type=NULL,
                                 recruitment=FALSE,N=NULL,to.group0.variable=NULL, to.group1.variable=NULL,
                                 number.ss.samples.per.iteration=NULL,confidence.level=.95)
 {
-  subset <- substitute(subset)
   if(length(outcome.variable) == 1){
     result <- homophily.estimates.local(rds.data=rds.data,
                                         outcome.variable=outcome.variable,

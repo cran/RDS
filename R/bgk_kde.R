@@ -34,18 +34,25 @@ bgk_kde <- function(data, n, MIN, MAX, smooth = 4) {
   
   nargin <- length(as.list(match.call())) - 1
   
-  if (nargin < 2)
+  if (missing(n))
     n <- 2 ^ 14
   n <- 2 ^ ceiling(log2(n))
   # round up n to the next power of 2;
   if (n < 8) {
     n <- 8
   }
-  if (nargin < 4)
+  
+  if (missing(MAX) || missing(MIN))
   {
     # define the default  interval [MIN,MAX]
-    minimum <- min(data)
-    maximum <- max(data)
+    if(missing(MIN))
+      minimum <- min(data)
+    else
+      minimum <- MIN
+    if(missing(MAX))
+      maximum <- max(data)
+    else
+      maximum <- MAX
     
     Range = maximum - minimum
     

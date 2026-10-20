@@ -5,9 +5,7 @@ probtodist<-function(classes,nums,prob,n,hajek=TRUE){
   #nums: number of members of that class in the sample
   #prob: Probabilities of selection for a member of that class
   props<-rep(0,length(classes))
-  for(k in 1:length(classes)){
-    props[k]<-nums[k]/prob[k]
-  }
+  props <- nums / prob
   # Hajek is the one in Krista's thesis and it implicitly multiplies the
   # HT estimate of the proportions by N as an estimate of the population size.
   # Otherwise use the HT estimator which implicitly multiples by the HT
@@ -26,7 +24,7 @@ probtodist<-function(classes,nums,prob,n,hajek=TRUE){
   }
   props<-props/sum(props)
   if(any(is.na(props))){
-    print("Error in proptodist")
+    warning("Error in probtodist")
   }	
   #classes: size value of each class: 
   #props: proportion of the population in that class
@@ -77,7 +75,7 @@ getestCstacked<-function(samp,n,nit=5, nsampsamp=1000, trace=FALSE, hajek=TRUE,S
       pvec=nsamp*(temp$classes)/(temp$n*sum(temp$props*temp$classes))
     }else{
       #    Arithmetic Mean
-      pvec=rep(nsamp,length=temp$classes)/temp$n
+      pvec=rep(nsamp/temp$n,length=length(temp$classes))
     }
     newprobs <- list(degvec=temp$classes, pvec=pvec,
                      nbyclass=round(temp$n*temp$props/sum(temp$props)))
@@ -94,7 +92,7 @@ getestCstacked<-function(samp,n,nit=5, nsampsamp=1000, trace=FALSE, hajek=TRUE,S
 }
 
 
-getinclCstacked<-function(classes,props,n,nsamp,nsampsamp,nums,hajek=TRUE){
+getinclCstacked<-function(classes,props,n,nsamp,nsampsamp,nums){
   props2<-props/sum(props)
   #artificially inflate each value to at least 1 node
   nbyclass<-round(n*props2)

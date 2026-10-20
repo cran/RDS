@@ -38,27 +38,42 @@ HCG.bootstrap <- function(rds.data, group.variable, number.of.bootstrap.samples,
   rid <- get.rid(rds)
   id <- get.id(rds)
   degree <- get.net.size(rds)
+  # Boundary-lite: recode missing outcomes into the internal excluded group
+  # (for continuous outcomes, into the internal level of the cut factor) so
+  # the theta fit sees intact recruitment chains. Excluded subjects stand in
+  # by (class, degree) and carry NA values; originally-missing positions are
+  # re-masked to NA in each replicate's outcome below.
   if(is.cts){
     out <- .cut2(rds[, group.variable], g=cont.breaks)
-    
+    out.na <- is.na(out)
+    if(is.null(hcg.est) && any(out.na)){
+      out <- .sort.levels(.mint.excluded(out, out.na))
+    }
+
     #create a map in each outcome group between degrees and continuous outcome values
     deg.out.map <- list()
-    for(i in 1:cont.breaks){
-      d <- stats::na.omit(degree[as.numeric(out) == i])
-      o <- stats::na.omit(rds[as.numeric(out) == i, group.variable])
+    for(i in seq_len(nlevels(out))){
+      idx <- which(as.numeric(out) == i & !is.na(degree))
+      d <- degree[idx]
+      o <- rds[idx, group.variable]   # NA for the internal excluded class
       lis <- list()
       for(j in seq_along(d)){
-        if(length(lis) <= d[j] || is.null(lis[[d[j]]])){
+        if(length(lis) < d[j] || is.null(lis[[d[j]]])){
           tr <- try(lis[[d[j]]] <- o[j])
 		  if(inherits(tr,"try-error"))
-			browser()
+			  stop("HCG.bootstrap internal error")
 	    }else
           lis[[d[j]]] <- c(lis[[d[j]]], o[j])
       }
       deg.out.map[[i]] <- lis
     }
-  }else
+  }else{
     out <- as.factor(rds[, group.variable])
+    out.na <- is.na(out)
+    if(is.null(hcg.est) && any(out.na)){
+      out <- .sort.levels(.mint.excluded(out, out.na))
+    }
+  }
   outNum <- as.numeric(out)
   recruiter.ind <- match(rid, id)
   seed <- which(!(rid %in% id))
@@ -87,8 +102,6 @@ HCG.bootstrap <- function(rds.data, group.variable, number.of.bootstrap.samples,
     deg.by.group[[i]] <- data.frame(deg.value, deg.count)
   }
   
-  out.na <- is.na(out)
-  
   results <- list()
   doboot <- function(){
     running.deg.by.group <- deg.by.group
@@ -99,7 +112,8 @@ HCG.bootstrap <- function(rds.data, group.variable, number.of.bootstrap.samples,
     out.boot[seed] <- sample.int(nlev, size=length(seed), prob=yhat, replace = TRUE)#outNum[seed]#
     for(s in seed){
       d <- na.omit(degree[out == levels(out)[out.boot[s]]])
-      deg.boot[s] <- sample(d,size = 1,prob = d)
+      if(length(d) == 0) d <- na.omit(degree)  
+      deg.boot[s] <- d[sample.int(length(d), 1, prob = d)]#sample(d, size = 1, prob = d)
     }
     #if(any(is.na(out.boot[seed]))){
     #  isna <- is.na(out.boot[seed])
@@ -117,8 +131,9 @@ HCG.bootstrap <- function(rds.data, group.variable, number.of.bootstrap.samples,
       deg.ind <- try(sample.int(nrow(deg.by.group[[to]]), size = 1, 
                                 prob=running.deg.by.group[[to]]$deg.count * running.deg.by.group[[to]]$deg.value), silent=TRUE)
       if(inherits(deg.ind, "try-error")){
-        d <- na.omit(degree[out == to])
-        deg.boot[i] <- sample(d,size = 1,prob = d)
+        d <- na.omit(degree[outNum == to])
+        if(length(d) == 0) d <- na.omit(degree)  
+        deg.boot[i] <- d[sample.int(length(d), 1, prob = d)]#sample(d,size = 1,prob = d)
       }else
         deg.boot[i] <- running.deg.by.group[[to]]$deg.value[deg.ind]
       
@@ -133,12 +148,16 @@ HCG.bootstrap <- function(rds.data, group.variable, number.of.bootstrap.samples,
       out.boot.cont <- rep(NA, length(out.boot))
       for(r in 1:length(out)){
         outs <- deg.out.map[[out.boot[r]]][[deg.boot[r]]]
-        out.boot.cont[r] <- outs[sample.int(length(outs), size=1)]
+        if(is.null(outs) || length(outs) == 0)
+          out.boot.cont[r] <- NA
+        else
+          out.boot.cont[r] <- outs[sample.int(length(outs), size=1)]
       }
       out.boot <- out.boot.cont
     }else{
-      out.boot <- as.factor(out.boot)
-      levels(out.boot) <- lev
+      out.boot <- factor(out.boot, levels=1:nlev, labels=lev)
+      out.boot[as.character(out.boot) == .rds.excluded] <- NA
+      out.boot <- factor(out.boot, levels=setdiff(lev, .rds.excluded))
     }
     boot.rds <- rds
     
@@ -172,22 +191,16 @@ HCG.bootstrap.se <- function(rds.data, group.variable,
                                   number.of.bootstrap.samples,estimator.name,N=NULL, 
                              small.fraction=is.null(N) || nrow(rds.data) / N < 0.05,
                              to.factor=FALSE, control=control.rds.estimates(), cont.breaks=3, ...){
-  estimate <- function(boot,theta){
-    #if(estimator.name == "HCG"){
-    #  hcg.estimate(get.id(boot), get.rid(boot), get.recruitment.time(boot, wave.fallback=TRUE), get.net.size(boot), 
-    #               boot[[group.variable]], N, small.fraction=small.fraction)$yhat
-    #}else{
-      if(!missing(theta))
-        control$hcg.theta.start <- theta
+  estimate <- function(boot){
       RDS.estimates.local(
         rds.data=boot,
         outcome.variable=group.variable,
         weight.type=estimator.name,
-        empir.lik=FALSE,
         N=N,
         to.factor=to.factor,
         cont.breaks=cont.breaks,
         control=control,
+        hcg.wave.fallback=TRUE,
         ...)@estimate
     #}
   }
@@ -202,9 +215,9 @@ HCG.bootstrap.se <- function(rds.data, group.variable,
   
   result <- result[apply(!is.nan(result),1,all), , drop=FALSE]
   if(nrow(result)>1){
-    a=(sqrt(diag(stats::var(result))))	
+    a <- (sqrt(diag(stats::var(result))))	
   }else{
-    a=(sqrt(stats::var(as.numeric(result))))	
+    a <- (sqrt(stats::var(as.numeric(result))))	
   }
   attr(a,"bsresult") <- result
   return(a)

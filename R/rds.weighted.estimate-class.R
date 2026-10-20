@@ -49,17 +49,7 @@ setMethod("print",signature="rds.weighted.estimate",
             cat(x@weight.type,"Estimate for",x@outcome.variable,
                 switch(((x@csubset=="")|(x@csubset=="NULL"))+1,paste("[",x@csubset,"]",sep=""),NULL),
                 "\n")
-            if(!is.null(attr(x@estimate,"EL.se"))){
-              se <- attr(x@estimate,"EL.se")
-              attr(x@estimate,"EL.se") <- NULL
-              print(x@estimate)
-              if(se > 0){
-                cat("Estimated standard error","\n")
-                print(se)
-              }
-            }else{ 
-              print(x@estimate)
-            }
+            print(x@estimate)
           }
 )
 
@@ -68,17 +58,7 @@ setMethod("show",signature="rds.weighted.estimate",
             cat(object@weight.type,"Estimate for",object@outcome.variable,
                 switch(((object@csubset=="")|(object@csubset=="NULL"))+1,paste("[",object@csubset,"]",sep=""),NULL),
                 "\n")
-            if(!is.null(attr(object@estimate,"EL.se"))){
-              se <- attr(object@estimate,"EL.se")
-              attr(object@estimate,"EL.se") <- NULL
-              print(object@estimate)
-              if(se > 0){
-                cat("Estimated standard error","\n")
-                print(se)
-              }
-            }else{ 
-              print(object@estimate)
-            }
+            print(object@estimate)
           }
 )
 

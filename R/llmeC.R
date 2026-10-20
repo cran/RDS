@@ -97,7 +97,7 @@ memle <-function(network.size,num.recruits,recruit.time=FALSE,recruit.times=rep(
 #print(guess)
 #print(vtrans(fit$par))
     }
-    if(recruit.time & fit$par[3] > 0.0001){
+    if(recruit.time & abs(fit$par[2]) < 0.0001){
       recruit.time <- FALSE
       if(unit.scale<0){
         if(optimism) {
@@ -195,7 +195,7 @@ llcmpme <- function(v,n,network.size,num.recruits,recruit.time, recruit.times,
     recruit.times <- rep(0,n)
   }
   if(!optimism){
-    v <- c(v,1)
+    v <- c(v,0)
   }
   Cret <- .C("gllcmpmeC",
              v=as.double(v),
@@ -222,7 +222,7 @@ llnbme <- function(v,n,network.size,num.recruits,recruit.time,recruit.times,
     recruit.times <- rep(0,n)
   }
   if(!optimism){
-    v <- c(v,1)
+    v <- c(v,0)
   }
   Cret <- .C("gllnbmeC",
              v=as.double(v),
@@ -241,36 +241,36 @@ llnbme <- function(v,n,network.size,num.recruits,recruit.time,recruit.times,
   if(is.na(out)){out <- -10^10}
   out
 }
-dnbmepdf <- function(v,network.size,num.recruits,recruit.time,recruit.times,max.coupons=3,K=1000,
-                     nb.scale=NULL,optimism=TRUE,gmean=length(network.size)/sum(1/network.size),verbose=FALSE){
-  v <- c(gmean,v)
-  if(is.null(nb.scale)){
-    nb.scale <- -1
-  }else{
-    nb.scale <- 1
-  }
-  n <- length(network.size)
-  if(!recruit.time){
-    v <- c(v[1:2],0,v[-c(1:2)])
-    recruit.times <- rep(0,n)
-  }
-  if(!optimism){
-    v <- c(v,1)
-  }
-  network.size[is.na(network.size)] <- -1
-  Cret <- .C("gnbmepdfC",
-             v=as.double(v),
-             n=as.integer(n),
-             srd=as.integer(network.size),
-             numrec=as.double(num.recruits),
-             rectime=as.double(recruit.times),
-             maxcoupons=as.integer(max.coupons),
-             K=as.integer(K),
-             nb.scale=as.double(nb.scale),
-             pdf=double(n*K),
-             verbose=as.integer(verbose), PACKAGE="RDS")
-  return(matrix(Cret$pdf[1:(n*Cret$K)],ncol=n,nrow=Cret$K))
-}
+# dnbmepdf <- function(v,network.size,num.recruits,recruit.time,recruit.times,max.coupons=3,K=1000,
+#                      nb.scale=NULL,optimism=TRUE,gmean=length(network.size)/sum(1/network.size),verbose=FALSE){
+#   v <- c(gmean,v)
+#   if(is.null(nb.scale)){
+#     nb.scale <- -1
+#   }else{
+#     nb.scale <- 1
+#   }
+#   n <- length(network.size)
+#   if(!recruit.time){
+#     v <- c(v[1:2],0,v[-c(1:2)])
+#     recruit.times <- rep(0,n)
+#   }
+#   if(!optimism){
+#     v <- c(v,1)
+#   }
+#   network.size[is.na(network.size)] <- -1
+#   Cret <- .C("gnbmepdfC",
+#              v=as.double(v),
+#              n=as.integer(n),
+#              srd=as.integer(network.size),
+#              numrec=as.double(num.recruits),
+#              rectime=as.double(recruit.times),
+#              maxcoupons=as.integer(max.coupons),
+#              K=as.integer(K),
+#              nb.scale=as.double(nb.scale),
+#              pdf=double(n*K),
+#              verbose=as.integer(verbose), PACKAGE="RDS")
+#   return(matrix(Cret$pdf[1:(n*Cret$K)],ncol=n,nrow=Cret$K))
+# }
 
 dmepdf <- function(v,network.size,num.recruits,recruit.time,recruit.times,max.coupons=3,K=1000,
                    unit.scale=NULL,unit.model="nbinom",optimism=TRUE,gmean=length(network.size)/sum(1/network.size),verbose=FALSE){

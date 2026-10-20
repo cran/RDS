@@ -16,7 +16,7 @@
 #' 
 #' #create and rds.data.frame
 #' rds <- as.rds.data.frame(dat,network.size="network.size")
-rid.from.coupons <- function(data, subject.coupon=NULL, coupon.variables, 
+rid.from.coupons <- function(data, subject.coupon, coupon.variables, 
                              subject.id=NULL,seed.id="seed"){
   max.coupons <- length(coupon.variables)
   column.names <- colnames(data)

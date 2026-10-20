@@ -105,6 +105,7 @@ void bsC (
 	if(offbi>0){
 	  for (i=0; i<offbi; i++){
 	    dif[0]=props2[0]-newnbyclass[0]/(1.0*Ni);
+	    if(dif[0]<0.0){dif[0] = 0.0;}
 	    cdif[0] = dif[0];
 	    if(dif[0]<0.0){dif[0] = 0.0;}
 	    for (j=1; j<ci; j++){
@@ -115,6 +116,7 @@ void bsC (
 	    }
 	    rU = unif_rand()*cdif[ci-1];
 	    for (j = 0; j < ci; j++) {if (rU <= cdif[j]) break;}
+	    if(j == ci) j = ci - 1;
 	    newnbyclass[j]++;
 	  }
 	}
@@ -135,17 +137,26 @@ void bsC (
 	    }
 	    if(totaltmp==0.0){
 	     dif[0]=1.0-(props2[0]-newnbyclass[0]/(1.0*Ni));
-	     if(newnbyclass[0]==1){dif[0] = 0.0;}
+	     if(newnbyclass[0]<=1){dif[0] = 0.0;}
 	     cdif[0] = dif[0];
 	     for (j=1; j<ci; j++){
 	      dif[j]=1.0-(props2[j]-newnbyclass[j]/(1.0*Ni));
-	      if(newnbyclass[j]==1){dif[j] = 0.0;}
+	      if(newnbyclass[j]<=1){dif[j] = 0.0;}
 	      /* compute cumulative probabilities */
 	      cdif[j] = cdif[j-1] + dif[j];
+	     }
+	     if(cdif[ci-1] <= 0.0){
+	       /* last resort: all classes at <=1 but removals still owed;
+	        remove uniformly from non-empty classes */
+	       cdif[0] = (newnbyclass[0] > 0) ? 1.0 : 0.0;
+	       for (j=1; j<ci; j++){
+	         cdif[j] = cdif[j-1] + ((newnbyclass[j] > 0) ? 1.0 : 0.0);
+	       }
 	     }
 	    }
 	    rU = unif_rand()*cdif[ci-1];
 	    for (j = 0; j < ci; j++) {if (rU <= cdif[j]) break;}
+	    if(j == ci) j = ci - 1;
 	    newnbyclass[j]--;
 	  }
 	}

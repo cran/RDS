@@ -13,6 +13,8 @@
 #' It then draws bootstrap
 #' RDS samples from this population distribution and calculates the chi.squared statistic on
 #' the weighted contingency table. Weights are calculated using the HCG estimator assuming a large population size.
+#' @seealso \code{\link{RDS.bootstrap.mechanics}} for a description of the HCG
+#' bootstrap used here.
 #' @examples
 #' data(faux)
 #' bootstrap.contingency.test(rds.data=faux, row.var="X", col.var="Y",
@@ -89,10 +91,25 @@ bootstrap.contingency.test <- function(rds.data,
   rid <- get.rid(rds)
   id <- get.id(rds)
   degree <- get.net.size(rds)
-  hcg.row <-
-    hcg.estimate(id, rid, time, degree, row, N, small.fraction = TRUE)
-  hcg.col <-
-    hcg.estimate(id, rid, time, degree, col, N, small.fraction = TRUE)
+  # Fit the marginal HCG models with missing outcomes retained as an
+  # internal group (preserving recruitment chains), then remove the group
+  # (by name) and renormalize before building the independence null.
+  marginal.hcg <- function(x){
+    xf <- .mint.excluded(factor(x), is.na(x))
+    fit <- hcg.estimate(id, rid, time, degree, xf, N, small.fraction = TRUE)
+    th <- fit$theta
+    yh <- fit$yhat
+    if(.rds.excluded %in% colnames(th)){
+      keep <- colnames(th) != .rds.excluded
+      th <- th[keep, keep, drop = FALSE]
+      th <- th / rowSums(th)
+      yh <- yh[names(yh) != .rds.excluded]
+      yh <- yh / sum(yh)
+    }
+    list(theta = th, yhat = yh)
+  }
+  hcg.row <- marginal.hcg(row)
+  hcg.col <- marginal.hcg(col)
   theta <- matrix(0, nrow = nr * nc, ncol = nr * nc)
   yhat <- rep(0, nr * nc)
   for (i in 1:nr) {
@@ -148,7 +165,7 @@ bootstrap.contingency.test <- function(rds.data,
     tab[is.na(tab)] <- 0
     tab <- tab[rowSums(tab) > 0, colSums(tab) > 0, drop=FALSE]
     if(is.null(dim(tab)) || ncol(tab) < 2 || nrow(tab) < 2)
-      result <- structure(NA, .Names = "X-squared")
+      result <- structure(NA, names = "X-squared")
     else
       result <- suppressWarnings(stats::chisq.test(tab, correct = FALSE)$statistic)
 	  attr(result,"table") <- tab
@@ -177,7 +194,7 @@ bootstrap.contingency.test <- function(rds.data,
       )
     )
 
-  pvalue <- mean(boot.stats > stat, na.rm=TRUE)
+  pvalue <- mean(boot.stats > stat, na.rm=TRUE) + .5 * mean(boot.stats == stat, na.rm=TRUE)
   result <- list(
     table = tbl,
     p.value = pvalue,

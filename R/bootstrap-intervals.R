@@ -1,4 +1,25 @@
 
+.bootstrap.ci <- function(estimate, observed.estimate, bsests, ci.type, confidence.level) {
+  # estimate: point/lower/upper matrix, rows aligned to observed.estimate (outclasses order)
+  # bsests:   replicates x groups, columns aligned the same way
+  qs <- function() t(apply(bsests, 2, stats::quantile,
+                           c((confidence.level + 1)/2, (1 - confidence.level)/2), na.rm = TRUE))
+  estimate[, 1] <- observed.estimate
+  switch(ci.type,
+         pivotal    = { estimate[, 2:3] <- 2 * observed.estimate - qs(); estimate },
+         quantile   = { estimate[, 2:3] <- qs()[, 2:1];                   estimate },
+         proportion = {
+           if (all(observed.estimate >= 0) &&
+               (any(observed.estimate < 0.15) || any(estimate[, 2:3] < 0 | estimate[, 2:3] > 1)))
+             estimate[, 2:3] <- qs()[, 2:1]
+           estimate[, 2:3][estimate[, 2:3] < 0] <- 0
+           estimate[, 2:3][estimate[, 2:3] > 1] <- 1
+           estimate
+         },
+         estimate  # "t" default: keep the SE-based lower/upper
+  )
+}
+
 
 
 RDS.bootstrap.intervals.local <- function(rds.data,
@@ -105,71 +126,84 @@ RDS.bootstrap.intervals.local <- function(rds.data,
       max(rds.data[[network.size]], na.rm = TRUE)
   }
   rds.data.nomiss <- rds.data
-  
+
   se <- substitute(subset)
   subset <- eval(se, rds.data, parent.frame())
   if (is.null(se) | is.null(subset)) {
     subset <- rep(TRUE, length = nrow(rds.data.nomiss))
   } else{
     subset[is.na(subset)] <- FALSE
-    if (!is.null(N)) {
-      #use VH estimator to adjust population size to sub-population
-      # defined by subset
-      tmp.wts <- vh.weights(rds.data.nomiss[[network.size]])
-      tmp.wts <- tmp.wts / sum(tmp.wts)
-      prop <- sum(tmp.wts * subset)
-      N <- N * prop
-      if (N < sum(subset))
-        stop(sprintf("Estimated sub-population size, %f, smaller than subsets size, %f.", N, sum(subset)))
-    }
-    
-    #This subsets setting orphaned children to be seeds
-    #in order to maintain a valid recruitment tree.
-    rds.data.nomiss <- rds.data.nomiss[subset, , warn = FALSE]
-    
-    #drop 0 count levels
-    if (is.factor(rds.data[[outcome.variable]])) {
-      outcome <- factor(rds.data.nomiss[[outcome.variable]])
-      # 			Make sure the factor labels are alphabetic!
-      outcome <- factor(outcome, levels = levels(outcome)[order(levels(outcome))])
-      rds.data.nomiss[[outcome.variable]] <- outcome
-    }
   }
-  
+  # Sub-population size for reporting and the SRS variance; the weights and
+  # the bootstrap engines are fit on the full data with the full N.
+  N.report <- N
+  if (!all(subset) && !is.null(N)) {
+    #use VH estimator to adjust population size to sub-population
+    # defined by subset
+    tmp.wts <- vh.weights(rds.data.nomiss[[network.size]])
+    tmp.wts <- tmp.wts / sum(tmp.wts)
+    prop <- sum(tmp.wts * subset)
+    N.report <- N * prop
+    if (N.report < sum(subset))
+      stop(sprintf("Estimated sub-population size, %f, smaller than subsets size, %f.", N.report, sum(subset)))
+  }
+
+  # Boundary: retain excluded subjects (missing outcome / outside subset) as
+  # an internal group so recruitment chains stay intact; the group is removed
+  # from all outputs. A continuous outcome cannot carry the internal level in
+  # the outcome vector itself: excluded subjects' values are set to NA, and
+  # the engines carry them as the internal level of the *cut* factor - each
+  # (group, degree) cell's members stand in for one another, so an excluded
+  # subject contributes its degree and linkage but draws an NA value, which
+  # the estimates mask (see NA_SUBSET_HANDLING.md).
+  outcome0 <- rds.data.nomiss[[outcome.variable]]
+  is.cts <- is.numeric(outcome0) & !to.factor
+  excl <- .excluded.mask(outcome0, subset)
+  if (!is.cts) {
+    if (any(excl)) {
+      rds.data.nomiss[[outcome.variable]] <-
+        .sort.levels(.mint.excluded(as.factor(outcome0), excl))
+    }
+  } else if (any(excl & !is.na(outcome0))) {
+    # Subjects outside the subset must not contribute outcome information.
+    rds.data.nomiss[[outcome.variable]][excl] <- NA
+  }
+
   #if (mean(duplicated(rds.data.nomiss[[outcome.variable]], na.rm = TRUE)) < control$discrete.cutoff) {
   #  is.cts <- TRUE
   #}
   outcome <- rds.data.nomiss[[outcome.variable]]
-  is.cts <- is.numeric(outcome) & !to.factor
   #only categorical estimates are supported
   if(!is.cts){
     outcome <- factor(rds.data.nomiss[[outcome.variable]])
            #Make sure the factor labels are alphabetic!
-    outcome <-
-      factor(outcome, levels = levels(outcome)[order(levels(outcome))])
+    outcome <- .sort.levels(outcome)
     rds.data.nomiss[[outcome.variable]] <- outcome
-    outclasses <- levels(outcome)
-    nsamplesbyoutcome <- table(as.numeric(outcome))
+    outclasses <- setdiff(levels(outcome), .rds.excluded)
+    if(any(excl)){
+      nsamplesbyoutcome <- table(factor(as.character(outcome[!excl]), levels = outclasses))
+    }else{
+      nsamplesbyoutcome <- table(as.numeric(outcome))
+    }
   }else{
-    nsamplesbyoutcome <- length(outcome)
+    nsamplesbyoutcome <- sum(!excl & !is.na(outcome))
   }
-  g <- length(stats::na.omit(unique(rds.data.nomiss[[outcome.variable]])))
+  g <- length(setdiff(stats::na.omit(unique(as.character(rds.data.nomiss[[outcome.variable]]))), .rds.excluded))
   if (g == 1) {
     warning(paste(outcome.variable, "has only one level. Skipping..."))
     return(invisible(NULL))
   }
-  nsamples <- sum(!is.na(as.vector(outcome)))
-  
+  nsamples <- sum(!excl & !is.na(as.vector(outcome)))
+
   rds <- RDS.estimates.local(
     rds.data = rds.data.nomiss,
     outcome.variable = outcome.variable,
     N = N,
     weight.type = weight.type,
     control = control,
-    empir.lik = TRUE,
-    useC = useC,
     to.factor=to.factor,
     cont.breaks=cont.breaks,
+    hcg.wave.fallback = TRUE,
     ...
   )
   
@@ -220,70 +254,20 @@ RDS.bootstrap.intervals.local <- function(rds.data,
       to.factor=to.factor,
       ...
     )
-    
-    attr(bs, "is.cts") <- is.cts
-    #attr(bs, "is.quantile") <- is.quantile
-    attr(bs, "mu") <- observed.estimate
-    
-    if(!is.cts)
-      bso <- bs[match(names(bs), outclasses)]
-    else
-      bso <- bs
-    estimate <-
-      cbind(observed.estimate,
-            observed.estimate - crit * bso,
-            observed.estimate + crit * bso)
+    attr(bs, "is.cts") <- is.cts 
+    if (!is.cts) {
+      ord    <- match(outclasses, names(bs))        # <- FIX: correct direction (was names(bs), outclasses)
+      bso    <- bs[ord]
+      bsests <- attr(bs, "bsresult")[, ord, drop = FALSE]
+    } else {
+      bso    <- bs                                  # <- cts: single column, NO reorder (fixes the crash)
+      bsests <- as.matrix(attr(bs, "bsresult"))
+      outclasses <- outcome.variable                # normalize the cts label here for all branches
+    }
+    estimate <- cbind(observed.estimate, observed.estimate - crit * bso, observed.estimate + crit * bso)
     colnames(estimate) <- c("point", "lower", "upper")
-    estimate = switch(
-      ci.type,
-      "pivotal" = {
-        bsests <- attr(bs, "bsresult")
-        bsests <- bsests[, match(names(bs), outclasses)]
-        qcrit <-
-          t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                               confidence.level) / 2
-          ), na.rm = TRUE))
-        estimate[, 2:3] <- 2 * observed.estimate - qcrit
-        #	  	  estimate[, 1] <- 2*observed.estimate-apply(bsests,2,mean,na.rm=TRUE)
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      "quantile" = {
-        bsests <- attr(bs, "bsresult")
-        bsests <- bsests[, match(names(bs), outclasses)]
-        qcrit <-
-          t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                               confidence.level) / 2
-          ), na.rm = TRUE))
-        estimate[, 2:3] <- qcrit[, 2:1]
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      "proportion" = {
-        if (all(observed.estimate >= 0) &
-            (any(observed.estimate < 0.15) |
-             any(estimate[, 2:3] < 0 | estimate[, 2:3] > 1))) {
-          bsests <- attr(bs, "bsresult")
-          bsests <- bsests[, match(names(bs), outclasses)]
-          qcrit <-
-            t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                                 confidence.level) / 2
-            ), na.rm = TRUE))
-          estimate[, 2:3] <- qcrit[, 2:1]
-        }
-        estimate[estimate[, 2] < 0, 2] <- 0
-        estimate[estimate[, 3] < 0, 3] <- 0
-        estimate[estimate[, 2] > 1, 2] <- 1
-        estimate[estimate[, 3] > 1, 3] <- 1
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      {
-        # t (the default)
-        estimate[, 1] <- observed.estimate
-        estimate
-      }
-    )
+    estimate <- .bootstrap.ci(estimate, observed.estimate, bsests, ci.type, confidence.level)
+    
   } else if (uncertainty == "HCG") {
 
     bs <- HCG.bootstrap.se(
@@ -297,72 +281,23 @@ RDS.bootstrap.intervals.local <- function(rds.data,
       control = control,
       ...
     )
-    
-    attr(bs, "is.cts") <- is.cts
-    #attr(bs, "is.quantile") <- is.quantile
-    attr(bs, "mu") <- observed.estimate
-    if(is.cts){
-      bso <- bs
-      outclasses <- outcome.variable
-    }else{
-      bso <- bs[match(names(bs), outclasses)]
+    attr(bs, "is.cts") <- is.cts 
+    if (!is.cts) {
+      ord    <- match(outclasses, names(bs))        # <- FIX: correct direction (was names(bs), outclasses)
+      bso    <- bs[ord]
+      bsests <- attr(bs, "bsresult")[, ord, drop = FALSE]
+    } else {
+      bso    <- bs                                  # <- cts: single column, NO reorder (fixes the crash)
+      bsests <- as.matrix(attr(bs, "bsresult"))
+      outclasses <- outcome.variable                # normalize the cts label here for all branches
     }
-    estimate <-
-      cbind(observed.estimate,
-            observed.estimate - crit * bso,
-            observed.estimate + crit * bso)
+    estimate <- cbind(observed.estimate, observed.estimate - crit * bso, observed.estimate + crit * bso)
     colnames(estimate) <- c("point", "lower", "upper")
-    estimate = switch(
-      ci.type,
-      "pivotal" = {
-        bsests <- attr(bs, "bsresult")
-        bsests <- bsests[, match(names(bs), outclasses)]
-        qcrit <-
-          t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                               confidence.level) / 2
-          ), na.rm = TRUE))
-        estimate[, 2:3] <- 2 * observed.estimate - qcrit
-        #	  	  estimate[, 1] <- 2*observed.estimate-apply(bsests,2,mean,na.rm=TRUE)
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      "quantile" = {
-        bsests <- attr(bs, "bsresult")
-        bsests <- bsests[, match(names(bs), outclasses)]
-        qcrit <-
-          t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                               confidence.level) / 2
-          ), na.rm = TRUE))
-        estimate[, 2:3] <- qcrit[, 2:1]
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      "proportion" = {
-        if (all(observed.estimate >= 0) &
-            (any(observed.estimate < 0.15) |
-             any(estimate[, 2:3] < 0 | estimate[, 2:3] > 1))) {
-          bsests <- attr(bs, "bsresult")
-          bsests <- bsests[, match(names(bs), outclasses)]
-          qcrit <-
-            t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                                 confidence.level) / 2
-            ), na.rm = TRUE))
-          estimate[, 2:3] <- qcrit[, 2:1]
-        }
-        estimate[estimate[, 2] < 0, 2] <- 0
-        estimate[estimate[, 3] < 0, 3] <- 0
-        estimate[estimate[, 2] > 1, 2] <- 1
-        estimate[estimate[, 3] > 1, 3] <- 1
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      {
-        # t (the default)
-        estimate[, 1] <- observed.estimate
-        estimate
-      }
-    )
+    estimate <- .bootstrap.ci(estimate, observed.estimate, bsests, ci.type, confidence.level)
+    
   } else if (uncertainty == "Treeboot") {
+    if(is.cts)
+      stop("uncertainty = \"Treeboot\" does not support continuous outcomes; use \"Salganik\", \"HCG\", or \"Gile\".")
     bs <- treeboot.bootstrap.se(
       rds.data = rds.data.nomiss,
       group.variable = outcome.variable,
@@ -371,71 +306,28 @@ RDS.bootstrap.intervals.local <- function(rds.data,
       N = N,
       ...
     )
-    
-    attr(bs, "is.cts") <- is.cts
-    #attr(bs, "is.quantile") <- is.quantile
-    attr(bs, "mu") <- observed.estimate
-    
-    bso <- bs[match(names(bs), outclasses)]
-    estimate <-
-      cbind(observed.estimate,
-            observed.estimate - crit * bso,
-            observed.estimate + crit * bso)
+    attr(bs, "is.cts") <- is.cts 
+    if (!is.cts) {
+      ord    <- match(outclasses, names(bs))        # <- FIX: correct direction (was names(bs), outclasses)
+      bso    <- bs[ord]
+      bsests <- attr(bs, "bsresult")[, ord, drop = FALSE]
+    } else {
+      bso    <- bs                                  # <- cts: single column, NO reorder (fixes the crash)
+      bsests <- as.matrix(attr(bs, "bsresult"))
+      outclasses <- outcome.variable                # normalize the cts label here for all branches
+    }
+    estimate <- cbind(observed.estimate, observed.estimate - crit * bso, observed.estimate + crit * bso)
     colnames(estimate) <- c("point", "lower", "upper")
-    estimate = switch(
-      ci.type,
-      "pivotal" = {
-        bsests <- attr(bs, "bsresult")
-        bsests <- bsests[, match(names(bs), outclasses)]
-        qcrit <-
-          t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                               confidence.level) / 2
-          ), na.rm = TRUE))
-        estimate[, 2:3] <- 2 * observed.estimate - qcrit
-        #	  	  estimate[, 1] <- 2*observed.estimate-apply(bsests,2,mean,na.rm=TRUE)
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      "quantile" = {
-        bsests <- attr(bs, "bsresult")
-        bsests <- bsests[, match(names(bs), outclasses)]
-        qcrit <-
-          t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                               confidence.level) / 2
-          ), na.rm = TRUE))
-        estimate[, 2:3] <- qcrit[, 2:1]
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      "proportion" = {
-        if (all(observed.estimate >= 0) &
-            (any(observed.estimate < 0.15) |
-             any(estimate[, 2:3] < 0 | estimate[, 2:3] > 1))) {
-          bsests <- attr(bs, "bsresult")
-          bsests <- bsests[, match(names(bs), outclasses)]
-          qcrit <-
-            t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                                 confidence.level) / 2
-            ), na.rm = TRUE))
-          estimate[, 2:3] <- qcrit[, 2:1]
-        }
-        estimate[estimate[, 2] < 0, 2] <- 0
-        estimate[estimate[, 3] < 0, 3] <- 0
-        estimate[estimate[, 2] > 1, 2] <- 1
-        estimate[estimate[, 3] > 1, 3] <- 1
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      {
-        # t (the default)
-        estimate[, 1] <- observed.estimate
-        estimate
-      }
-    )
+    estimate <- .bootstrap.ci(estimate, observed.estimate, bsests, ci.type, confidence.level)
   } else if (uncertainty == "SRS") {
-    varsrs <- observed.estimate * (1 - observed.estimate) / nsamples
+    if(is.cts){
+      varsrs <- varoutcome / nsamples
+    }else{
+      varsrs <- observed.estimate * (1 - observed.estimate) / nsamples
+    }
     if (!is.null(N))
-      varsrs <- ((N - nsamples) / (N - 1)) * varsrs
+      varsrs <- ((N.report - nsamples) / (N.report - 1)) * varsrs
+
     estimate <- cbind(
       observed.estimate,
       observed.estimate -
@@ -464,118 +356,37 @@ RDS.bootstrap.intervals.local <- function(rds.data,
       useC = useC,
       ...
     )
-    
     if (attr(bs, "is.cts")) {
-      observed.estimate <- bs[1]
-      outclasses <- outcome.variable
-      nsamplesbyoutcome <- nrow(rds.data.nomiss)
-      estimate <- bs
-    }else
-      estimate <- bs[match(rownames(bs), outclasses), , drop = FALSE]
-    colnames(estimate) <- c("point", "lower", "upper")
-    bsests <- attr(bs, "bsresult")$bsests
-    bsests <- bsests[, match(rownames(bs), outclasses)]
-    estimate = switch(
-      ci.type,
-      "pivotal" = {
-        qcrit <-
-          t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                               confidence.level) / 2
-          ), na.rm = TRUE))
-        estimate[, 2:3] <- 2 * observed.estimate - qcrit
-        #	  	  estimate[, 1] <- 2*observed.estimate-apply(bsests,2,mean,na.rm=TRUE)
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      "quantile" = {
-        qcrit <-
-          t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                               confidence.level) / 2
-          ), na.rm = TRUE))
-        estimate[, 2:3] <- qcrit[, 2:1]
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      "proportion" = {
-        if (all(observed.estimate >= 0) &
-            (any(observed.estimate < 0.15) |
-             any(estimate[, 2:3] < 0 | estimate[, 2:3] > 1))) {
-          qcrit <-
-            t(apply(bsests, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                                 confidence.level) / 2
-            ), na.rm = TRUE))
-          estimate[, 2:3] <- qcrit[, 2:1]
-          #	  	    estimate[, 1] <- 2*observed.estimate-apply(bsests,2,mean,na.rm=TRUE)
-        }
-        estimate[estimate[, 2] < 0, 2] <- 0
-        estimate[estimate[, 3] < 0, 3] <- 0
-        estimate[estimate[, 2] > 1, 2] <- 1
-        estimate[estimate[, 3] > 1, 3] <- 1
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      "hmg" = {
-        nobs <- min(as.vector(nsamplesbyoutcome))
-        dae <-
-          as.vector(
-            differential.activity.estimates(
-              rds.data = rds.data.nomiss,
-              outcome.variable = outcome.variable,
-              N = N,
-              weight.type = weight.type
-            )
-          )[1]
-        if (nobs == as.vector(nsamplesbyoutcome)[1]) {
-          dae <- 1 / dae
-        }
-        if (nobs + control$lowprevalence[1] * dae < control$lowprevalence[2]) {
-          #                  Apply the combined Agresti-Coull and the bootstrap-t interval of Mantalos and Zografos (2008)
-          wbse <-
-            (attr(bs, "bsresult")$bsnm * bsests + 2) / (attr(bs, "bsresult")$bsnm +
-                                                          4)
-          nm <-
-            sum(weights.all, na.rm = TRUE) ^ 2 / sum(weights.all ^ 2, na.rm = TRUE)
-          woe <- (nm * observed.estimate + 2) / (nm + 4)
-          sigmamb <- sqrt(wbse * (1 - wbse) / attr(bs, "bsresult")$bsnm)
-          tstarn <- sweep(wbse, 2, woe, "-") / sigmamb
-          tstarn[is.infinite(tstarn)] <- NA
-          qcrit <-
-            t(apply(tstarn, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                                 confidence.level) / 2
-            ), na.rm = TRUE))
-          estimate[, 2:3] <- woe - qcrit * sqrt(woe * (1 - woe) / (nm + 4))
-        }
-        #
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      "acbt" = {
-        #                 Apply the combined Agresti-Coull and the bootstrap-t interval of Mantalos and Zografos (2008)
-        wbse <-
-          (attr(bs, "bsresult")$bsnm * bsests + 2) / (attr(bs, "bsresult")$bsnm +
-                                                        4)
-        nm <-
-          sum(weights.all, na.rm = TRUE) ^ 2 / sum(weights.all ^ 2, na.rm = TRUE)
-        woe <- (nm * observed.estimate + 2) / (nm + 4)
-        sigmamb <- sqrt(wbse * (1 - wbse) / attr(bs, "bsresult")$bsnm)
-        tstarn <- sweep(wbse, 2, woe, "-") / sigmamb
-        tstarn[is.infinite(tstarn)] <- NA
-        qcrit <-
-          t(apply(tstarn, 2, stats::quantile, c((confidence.level + 1) / 2, (1 -
-                                                                               confidence.level) / 2
-          ), na.rm = TRUE))
-        estimate[, 2:3] <- woe - qcrit * sqrt(woe * (1 - woe) / (nm + 4))
-        #
-        estimate[, 1] <- observed.estimate
-        estimate
-      },
-      {
-        # t (normal;the default)
-        #		  estimate[,2:3] <- estimate[,2:3]-matrix(apply(estimate[,2:3],1,mean),ncol=2,nrow=nrow(estimate)) + observed.estimate
-        estimate[, 1] <- observed.estimate
-        estimate
+      observed.estimate <- bs[1]; outclasses <- outcome.variable
+      estimate <- matrix(bs, nrow = 1); bsests <- as.matrix(attr(bs, "bsresult")$bsests)
+    } else {
+      # If the internal excluded group was simulated, remove it (by name)
+      # from each replicate and renormalize before taking SDs/quantiles.
+      bsr <- attr(bs, "bsresult")
+      if (.rds.excluded %in% colnames(bsr$bsests)) {
+        keep   <- colnames(bsr$bsests) != .rds.excluded
+        be     <- bsr$bsests[, keep, drop = FALSE]
+        be     <- be / rowSums(be)
+        pt     <- bsr$point_estimate[names(bsr$point_estimate) != .rds.excluded]
+        pt     <- pt / sum(pt)
+        sds    <- apply(be, 2, stats::sd, na.rm = TRUE)
+        bs2    <- cbind(pt, pt - crit * sds, pt + crit * sds)
+        rownames(bs2) <- names(pt)
+        bsr$bsests <- be
+        bsr$point_estimate <- pt
+        bsr$se_estimate <- sds
+        attributes(bs2) <- c(attributes(bs2),
+                             attributes(bs)[setdiff(names(attributes(bs)),
+                                                    c("dim","dimnames","bsresult"))])
+        attr(bs2, "bsresult") <- bsr
+        bs <- bs2
       }
-    )
+      ord      <- match(outclasses, rownames(bs))   # <- FIX: correct direction
+      estimate <- bs[ord, , drop = FALSE]
+      bsests   <- attr(bs, "bsresult")$bsests[, ord, drop = FALSE]
+    }
+    colnames(estimate) <- c("point", "lower", "upper")
+    estimate <- .bootstrap.ci(estimate, observed.estimate, bsests, ci.type, confidence.level)
   }
   #
   # Design effect (for factor outcomes)
@@ -596,7 +407,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
   #}
   #       Note the finite sample correction factor
   if (!is.null(N)) {
-    varsrs <- (((N - nsamples) / (N - 1)) * varoutcome / nsamples)
+    varsrs <- (((N.report - nsamples) / (N.report - 1)) * varoutcome / nsamples)
   } else{
     varsrs <- varoutcome / nsamples
   }
@@ -611,7 +422,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
     rownames(estimate) <- outcome.variable
   } else{
     outclasses <-
-      sort(unique(as.vector(rds.data.nomiss[[outcome.variable]])))
+      setdiff(sort(unique(as.vector(rds.data.nomiss[[outcome.variable]]))), .rds.excluded)
     outclasses[outclasses == "NA.NA"] <- "NA"
     rownames(estimate) <- outclasses[1:nrow(estimate)]
     estimate <- as.numeric(estimate)
@@ -628,7 +439,7 @@ RDS.bootstrap.intervals.local <- function(rds.data,
     weight.type,
     uncertainty,
     weights.all,
-    N = N,
+    N = N.report,
     csubset = csubset,
     conf.level = confidence.level
   )
@@ -661,10 +472,13 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 #' and \code{"Arithemic Mean"}. If \code{NULL} it defaults to \code{"Gile's
 #' SS"}.
 #' @param uncertainty A string giving the type of uncertainty estimator to use.
-#' The options are \code{"SRS"}, \code{"Gile"} and \code{"Salganik"}. This is usually
+#' The options are \code{"SRS"}, \code{"Salganik"}, \code{"Treeboot"},
+#' \code{"Gile"} and \code{"HCG"}; see \code{\link{RDS.bootstrap.mechanics}}
+#' for how each resampling procedure works and what it assumes. This is usually
 #' determined by \code{weight.type} to be consistent with the estimator's
 #' origins. The estimators RDS-I, RDS-I (DS), and RDS-II default to \code{"Salganik"},  "Arithmetic
-#' Mean" defaults to \code{"SRS"} and "Gile's SS" defaults to the \code{"Gile"} bootstrap.
+#' Mean" defaults to \code{"SRS"}, "Gile's SS" defaults to the \code{"Gile"}
+#' bootstrap and "HCG" defaults to the \code{"HCG"} bootstrap.
 #' @param N An estimate of the number of members of the population being
 #' sampled. If \code{NULL} it is read as the \code{population.size.mid} attribute of
 #' the \code{rds.data} frame. If that is missing it defaults to 1000.
@@ -726,6 +540,9 @@ RDS.bootstrap.intervals.local <- function(rds.data,
 #' Annual Review of Statistics and Its Application
 #' <doi:10.1146/annurev-statistics-031017-100704>.
 #'
+#' @seealso \code{\link{RDS.bootstrap.mechanics}} for a description of each
+#' bootstrap procedure, and \code{\link{control.rds.estimates}} for tuning
+#' parameters.
 #' @keywords survey manip
 #' @examples
 #'

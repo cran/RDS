@@ -2,10 +2,19 @@
 hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fraction=FALSE, tol=.00005, max.iter=50, 
                          reltol=sqrt(.Machine$double.eps), BS.reltol=sqrt(.Machine$double.eps), max.optim=500, 
                          theta.start=NULL, weights.include.seeds = TRUE){
+  # Callers recode missing outcomes into the internal excluded level
+  # (continuous outcomes: the internal level of their cut factor).
+  .assert.complete.outcome(out)
   rds <- data.frame(subject, recruiter, time, degree, out)
-  rds <- rds[order(rds$time),]
+  rds <- rds[order(rds$time, rds$subject),]
+  orgOrder <- match(subject, rds$subject)
+  
+  if(!is.null(N) && nrow(rds) >= N){
+    stop("RDS sample size must be smaller than the population size.")
+  }
+  
   rInd <- match(rds$recruiter, rds$subject)
-  seed <- !(recruiter %in% subject)
+  seed <- !(rds$recruiter %in% rds$subject)
   rrInd <- match(rds$recruiter[rInd],rds$subject)
   out <- as.factor(rds$out)
   outNum <- as.numeric(out)
@@ -45,8 +54,8 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
     ub <- rep(1, length(ybar))
     lb <- pmax(as.vector(tots) / N, totSampDeg / (N*dbar))
     #If estimate violates contraints, find a ybar that satisfies them
-    if(sum(lb) > 1)
-      warning("Algorithm: Current dbar not consistant with population size")
+    #if(sum(lb) > 1)
+    #  warning("Algorithm: Current dbar not consistant with population size")
     if(anyNA(lb))
       stop("Algorithm: Error in calculating lower bound")
     if(any(ybar < lb)){
@@ -83,13 +92,17 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
     ds <- dbar
     unsmp <- Ns*ds - totSampDeg
     if(any(unsmp<0)){
-      warning("likelihood evaluated at inconsistant ybar")
-      return(1000000000*(sum(-unsmp[unsmp<0]) + 1))
+      #warning("likelihood evaluated at inconsistent ybar")
+      ll <- 1000000000*(sum(-unsmp[unsmp<0]) + 1)
+      attr(ll,"domain") <- "inconsistent ybar"
+      return(ll)
     }
+    
+    domain <- "normal"
     for(i in 1:length(out)){
       if(i==1){
         s <- rep(0,nlev)
-      }else{
+      }else if(!is.na(outNum[i-1])){
         s[outNum[i-1]] <- s[outNum[i-1]] + dg[i-1]
       }
       if(outNotMiss[i] && rOutNotMiss[i]){
@@ -99,21 +112,23 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
         num <- theta[grp,oGrp] * u[oGrp] / (Ns[oGrp]*ds[oGrp])
         denom <- sum(theta[grp,] *  u / (Ns*ds))
         t <- num / denom
-        if(is.na(t) || !is.finite(t) || t<=0 ||t>1)
-          next #browser()
-        ll <- ll + log(t)
+        #if(is.na(t) || !is.finite(t) || t<=0 ||t>1)
+        #  next #browser()
+        #ll <- ll + log(t)
+        if(!is.finite(t) || t <= 0){
+          t <- 0   # denom==0: recruiter's reachable pool exhausted
+          domain <- "inconsistent degree"
+        }
+        ll <- ll + log(min(max(t, .Machine$double.xmin), 1))
       }
     }
+    attr(ll, "domain") <- domain
     -ll
   }
-  t <- table(rOut,out)
-  nlev <- ncol(t)
-  if(!small.fraction && nlev > 10){
-    warning("HCG can not be calculated for factors with more than 10 levels. Falling back to small sample fraction approximation")
-    small.fraction <- TRUE
-    stop()
-  }
-  if(small.fraction){
+  
+  smallFractionEstimate <- function(){
+    t <- table(rOut,out)
+    nlev <- ncol(t)
     if(any(t==0))
       t <- t + 1
     theta <- prop.table(t,1)
@@ -130,9 +145,21 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
     orgOrder <- match(subject, rds$subject)
     names(yhat) <- levels(out)
     return(list(yhat=yhat,
-         weights=weights[orgOrder] / sum(weights), 
-         dbar=dbar, 
-         theta=theta))
+                weights=weights[orgOrder] / sum(weights), 
+                dbar=dbar, 
+                theta=theta))
+  }
+  
+  t <- table(rOut,out)
+  nlev <- ncol(t)
+  if(!small.fraction && nlev > 10){
+    warning("HCG can not be calculated for factors with more than 10 levels. Falling back to small sample fraction approximation")
+    small.fraction <- TRUE
+  }
+  
+  
+  if(small.fraction){
+    return(smallFractionEstimate())
   }
   t <- t + 1
   if(is.null(theta.start)){
@@ -169,16 +196,17 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
     if(inherits(tr,"try-error") || opt$convergence != 0){
       tr <- try(opt <- optim(par=tflat,fn=llik,method="BFGS",control=list(reltol=reltol,maxit=max.optim)), silent = TRUE)
       if(inherits(tr,"try-error") || opt$convergence != 0){
-        warning("Optimization failed to converge, trying coordinate descent.")
-        #browser()
-        for(j in 1:nlev){
-          inds <- ((i-1)*(nlev-1)+1):(i*(nlev-1))
-          opt <- optim(par=tflat[inds],fn=function(x){
-            tflat[inds] <- x
-            llik(tflat)
-          }, control=list(reltol=reltol,maxit=max.optim))
-          tflat[inds] <- opt$par
+        opt <- list(par = tflat)
+        for(j in 1:length(tflat)){
+          try({
+            opt <- optim(par=tflat[j],fn=function(x){
+              tflat[j] <- x
+              llik(tflat)
+            }, control=list(reltol=reltol,maxit=max.optim), method = "CG")
+            tflat[j] <- opt$par
+          }, silent = TRUE)
         }
+        opt$par <- tflat
       }
     }
     theta <- unflattenTheta(opt$par)
@@ -188,7 +216,28 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
       break
     yhatLast <- yhat
   }
-  
+  # Handle case where we never even got to the valid likelihood domain
+  # If n > .3 * N use gile's SS else use small fraction
+  if(attr(llik(flattenTheta(theta)), "domain") != "normal"){
+    if(length(out) > .3 * N){
+      t <- table(rOut,out)
+      nlev <- ncol(t)
+      if(any(t==0))
+        t <- t + 1
+      theta <- prop.table(t,1)
+      weights <- gile.ss.weights(dg, N = N)
+      yhat <- sapply(1:nlev,function(j){
+        sum((outNum==j) * weights, na.rm=TRUE) / sum((!is.na(outNum)) * weights, na.rm=TRUE)
+      })
+      names(yhat) <- levels(out)
+      return(list(yhat=yhat,
+           weights=weights[orgOrder] / sum(weights), 
+           dbar=dbar, 
+           theta=theta))
+    }else{
+      return(smallFractionEstimate())
+    }
+  }
   if(weights.include.seeds){
     wts <- lapply(1:nlev,function(i) {
       dd <- dg[outNotMiss & outNum==i]
@@ -212,7 +261,6 @@ hcg.estimate <- function(subject, recruiter, time, degree, out, N, small.fractio
     }
   }
   weights <- weights / sum(weights)
-  orgOrder <- match(subject, rds$subject)
   names(yhat) <- levels(out)
   list(yhat=yhat,
        weights=weights[orgOrder] / sum(weights), 

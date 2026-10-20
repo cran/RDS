@@ -15,8 +15,14 @@ rds.I.weights(rds.data, outcome.variable, N = NULL, smoothed = FALSE, ...)
 
 \item{smoothed}{Should the data smoothed RDS-I weights be computed.}
 
-\item{...}{Unused}
+\item{...}{Additional parameters passed to \code{\link{compute.weights}}.}
 }
 \description{
 RDS-I weights
+}
+\details{
+This function dispatches to \code{\link{compute.weights}}, which
+handles missing outcome values by retaining the subjects internally (as
+their own group, preserving recruitment chains) and returning weight 0
+for them.
 }

@@ -7,10 +7,8 @@
 RDS.I.estimates(
   rds.data,
   outcome.variable,
-  N = NULL,
   subset = NULL,
   smoothed = FALSE,
-  empir.lik = TRUE,
   to.factor = FALSE,
   cont.breaks = 3
 )
@@ -22,10 +20,6 @@ by a pair of attributes named ``id'' and ``recruiter.id''.}
 \item{outcome.variable}{A string giving the name of the variable in the
 \code{rds.data} that contains a categorical variable to be analyzed.}
 
-\item{N}{Population size to be used to calculate the empirical likelihood interval. If NULL, this value is
-taken to be the population.size.mid attribute of the data and if that is not set, no finite population
-correction is used.}
-
 \item{subset}{An optional criterion to subset \code{rds.data} by. It is
 an R expression which, when evaluated, subset the
 data. In plain English, it can be something like \code{subset = seed > 0} to
@@ -36,26 +30,12 @@ the outcome variable where TRUE means include it in the analysis. If
 \item{smoothed}{Logical, if TRUE then the ``data smoothed'' version of RDS-I is used,
 where it is assumed that the observed Markov process is reversible.}
 
-\item{empir.lik}{Should confidence intervals be estimated using 
-empirical likelihood.}
-
 \item{to.factor}{force variable to be a factor}
 
 \item{cont.breaks}{The number of categories used for the RDS-I adjustment when the variate is continuous.}
 }
 \value{
-If the \code{empir.lik} is true, an object of class
-\code{rds.interval.estimate} is returned. This is a list with components
-\itemize{ \item\code{estimate}: The numerical point estimate of proportion
-of the \code{trait.variable}.  \item\code{interval}: A matrix with six
-columns and one row per category of \code{trait.variable}: \itemize{
-\item\code{point estimate}: The HT estimate of the population mean.
-\item\code{95\% Lower Bound}: Lower 95\% confidence bound.  \item\code{95\%
-Upper Bound}: Upper 95\% confidence bound.  \item\code{Design Effect}: The
-design effect of the RDS.  \item\code{s.e.}: Standard error.  \item\code{n}:
-Count of the number of sample values with that value of the trait.  } }
-
-Otherwise an object of class \code{rds.I.estimate} object is returned.
+An object of class \code{rds.weighted.estimate}.
 }
 \description{
 This function computes the RDS-I type estimates for a categorical variable.

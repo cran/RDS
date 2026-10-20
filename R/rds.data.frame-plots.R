@@ -34,11 +34,11 @@ plot.rds.data.frame <- function(x,
                                 ...){
   
   #for R CMD check
-  wave <- network <- ..n.. <- ..y.. <- seed <- color <- NULL
+  wave <- network <- n <- y <- seed <- color <- grp <- NULL
   ggplotGrob <- function(x) {ggplot2::ggplot_gtable(ggplot2::ggplot_build(x))}
   
   x <- as.rds.data.frame(x)
-  plot.type <- plot.type[1]
+  plot.type <- match.arg(plot.type)
   tmp <- data.frame(id = x[[attr(x,"id")]],
                     recruiter.id = x[[attr(x,"recruiter.id")]],
                     network = x[[attr(x,"network.size.variable")]],
@@ -54,10 +54,10 @@ plot.rds.data.frame <- function(x,
       return(invisible())
     }else if(plot.type=="Network size by wave"){
       p <- ggplot(data=tmp) +
-        geom_point(aes(x = wave,y = network,size = ..n..),stat = 'sum') +
+        geom_point(aes(x = wave,y = network,size = after_stat(n)),stat = 'sum') +
         scale_size_area(name = '# of Subjects\nwith Identical \nValues')+
         stat_summary(aes(x = wave,y = network,
-                         ymax=..y..,ymin=..y..),fun.data = mean_sdl,
+                         ymax=after_stat(y),ymin=after_stat(y)),fun.data = mean_sdl,
                      geom = 'crossbar',color="red") +
         labs(title=plot.type)
     }else if(plot.type=="Recruits by wave"){
@@ -69,8 +69,9 @@ plot.rds.data.frame <- function(x,
         labs(title=plot.type)
     }else if(plot.type=="Recruits per subject"){
       sd <- tmp$recruiter.id == get.seed.rid(x)
-      p <- qplot(x=factor(as.vector(table(tmp$recruiter.id[!sd]))[-1]),
-                 xlab="# of Recruits") + 
+      p <- ggplot(data.frame(x=factor(as.vector(table(tmp$recruiter.id[!sd])))),
+                  aes(x=x)) +
+        geom_bar() + xlab("# of Recruits") +
         labs(title=plot.type)
     }
   }else{
@@ -80,10 +81,10 @@ plot.rds.data.frame <- function(x,
       return(invisible())
     }else if(plot.type=="Network size by wave"){
       p <- ggplot(data=tmp) +
-        geom_point(aes(x = wave,y = network,colour = as.factor(color),size = ..n..),
+        geom_point(aes(x = wave,y = network,colour = as.factor(color),size = after_stat(n)),
                    alpha = 0.5,stat = 'sum') +
         scale_size_area(name = '# of Subjects\nwith Identical \nValues')+
-        stat_summary(aes(x = wave,y = network,colour = as.factor(color),ymax=..y..,ymin=..y..),
+        stat_summary(aes(x = wave,y = network,colour = as.factor(color),ymax=after_stat(y),ymin=after_stat(y)),
                      fun.data = mean_sdl,geom = 'crossbar')+
         scale_colour_hue(name=stratify.by) + 
         labs(title=plot.type)
@@ -105,8 +106,10 @@ plot.rds.data.frame <- function(x,
       idmap <- match(rids,get.id(x))
       col <- tmp$color[idmap]
       dat <- data.frame(Var2=col,value=as.vector(tab))
-      p <- qplot(x=factor(dat$value),fill=factor(dat$Var2), xlab="# of Recruits") + 
-        scale_fill_hue(guide=guide_legend(title=stratify.by)) + 
+      p <- ggplot(data.frame(x=factor(dat$value),grp=factor(dat$Var2)),
+                  aes(x=x,fill=grp)) +
+        geom_bar() + xlab("# of Recruits") +
+        scale_fill_hue(guide=guide_legend(title=stratify.by)) +
         labs(title=plot.type)
     }		
   }
@@ -189,9 +192,8 @@ reingold.tilford.plot <-function(x,
     vertex.size.name <- deparse(substitute(vertex.size))
   }
   if(length(vertex.size)>1){
-    vrange <- range(vertex.size,na.rm=TRUE)
-    vertex.size <- vertex.size - vrange[1]/2
-    vertex.size <- vertex.size / vrange[2]
+    vrange <- range(vertex.size, na.rm=TRUE)
+    vertex.size <- if(diff(vrange) > 0) (vertex.size - vrange[1]) / diff(vrange) else rep(0.5, length(vertex.size))
     vertex.size <- vertex.size*(vertex.size.range[2]-vertex.size.range[1]) + vertex.size.range[1]
     vertex.size[is.na(vertex.size)] <- 0
   }
@@ -204,7 +206,7 @@ reingold.tilford.plot <-function(x,
   sid <- get.seed.rid(x)
   seeds <- get.seed.id(x)
   el <- cbind(rid,id,seeds)
-  el <- el[rid!=sid,]
+  el <- el[rid!=sid, , drop=FALSE]
   el <- el[order(el[,3]),, drop=FALSE]
   
   ########

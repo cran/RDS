@@ -69,37 +69,28 @@ differential.activity.estimates.local <- function(rds.data,
     subset <- rep(TRUE, length = nrow(rds.data.nomiss))
   } else{
     subset[is.na(subset)] <- FALSE
-    if (!is.na(N)) {
-      #use VH estimator to adjust population size to sub-population
-      tmp.wts <- vh.weights(rds.data.nomiss[[network.size]])
-      tmp.wts <- tmp.wts / sum(tmp.wts)
-      prop <- sum(tmp.wts * subset)
-      N <- N * prop
-      if (N < sum(subset))
-        stop(sprintf("Estimated sub-population size, %f, smaller than subsets size, %f.", N, sum(subset)))
-    }
-    
-    #This subsets setting orphaned children to be seeds
-    #in order to maintain a valid recruitment tree.
-    rds.data.nomiss <- rds.data.nomiss[subset, , warn = FALSE]
-    
-    #drop 0 count levels
-    if (is.factor(rds.data[[outcome.variable]])) {
-      outcome <- factor(rds.data.nomiss[[outcome.variable]])
-      # 			Make sure the factor labels are alphabetic!
-      outcome = factor(outcome, levels = levels(outcome)[order(levels(outcome))])
-      rds.data.nomiss[[outcome.variable]] <- outcome
-    }
+  }
+
+  # Boundary: retain excluded subjects (missing outcome / outside subset)
+  # as an internal group so recruitment chains stay intact; they receive
+  # weight 0 and are removed from the estimates below.
+  outcome0 <- rds.data.nomiss[[outcome.variable]]
+  excl <- .excluded.mask(outcome0, subset)
+  if (!is.numeric(outcome0) && any(excl)) {
+    rds.data.nomiss[[outcome.variable]] <-
+      .sort.levels(.mint.excluded(as.factor(outcome0), excl))
   }
   weights.nomiss <- compute.weights(
     rds.data.nomiss,
     weight.type = weight.type,
     outcome.variable = outcome.variable,
-    N = N,
+    N = if(is.null(N) || is.na(N)) NULL else N,
     ...
   )
-  
+  weights.nomiss[excl] <- 0
+
   outcome <- as.vector(rds.data.nomiss[[outcome.variable]])
+  outcome[excl] <- NA
   toutcome <- table(outcome)
   maxa <- which.max(toutcome)
   toutcome[maxa] <- 0
@@ -117,6 +108,7 @@ differential.activity.estimates.local <- function(rds.data,
                                       outcome = deg * (outcome == 1)) / prop.outcome
   
   result <- c(mean.degree.outcome1 / mean.degree.outcome0, moutcome)
+  attr(result, "level") <- max(onames, na.rm = TRUE)
   class(result) <- "differential.activity.estimate"
   result
 }
@@ -190,8 +182,8 @@ print.differential.activity.estimate <- function(x, ...) {
   cat(
     paste(
       "The mean degree of those with value",
-      x[2],
-      "divided by the mean degree of those without is"
+      attr(x, "level") ,
+      "divided by the mean degree of all others is"
     ),
     format(x[1], width = 6),
     "\n"

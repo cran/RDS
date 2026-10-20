@@ -41,7 +41,7 @@ as.rds.data.frame <- function(df,
                               }else attr(df,"max.coupons"),
                               notes=if(is.null(attr(df,"notes"))){
                                 NULL
-                              }else attr(df,"time"),
+                              }else attr(df,"notes"),
                               time=if(is.null(attr(df,"time"))){
                                 NULL
                               }else attr(df,"time"),
@@ -212,7 +212,7 @@ get.recruitment.time <- function(x, to.numeric=TRUE, wave.fallback=FALSE, check.
   if(is.null(attr(x,"time"))){
     if(wave.fallback){
       
-      return(order(get.wave(x)))
+      return(rank(get.wave(x), ties.method = "first"))
     }else
       stop("RDS data missing recruitment time attribute")
   }
@@ -335,13 +335,16 @@ print.rds.data.frame <- function(x, ...) {
 #' r[1:3,] # A valid pruning of the RDS tree.
 #' r[c(1,5),warn=FALSE] # recruiter.id of last row set to -1 (i.e. a seed) to maintain validity of tree
 #' @docType methods
+#' @export
 #' @method [ rds.data.frame
 #' @rdname indexing-methods
 `[.rds.data.frame`  <- function (x, i, j, ..., drop, warn=TRUE){
   x1 <- as.data.frame(x)
+  if((nargs() - !missing(drop) - !missing(warn)) < 3L)  # single index x[i] => columns
+    return(if(missing(i)) x1 else x1[i])                # plain data.frame (base semantics)
   res <- if(!missing(drop)) x1[ i, j, drop] else x1[ i, j]
   id <- attr(x,"id")
-  rid <- id <- attr(x,"recruiter.id")
+  rid <- attr(x,"recruiter.id")
   if(is.data.frame(res) && (id %in% names(res)) && (rid %in% names(res))){
     sid <- get.seed.rid(x)
     rid <- res[[attr(res,"recruiter.id")]]
@@ -364,14 +367,16 @@ print.rds.data.frame <- function(x, ...) {
 #' @param value value
 #' @docType methods
 #' @rdname extract-methods
+#' @export
 #' @method [<- rds.data.frame
 #' @details Indexed assignment. If the result is not a valid rds.data.frame, an error
 #' is emitted.
 `[<-.rds.data.frame`  <- function(x, i, j, value) 
 {
-  df <- `[<-.data.frame`(x,i,j,value)
+  x1 <- as.data.frame(x)
+  if(nargs() < 4L) x1[i] <- value else x1[i, j] <- value
   # Now return a new object of class "rds.data.frame".
-  return(as.rds.data.frame(df))
+  return(as.rds.data.frame(x1))
 }
 
 
@@ -383,7 +388,7 @@ make.valid.recruitment.time <- function(x){
   rid <- get.rid(x,check.type=FALSE)
   r <- match(rid, id)
   time <- x[[attr(x,"time")]]
-  last.len <- 0
+  last.invalid <- NA
   while(TRUE){
     rtime <- time[r]  
     invalid <- which(time < rtime | is.na(time))
@@ -392,11 +397,11 @@ make.valid.recruitment.time <- function(x){
     time[invalid] <- time[r][invalid]
     
     #only seeds with NAs
-    if(last.len == length(invalid)){
+    if(identical(invalid, last.invalid)){
       time[invalid] <- min(time, na.rm=TRUE)
       return(time)
     }
-    last.len <- length(invalid)
+    last.invalid <- invalid
   }
   return(time)
 }

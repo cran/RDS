@@ -38,22 +38,30 @@ impute.degree <- function(rds.data, trait.variable=NULL, N=NULL, method=c("mean"
   degree <- get.net.size(rds.data)
   if(recruitment.lower.bound)
     degree <- ifelse(degree < nrecruit + 1, nrecruit + 1, degree)
-  d <- na.omit(degree)
-  if(!is.null(N))
-    wts <- gile.ss.weights(d, N)
-  else
-    wts <- vh.weights(d, N)
+  degree[!is.finite(degree)] <- NA
+  obs <- !is.na(degree)
   nadeg <- is.na(degree)
+  if(!is.null(N))
+    wts <- gile.ss.weights(degree[obs], N)
+  else
+    wts <- vh.weights(degree[obs], N)
   imp.value <- rep(NA,nlev)
   for(i in 1:nlev){
     if(method=="mean")
-      imp.value[i] <- wtd.mean(d[by.var == i], wts[by.var == i])
+      imp.value[i] <- wtd.mean(degree[obs][by.var[obs] == i], wts[by.var[obs] == i])
     else 
-      imp.value[i] <- wtd.quantile(d[by.var == i], wts[by.var == i], probs=quantile)    
+      imp.value[i] <- wtd.quantile(degree[obs][by.var[obs] == i], wts[by.var[obs] == i], probs=quantile)    
   }
   imputed <- imp.value[by.var]
   newdeg <- degree
   newdeg[nadeg] <- imputed[nadeg]
+  if(any(!is.finite(newdeg))){
+    if(method=="mean")
+      imp.value <- wtd.mean(degree[obs], wts)
+    else
+      imp.value <- wtd.quantile(degree[obs], wts, probs=quantile)
+    newdeg[!is.finite(newdeg)] <- imp.value
+  }
   if(round.degree) 
     newdeg <- round(newdeg)
   newdeg

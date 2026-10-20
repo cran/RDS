@@ -19,8 +19,8 @@
 #' SS" defaults to the \code{"Gile"} bootstrap.
 #' @param weights A numerical vector of sampling weights for the sample, in
 #' order of the sample.  They should be inversely proportional to the
-#' first-order inclusion probabilites, although this is not assessed or
-#' inforced.
+#' first-order inclusion probabilities, although this is not assessed or
+#' enforced.
 #' @param N An estimate of the number of members of the population being
 #' sampled. If \code{NULL} it is read as the \code{pop.size.mid} attribute of
 #' the \code{rds.data} frame. If that is missing it defaults to 1000.
@@ -180,9 +180,9 @@ is.rds.interval.estimate.list <- function(x) inherits(x,"rds.interval.estimate.l
 
 #' Convert the output of print.rds.interval.estimate from a character data.frame to a numeric matrix
 #' @param x An object, typically the result of print.rds.interval.estimate.
-#' @param proportion logical, Should the outcome be treated as a proportion and converted to a percentage.
+#' @param ... future parameters
 #' @export
-export.rds.interval.estimate <- function(x,proportion=TRUE){
+export.rds.interval.estimate <- function(x, ...){
   a <- as.matrix(x)
   a <- a[-nrow(a),,drop=FALSE]
   b <- matrix(0,ncol=6,nrow=nrow(a))
@@ -192,8 +192,5 @@ export.rds.interval.estimate <- function(x,proportion=TRUE){
   b[,c(1,4:6)] <- as.numeric(a[,c(1,3:5)])
   colnames(b) <- c(colnames(a)[1],"95% lower","95% upper",colnames(a)[3:ncol(a)])
   rownames(b) <- rownames(a)
-  if(proportion){
-    b[,c(1,2,3,5)] <- 100*b[,c(1,2,3,5)]
-  }
   as.data.frame(b)
 }

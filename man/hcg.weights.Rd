@@ -13,6 +13,7 @@ hcg.weights(
   max.optim = 500,
   theta.start = NULL,
   weights.include.seeds = TRUE,
+  hcg.wave.fallback = FALSE,
   ...
 )
 }
@@ -35,10 +36,20 @@ at a step. Defaults to \code{sqrt(.Machine$double.eps)}, typically about \code{1
 
 \item{weights.include.seeds}{logical Should the weights be computed including the influence of the seeds?}
 
-\item{...}{Unused}
+\item{hcg.wave.fallback}{Logical. Internal use: allow recruitment-wave ordering
+when recruitment times are absent (used by the bootstrap machinery). Direct
+weight computations require recruitment time unless \code{small.fraction=TRUE}.}
+
+\item{...}{Additional parameters passed to \code{\link{compute.weights}}.}
 }
 \description{
 homophily configuration graph weights
+}
+\details{
+This function dispatches to \code{\link{compute.weights}}, which
+handles missing outcome values by retaining the subjects internally (as
+their own group, preserving recruitment chains) and returning weight 0
+for them.
 }
 \examples{
 data(fauxtime)

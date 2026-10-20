@@ -44,7 +44,9 @@ SSBS.estimates <- function(rds.data,trait.variable,
   tv <- rds.data[[trait.variable]]
   #rds.data[[trait.variable]] <- tv     ###??? why? Are elements of trait.variable all numbers?
   remvalues <- !is.na(rds.data[[trait.variable]])
-  if(sum(remvalues) < nrow(rds.data)){
+  # Continuous outcomes keep their NA rows (excluded subjects are
+  # (cut class, degree) stand-ins with NA values); no removal, no warning.
+  if(!is.cts && sum(remvalues) < nrow(rds.data)){
     warning(paste(nrow(rds.data)-sum(remvalues),"of",nrow(rds.data),
                   "trait variable values were missing and were removed."), call. = FALSE)
     if(is.numeric(rds.data[[trait.variable]])){
@@ -65,12 +67,19 @@ SSBS.estimates <- function(rds.data,trait.variable,
   recruiter.id <- get.rid(rds.data)#as.character(rds.data[[attr(rds.data,"recruiter.id")]])
   seed.rid <- get.seed.rid(rds.data)
   if(is.cts){
-    outcome <- .cut2(rds.data[[trait.variable]], g=cont.breaks)
+    outcome <- .cut2.excl(rds.data[[trait.variable]], g=cont.breaks,
+                          mask=is.na(rds.data[[trait.variable]]))
   }else{
     outcome <- factor(rds.data[[trait.variable]],exclude=NULL)
     # 	Make sure the factor labels are alphabetic!
     outcome <- factor(outcome,levels=levels(outcome)[order(levels(outcome))])
   }
+  # The class structure the engine runs on must be complete: continuous
+  # outcomes absorbed their NAs into the cut factor's internal level above;
+  # categorical outcomes must arrive recoded from the boundary
+  # (as.character() exposes genuine-NA levels, which factor(exclude=NULL)
+  # would otherwise hide from anyNA()).
+  .assert.complete.outcome(as.character(outcome))
   outclasses <- levels(outcome)
   deg <- rds.data[[network.size]]
   deg <- as.numeric(as.vector(deg))
@@ -81,7 +90,7 @@ SSBS.estimates <- function(rds.data,trait.variable,
     refs.to.trait<-matrix(0,nrow=nrow(rds.data),ncol=g)
     for(j in 1:g){
       # b is the number of referrals for each recruiter to those of group j
-      b <- tapply(outcome==outclasses[j],recruiter.id,sum,na.rm=TRUE)[-1]
+      b <- tapply(outcome==outclasses[j],recruiter.id,sum,na.rm=TRUE)
       # match the names of the recruiters to the id
       #d=match(names(b),as.character(rds.data[[attr(rds.data,"id")]]))
       d <- match(names(b),get.id(rds.data))
@@ -114,16 +123,21 @@ SSBS.estimates <- function(rds.data,trait.variable,
   
   remvalues <- !is.na(as.vector(outcome))
   remvalues[as.vector(outcome)=="NA"] <- FALSE
-  if(sum(remvalues) < nrow(rds.data)){
+  # Continuous outcomes: rows are never removed. Excluded subjects stand in
+  # with their (cut class, degree) and an NA value; removing them here would
+  # desynchronize refs.to.trait (indexed by cut classes) from the reset
+  # raw-value outcome and truncate the recruitment chains.
+  if(!is.cts && sum(remvalues) < nrow(rds.data)){
     warning(paste(nrow(rds.data)-sum(remvalues),"of",nrow(rds.data),
                   "values were missing and were removed."))
     deg <- deg[remvalues]
     outcome <- factor(as.vector(outcome[remvalues]),exclude=NULL)
     ## 		Make sure the factor labels are alphabetic!
     #outcome=factor(outcome,levels=levels(outcome)[order(levels(outcome))],exclude=NULL)
+    old.outclasses <- outclasses   # column order of refs.to.trait (pre-removal levels, incl. "NA")
     outclasses <- levels(outcome)
     g <- length(outclasses)
-    refs.to.trait <- refs.to.trait[remvalues,]
+    refs.to.trait <- refs.to.trait[remvalues, match(outclasses, old.outclasses), drop=FALSE]
     recruiter.id <- recruiter.id[remvalues]
     recID <- recID[remvalues]
     n0 <- sum(recruiter.id==seed.rid, na.rm=TRUE)
@@ -192,10 +206,12 @@ vh.est <- function(degs,dis,wstart=0,wsample=NULL){
     num <- rep(0,length=length(levels(disnew)))
     a <- tapply(1/degsnew,as.numeric(disnew),sum)
     num[as.numeric(names(a))] <- a
+    den<-sum(1/degsnew)
   }else{
-    num<-sum(disnew/degsnew)
+    keep <- !is.na(disnew)
+    num<-sum(disnew[keep]/degsnew[keep])
+    den<-sum(1/degsnew[keep])
   }
-  den<-sum(1/degsnew)
   num/den
 }
 
@@ -213,10 +229,11 @@ spps.est.keep <- function(degs,dis,nguess,wstart=0,wsample=NULL,number.ss.iterat
     num <- rep(0,length=length(levels(dis)))
     a <- tapply(weights,as.numeric(dis),sum)
     num[as.numeric(names(a))] <- a
+    est<-num/sum(weights)
   }else{
-    num<-sum(dis*weights)
+    keep <- !is.na(dis)
+    est<-sum(dis[keep]*weights[keep])/sum(weights[keep])
   }
-  est<-num/sum(weights)
   #	}
   
   # Note wts are actually the pis here
@@ -265,7 +282,10 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
   fdis <- dis
   if(is.cts){
     out <- as.numeric(as.character(dis))
-    dis <- .cut2(out, g=cont.breaks)
+    dis <- .cut2.excl(out, g=cont.breaks, mask=is.na(out))
+    useC <- FALSE
+  }
+  if(!fast){
     useC <- FALSE
   }
   outclasses <- levels(dis)  
@@ -281,7 +301,7 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
       o <- out[dis == i]
       lis <- list()
       for(j in 1:length(d)){
-        if(length(lis) <= d[j] || is.null(lis[[d[j]]]))
+        if(length(lis) < d[j] || is.null(lis[[d[j]]]))
           lis[[d[j]]] <- o[j]
         else
           lis[[d[j]]] <- c(lis[[d[j]]], o[j])
@@ -408,14 +428,14 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
   nbyclass<-round(n*props2)  
   #	nbyclass[nbyclass==0]<-1
   offby<-n-sum(nbyclass)
-  if(is.na(offby)){print("Error in getincl: offby"); } 
+  if(is.na(offby)){stop("Error in getincl: offby"); } 
   tempties <- (tiemtx+t(tiemtx))/2
   #	symetrize the ties so that
   # tempties is a matrix with the estimated number of ties (not referrals)
   # from class i to class j (in the population). It is based on extrapolating
   # the number of referrals 
   # moved
-  pis=1/stats::approx(x=data.mapping$classes,y=1/data.mapping$probs,xout=rep(classes,g),rule=2)$y
+  pis <- 1/stats::approx(x=sek$classes,y=1/sek$pvec,xout=rep(classes,g),rule=2)$y
   data<-list(n=n, effn=effn,
              classesboth=classesboth,
              n0=n0, nsamp=nsamp, nrefs=nrefs,
@@ -464,19 +484,18 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
         for(ii in 1:abs(offby)){                
           dif<-nbyclass/data$n - data$props2
           dif[dif<0]<-0
-          dif[nbyclass==1]<-0 
-          if(sum(dif==0)){
+          dif[nbyclass<=1]<-0 
+          if(sum(dif)==0){
             dif<-1-(data$props2-nbyclass/data$n)
-            dif[nbyclass==1]<-0
+            dif[nbyclass<=1]<-0
             dif[dif<0]<-0
           }       
-          tochange<-sample(1:length(dif),1,prob=dif)
-          while(any(nbyclass[tochange]<1)){
-            tochange<-sample(1:length(dif),1,prob=dif)
-            #print(nbyclass)
-            #print(tochange)
-            #print(dif)
+          if(sum(dif)==0){
+            # Last resort: removals still owed but every class is at <= 1 member.
+            # Remove uniformly from non-empty classes (a class may empty).
+            dif<-as.numeric(nbyclass>0)
           }
+          tochange<-sample(1:length(dif),1,prob=dif)
           nbyclass[tochange]<-nbyclass[tochange]-1
         }
       }}   
@@ -499,7 +518,7 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
       #		nsample0<-sample.int(data$n,size=data$n0,prob=abs(newdeg),replace=FALSE)
       pclass=ideg*nbyclass
       for(i in 1:data$n0){
-        j<-sample.int(nc,size=1,prob=ideg*nbyclass)
+        j<-sample.int(nc,size=1,prob=pclass)
         pclass[j]<-pclass[j]-ideg[j]
         degsample[i] <- ideg[j]
         dissample[i] <- idis[j]
@@ -510,7 +529,7 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
       #		tempties <- (data$tiemtx+t(data$tiemtx))/2
       
       # 		nprop <- tabulate(newdis,nbins=g)
-      nprop <- tapply(nbyclass,idis)
+      nprop <- tapply(nbyclass,idis, sum)
       nprop <- nprop / sum(nprop)
       for(k in 1:g){
         if(all(tempties[k,]==0)){
@@ -538,8 +557,9 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
         #			p <- tempties[thisdis,] / temptiess[thisdis]
         #        ## p is the vector of probability
         
-        ttt <- try(nextdis<-sample.int(g, 1, replace=FALSE, prob=tempties[thisdis,]))
+        ttt <- try(nextdis<-sample.int(g, 1, replace=FALSE, prob=tempties[thisdis,]), silent=TRUE)
         if(inherits(ttt,"try-error")){
+          
           warning("Gile Bootstrap: No available subject to select. Falling back to random selection.")
           nextdis<-sample.int(g, 1, replace=FALSE)
         }
@@ -603,7 +623,10 @@ sppsboot4ppsreal<-function(degs,dis,n,n0,refs.to.trait,nit,                     
         oo <- rep(NA, length(dissample))
         for(r in 1:length(dissample)){
           outs <- deg.out.map[[ds[r]]][[degsample[r]]]
-          oo[r] <- outs[sample.int(length(outs), size=1)]
+          if(is.null(outs) || length(outs) == 0)
+            oo[r] <- NA
+          else
+            oo[r] <- outs[sample.int(length(outs), size=1)]
         }
         # Apply weights to the continuous variate.
         est <- vh.est(manynewests$pis, oo)

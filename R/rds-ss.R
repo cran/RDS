@@ -13,7 +13,8 @@
 #' analyzed.
 #' @param N An estimate of the number of members of the population being
 #' sampled. If \code{NULL} it is read as the \code{population.size.mid} attribute of
-#' the \code{rds.data} frame. If that is missing it defaults to 1000.
+#' the \code{rds.data} frame. If that is missing no finite population correction is
+#' applied and the estimate is the same as RDS-II.
 #' @param subset An optional criterion to subset \code{rds.data} by. It is
 #' an R expression which, when evaluated, subset the
 #' data. In plain English, it can be something like \code{subset = seed > 0} to
@@ -21,7 +22,7 @@
 #' the outcome variable where TRUE means include it in the analysis. If
 #' \code{NULL} then no subsetting is done.
 #' @param number.ss.samples.per.iteration The number of samples to take in
-#' estimating the inclusion probabilites in each iteration of the sequential
+#' estimating the inclusion probabilities in each iteration of the sequential
 #' sampling algorithm. If \code{NULL} it is read as the
 #' eponymous attribute of \code{rds.data}. If that
 #' is missing it defaults to 5000.
@@ -32,22 +33,9 @@
 #' \code{\link{control.rds.estimates}}.
 #' @param hajek logical; Use the standard Hajek-type estimator of Gile (2011)
 #' or the standard Hortitz-Thompson. The default is TRUE.
-#' @param empir.lik If true, and outcome.variable is numeric, standard errors
-#' based on empirical likelihood will be given.
 #' @param to.factor force variable to be a factor
 #' @return 
-#' If \code{outcome.variable} is numeric then the Gile SS estimate of the mean is returned, otherwise a vector of proportion estimates is returned.
-#' If the \code{empir.lik} is true, an object of class \code{rds.interval.estimate} is returned. This is a list with components
-#' \itemize{ \item\code{estimate}: The numerical point estimate of proportion
-#' of the \code{trait.variable}.  \item\code{interval}: A matrix with six
-#' columns and one row per category of \code{trait.variable}: \itemize{
-#' \item\code{point estimate}: The HT estimate of the population mean.
-#' \item\code{95\% Lower Bound}: Lower 95\% confidence bound.  \item\code{95\%
-#' Upper Bound}: Upper 95\% confidence bound.  \item\code{Design Effect}: The
-#' design effect of the RDS.  \item\code{s.e.}: Standard error.  \item\code{n}:
-#' Count of the number of sample values with that value of the trait.  } }
-#' 
-#' Otherwise, an object of class \code{rds.SS.estimate} is returned.
+#' An object of class \code{rds.weighted.estimate}.
 #' 
 #' @author Krista J. Gile with help from Mark S. Handcock
 #' @seealso \code{\link{RDS.I.estimates}}, \code{\link{RDS.II.estimates}}
@@ -86,7 +74,7 @@
 RDS.SS.estimates <- function(rds.data,outcome.variable,N=NULL,subset=NULL,
            number.ss.samples.per.iteration=500,number.ss.iterations=5,
            control=control.rds.estimates(),
-           hajek=TRUE,empir.lik=TRUE,to.factor=FALSE){
+           hajek=TRUE, to.factor=FALSE){
     se <- substitute(subset)
     subset <- eval(se,rds.data,parent.frame())
     if(length(outcome.variable) == 1){
@@ -99,7 +87,6 @@ RDS.SS.estimates <- function(rds.data,outcome.variable,N=NULL,subset=NULL,
         number.ss.iterations=number.ss.iterations,
         control=control,
         hajek=hajek,
-        empir.lik=empir.lik,
         weight.type="Gile's SS",
         to.factor=to.factor)
     }
@@ -114,7 +101,6 @@ RDS.SS.estimates <- function(rds.data,outcome.variable,N=NULL,subset=NULL,
           number.ss.iterations=number.ss.iterations,
           control=control,
           hajek=hajek,
-          empir.lik=empir.lik,
           weight.type="Gile's SS",
           to.factor=to.factor)
       })

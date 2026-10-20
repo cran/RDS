@@ -25,8 +25,7 @@ RDS.compare.two.proportions(
 \item{number.of.bootstrap.samples}{The number of Monte Carlo draws to determine the null distribution of the likelihood
 ratio statistic.}
 
-\item{plot}{Logical, if TRUE then a plot is produces of the null distribution of the likelihood
-ratio statistic with the observed statistics plotted as a vertical dashed line.}
+\item{plot}{A character vector with elements "estimates" for estimate plots, "distributions" for distribution plots and "par" if you want the plot layout to be set to two columns.}
 
 \item{seed}{The value of the random number seed. Preset by default to allow reproducability.}
 }

@@ -129,15 +129,13 @@ double poilog(int x, double my, double sig)
   double result, abserr;
   int last, neval, ier;
   int lenw;
-  int *iwork;
-  double *work;
   int limit=100;
   double reltol=0.001;
   double abstol=0.00001;
   sig = sig * sig;
   lenw = 4 * limit;
-  iwork =   (int *) R_Calloc(limit, int);
-  work = (double *) R_Calloc(lenw,  double);
+  int iwork[100];
+  double work[400];
   
   m=poilogmaxf(x,my,sig);
   a=poiloglower(x,m,my,sig);
@@ -150,10 +148,8 @@ double poilog(int x, double my, double sig)
          &abstol,&reltol,&result,&abserr,&neval,&ier,
          &limit,&lenw, &last,iwork, work);
          
-         if (ier!=0) error("error in integration\n");
+  if (ier!=0) error("error in integration\n");
          
-         val = result*(1/sqrt(2*M_PI*sig));
-         R_Free(iwork);
-         R_Free(work);
-         return(val);
+  val = result*(1/sqrt(2*M_PI*sig));
+  return(val);
 }

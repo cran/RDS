@@ -4,12 +4,12 @@
 \alias{export.rds.interval.estimate}
 \title{Convert the output of print.rds.interval.estimate from a character data.frame to a numeric matrix}
 \usage{
-export.rds.interval.estimate(x, proportion = TRUE)
+export.rds.interval.estimate(x, ...)
 }
 \arguments{
 \item{x}{An object, typically the result of print.rds.interval.estimate.}
 
-\item{proportion}{logical, Should the outcome be treated as a proportion and converted to a percentage.}
+\item{...}{future parameters}
 }
 \description{
 Convert the output of print.rds.interval.estimate from a character data.frame to a numeric matrix

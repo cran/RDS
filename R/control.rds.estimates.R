@@ -14,9 +14,6 @@ utils::globalVariables(c(".control.rds.estimates"))
 #' The default is 0.95 for 95\%.
 #' @param SS.infinity The sample proportion, \code{n/N}, below which the computation
 #' of the SS weights should simplify to that of the \code{RDS-II} weights.
-#' @param lowprevalence Standard confidence interval procedures can be inaccurate when the
-#' outcome expected count is close to zero. This sets conditions where alternatives to the
-#' standard are used for the \code{ci.type="hmg"} option. See Details for its use.
 #' @param discrete.cutoff The minimum proportion of the values of the outcome variable that
 #' need to be unique before the variable is judged to be continuous.
 #' @param useC Use a C-level implementation of Gile's bootstrap (rather than
@@ -35,22 +32,12 @@ utils::globalVariables(c(".control.rds.estimates"))
 #' @param seed Seed value (integer) for the random number generator.  See
 #' \code{\link[base]{set.seed}}
 #' @return A list with arguments as components.
-#' @details Standard confidence interval procedures can be inaccurate when the
-#' outcome expected count is close to zero. In these cases
-#' the combined Agresti-Coull and the bootstrap-t interval of
-#' Mantalos and Zografos (2008) can be used.
-#' The \code{lowprevalence} argument is a
-#' two vector parameter setting the conditions under which the approximation is used.
-#' The first is the penalty term on the differential activity. If the observed number
-#' of the rare group minus the product of the first parameter and the differential
-#' activity is lower than the
-#' second parameter, the low prevalence approximation is used.
-#' @seealso \code{\link{RDS.bootstrap.intervals}}
+#' @seealso \code{\link{RDS.bootstrap.intervals}},
+#' \code{\link{RDS.bootstrap.mechanics}}
 #' @keywords models
 #' @export
 control.rds.estimates <- function(confidence.level = 0.95,
                                   SS.infinity = 0.01,
-                                  lowprevalence = c(8, 14),
                                   discrete.cutoff = 0.8,
                                   useC = TRUE,
                                   number.of.bootstrap.samples = NULL,
@@ -70,9 +57,6 @@ control.rds.estimates <- function(confidence.level = 0.95,
     }
     if (!missing(SS.infinity)) {
       control[["SS.infinity"]] <- SS.infinity
-    }
-    if (!missing(lowprevalence)) {
-      control[["lowprevalence"]] <- lowprevalence
     }
     if (!missing(discrete.cutoff)) {
       control[["discrete.cutoff"]] <- discrete.cutoff

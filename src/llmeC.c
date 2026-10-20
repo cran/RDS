@@ -28,8 +28,8 @@ void gllcmpmeC (double *v,
   ni=(*n);
   maxc=(*maxcoupons);
   
-  double *pdf = (double *) malloc(sizeof(double) * (Ki+1));
-  double *rtprob = (double *) malloc(sizeof(double) * ni);
+  double *pdf = (double *) R_alloc(Ki+1, sizeof(double));
+  double *rtprob = (double *) R_alloc(ni,   sizeof(double));
   
   dmean=(exp(v[0])+1.0)/exp(v[0]);
   beta0=v[1];
@@ -104,8 +104,6 @@ void gllcmpmeC (double *v,
     loglik+=log(sint);
   }
   (*llik)=loglik;
-  free(rtprob);
-  free(pdf);
 }
 
 void gcmpmepdfC (double *v,
@@ -129,16 +127,16 @@ void gcmpmepdfC (double *v,
   ni=(*n);
   maxc=(*maxcoupons);
   
-  double *pdf = (double *) malloc(sizeof(double) * (Ki+1));
+  double *pdf = (double *) R_alloc(Ki+1, sizeof(double));
   //int *intu = (double *) malloc(sizeof(int) * Ki);
-  double *rtprob = (double *) malloc(sizeof(double) * ni);
+  double *rtprob = (double *) R_alloc(ni,   sizeof(double));
   
   dmean=v[0];
   beta0=v[1];
   beta1=v[2];
   lnsd=v[3];
   if((*cmpscale)<0.0){
-    scale=v[4];
+    scale=v[4] - 1.0;
     opt=v[5];
   }else{
     scale=(*cmpscale);
@@ -186,16 +184,18 @@ void gcmpmepdfC (double *v,
         temp *= poilog(srd[i],log(u)-log(opt),lnsd);
       }
       //  Rprintf("dn %f\n", dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0));
-      sint += temp; 
-      dpdf[i*Ki+iu-1] = temp; 
+      if(!isnan(temp)){
+        sint += temp;
+        dpdf[i*Ki+iu-1] = temp;
+      }else{
+        dpdf[i*Ki+iu-1] = 0.0;
+      }
     }
     for (iu=1; iu<=Ki; iu++){
       dpdf[i*Ki+iu-1] /= sint; 
     }
   }
   *K=Ki;
-  free(rtprob);
-  free(pdf);
 }
 
 void gllnbmeC (double *v,
@@ -219,8 +219,8 @@ void gllnbmeC (double *v,
   ni=(*n);
   maxc=(*maxcoupons);
   
-  double *pdf = (double *) malloc(sizeof(double) * (Ki+1));
-  double *rtprob = (double *) malloc(sizeof(double) * ni);
+  double *pdf = (double *) R_alloc(Ki+1, sizeof(double));
+  double *rtprob = (double *) R_alloc(ni,   sizeof(double));
   
   dmean=(exp(v[0])+1.0)/exp(v[0]);
   beta0=v[1];
@@ -276,13 +276,11 @@ void gllnbmeC (double *v,
       }
       //  Rprintf("pln srd %d %f\n", srd[i], poilog(srd[i],log(u)-log(opt),lnsd));
       //  Rprintf("dn %f\n", dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0));
-      sint += temp; 
+      if(!isnan(temp)) sint += temp; 
     }
     loglik+=log(sint);
   }
   (*llik)=loglik;
-  free(rtprob);
-  free(pdf);
 }
 
 void gnbmepdfC (double *v,
@@ -306,8 +304,8 @@ void gnbmepdfC (double *v,
   ni=(*n);
   maxc=(*maxcoupons);
   
-  double *pdf = (double *) malloc(sizeof(double) * (Ki+1));
-  double *rtprob = (double *) malloc(sizeof(double) * ni);
+  double *pdf = (double *) R_alloc(Ki+1, sizeof(double));
+  double *rtprob = (double *) R_alloc(ni,   sizeof(double));
   
   dmean=v[0];
   beta0=v[1];
@@ -360,13 +358,15 @@ void gnbmepdfC (double *v,
         temp *= poilog(srd[i],log(u)-log(opt),lnsd);
       }
       //  Rprintf("dn %f\n", dnorm(log(srd[i])-log(u)+log(opt),zero,lnsd,give_log0));
-      sint += temp; 
-      dpdf[i*Ki+iu-1] = temp; 
+      if(!isnan(temp)){
+        sint += temp;
+        dpdf[i*Ki+iu-1] = temp;
+      }else{
+        dpdf[i*Ki+iu-1] = 0.0;
+      }
     }
     for (iu=1; iu<=Ki; iu++){
       dpdf[i*Ki+iu-1] /= sint; 
     }
   }
-  free(rtprob);
-  free(pdf);
 }

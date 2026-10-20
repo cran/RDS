@@ -2,11 +2,11 @@ RDS.estimates.local <- function(rds.data,
            outcome.variable,
            subset = NULL,
            control = control.rds.estimates(),
-           empir.lik = FALSE,
            weight.type,
            N = NULL,
            to.factor = FALSE,
            cont.breaks = 3,
+           hcg.wave.fallback = FALSE,
            ...) {
     if (is(rds.data, "rds.data.frame")) {
       if (!(outcome.variable %in% names(rds.data))) {
@@ -76,35 +76,27 @@ RDS.estimates.local <- function(rds.data,
       if (nchar(csubset) > 20)
         csubset <- "subsetted"
       subset[is.na(subset)] <- FALSE
-      if (!is.null(N)) {
-        #use VH estimator to adjust population size to sub-population
-        tmp.wts <- vh.weights(rds.data.nomiss[[network.size]])
-        tmp.wts <- tmp.wts / sum(tmp.wts)
-        prop <- sum(tmp.wts * subset)
-        N <- round(N * prop)
-        if (N < sum(subset))
-          stop(sprintf("Estimated sub-population size, %f, smaller than subsets size, %f.", N, sum(subset)))
-      }
-      
-      #This subsets setting orphaned children to be seeds
-      #in order to maintain a valid recruitment tree.
-      rds.data.nomiss <- rds.data.nomiss[subset, , warn = FALSE]
-      
-      #drop 0 count levels
-      if (is.factor(rds.data[[outcome.variable]])) {
-        outcome <- factor(rds.data.nomiss[[outcome.variable]])
-        # 			Make sure the factor labels are alphabetic!
-        outcome <- factor(outcome, levels = levels(outcome)[order(levels(outcome))])
-        rds.data.nomiss[[outcome.variable]] <- outcome
-      }
     }
-    force.discrete <- is.numeric(rds.data.nomiss[[outcome.variable]]) && weight.type %in% c("HCG","RDS-I","RDS-I (DS)")
+
+    # Boundary: subjects excluded by the subset expression (and, for
+    # categorical outcomes, missing outcomes) are retained internally as
+    # their own group so that recruitment chains through them stay intact.
+    # They receive weight 0 and are removed from the estimate below.
+    outcome0 <- rds.data.nomiss[[outcome.variable]]
+    is.cts.outcome <- is.numeric(outcome0)
+    excl <- .excluded.mask(outcome0, subset)
+    if (!is.cts.outcome && any(excl)) {
+      rds.data.nomiss[[outcome.variable]] <-
+        .sort.levels(.mint.excluded(as.factor(outcome0), excl))
+    }
+
+    force.discrete <- is.cts.outcome && weight.type %in% c("HCG","RDS-I","RDS-I (DS)")
     if(force.discrete){
-      #out <- cut(rds.data.nomiss[[outcome.variable]], 
-      #               breaks = unique(quantile(rds.data.nomiss[[outcome.variable]], 
+      #out <- cut(rds.data.nomiss[[outcome.variable]],
+      #               breaks = unique(quantile(rds.data.nomiss[[outcome.variable]],
       #                                        probs = seq(0, 1, length.out=cont.breaks+1))), include.lowest=TRUE)
-      out <- suppressWarnings(.cut2(rds.data.nomiss[[outcome.variable]], g=cont.breaks))
-      tmp.out <- rds.data.nomiss[[outcome.variable]]
+      out <- suppressWarnings(.cut2.excl(outcome0, g=cont.breaks, mask=excl))
+      tmp.out <- outcome0
       rds.data.nomiss[[outcome.variable]] <- out
     }
     weights.all <- compute.weights(
@@ -113,139 +105,48 @@ RDS.estimates.local <- function(rds.data,
       outcome.variable = outcome.variable,
       N = N,
       control = control,
+      hcg.wave.fallback = hcg.wave.fallback,
       ...
     )
     if(force.discrete){
       rds.data.nomiss[[outcome.variable]] <- tmp.out
     }
-    
+    weights.all[excl] <- 0
+
     #########################################################################################
     # The simple data management tasks have been taken care of, so it's now time to compute
     # the RDS-II estimates.   The cases for numeric and categorical outcomes are handled
     # separately.
     outcome <- rds.data.nomiss[[outcome.variable]]
-    
+
     if (is.numeric(outcome)) {
-      estimate <- HT.estimate(weights = weights.all, outcome = outcome)
-      if (empir.lik) {
-        #		estimate <- EL.est(weights=weights.all,outcome=outcome,N=N)
-        if (!is.numeric(rds.data.nomiss[[outcome.variable]])) {
-          browser()
-          h.est <-
-            homophily.estimates(
-              rds.data.nomiss,
-              outcome.variable,
-              N = N,
-              weight.type = weight.type,
-              recruitment = FALSE
-            )
-          h.est <-
-            h.est@estimate[order(as.numeric(names(h.est@estimate)))]
-          h.est <-
-            sum(h.est * table(outcome), na.rm = TRUE) / sum(table(outcome)[!is.na(h.est)])
-          attr(estimate, "EL.se") <-
-            EL.se(weights.all,
-                  outcome,
-                  N = N,
-                  homophily = h.est)
-        } else{
-          attr(estimate, "EL.se") <-
-            EL.se(weights.all,
-                  outcome,
-                  N = N,
-                  homophily = 1)
-        }
-      }
+      estimate <- HT.estimate(weights = weights.all[!excl], outcome = outcome[!excl])
     } else{
       outcome <- as.factor(outcome)
+      # Restrict to retained subjects and observed levels (the internal
+      # excluded level is removed by name, never by position).
+      o <- outcome[!excl]
+      keep.lev <- setdiff(levels(o), .rds.excluded)
       # 		Make sure the factor labels are alphabetic!
-      outcome <- factor(outcome, levels = levels(outcome)[order(levels(outcome))])
-      
+      o <- factor(o, levels = keep.lev[order(keep.lev)])
+
       # Calculate the within group totals of the *inverse* of the weights, again we exclude the seeds.
-      wtd.degree.totals <- stats::xtabs(weights.all ~ outcome,
-                                        data = rds.data.nomiss)
-      
+      wtd.degree.totals <- stats::xtabs(weights.all[!excl] ~ o)
+
       estimate.xtabs <- wtd.degree.totals / sum(wtd.degree.totals)
       # Now convert to a numeric vector ('estimate.xtabs' is currently of class 'xtabs')
       estimate <- as.numeric(estimate.xtabs)
       names(estimate) <- names(estimate.xtabs)
-      names(estimate) <- names(estimate.xtabs)
-      if (empir.lik) {
-        aaa <- levels(outcome)
-        bbb = rep(NA, length(aaa))
-        for (i in seq_along(aaa)) {
-          bbb[i] <- EL.se(weights.all, outcome == aaa[i], N = N)
-        }
-        attr(estimate, "EL.se") <- bbb
-      }
     }
     
-    
-    if (is.null(attr(estimate, "EL.se"))) {
-      result <-
-        rds.weighted.estimate(
-          estimate,
-          weights.all,
-          outcome.variable,
-          weight.type,
-          subset = subset,
-          csubset = csubset
-        )
-    } else{
-      nsamples <- sum(!is.na(as.vector(outcome)))
-      estimate <- cbind(
+    result <-
+      rds.weighted.estimate(
         estimate,
-        estimate - 1.96 * attr(estimate, "EL.se"),
-        estimate + 1.96 * attr(estimate, "EL.se")
-      )
-      colnames(estimate) <- c("point", "lower", "upper")
-      if (is.numeric(outcome)) {
-        #
-        # Design effect (for numeric outcomes)
-        #
-        varoutcome <- wtd.var(outcome, weights.all)
-        if (is.null(N)) {
-          varsrs <- varoutcome / nsamples
-        } else{
-          varsrs <- (((N - nsamples) / (N - 1)) * varoutcome / nsamples)
-        }
-        de <- ((estimate[, 3] - estimate[, 2]) / (1.96 * 2)) ^ 2 / varsrs
-        estimate <-
-          cbind(estimate, de, (estimate[, 3] - estimate[, 2]) / (1.96 * 2), nsamples)
-        colnames(estimate)[c(4, 5, 6)] <-
-          c("Design Effect", "s.e.", "n")
-        rownames(estimate) <- outcome.variable
-        names(estimate) <- outcome.variable
-      } else{
-        nsamplesbyoutcome <- table(suppressWarnings(as.numeric(outcome)))
-        #
-        # Design effect (for factor outcomes)
-        #
-        varoutcome <- estimate[, 1] * (1 - estimate[, 1])
-        if (is.null(N)) {
-          varsrs <- varoutcome / nsamples
-        } else{
-          varsrs <- (((N - nsamples) / (N - 1)) * varoutcome / nsamples)
-        }
-        de <- ((estimate[, 3] - estimate[, 2]) / (1.96 * 2)) ^ 2 / varsrs
-        estimate <-
-          cbind(estimate,
-                de,
-                (estimate[, 3] - estimate[, 2]) / (1.96 * 2),
-                nsamplesbyoutcome)
-        colnames(estimate)[c(4, 5, 6)] <-
-          c("Design Effect", "s.e.", "n")
-        names(estimate) <- levels(outcome)
-      }
-      result <- rds.interval.estimate(
-        estimate,
+        weights.all,
         outcome.variable,
-        weight.type = weight.type,
-        uncertainty = "EL",
-        weights = weights.all,
-        N = N,
+        weight.type,
+        subset = subset,
         csubset = csubset
-      )
-    }
+      )    
     return(result)
   }

@@ -36,8 +36,8 @@ SS" defaults to the \code{"Gile"} bootstrap.}
 
 \item{weights}{A numerical vector of sampling weights for the sample, in
 order of the sample.  They should be inversely proportional to the
-first-order inclusion probabilites, although this is not assessed or
-inforced.}
+first-order inclusion probabilities, although this is not assessed or
+enforced.}
 
 \item{N}{An estimate of the number of members of the population being
 sampled. If \code{NULL} it is read as the \code{pop.size.mid} attribute of

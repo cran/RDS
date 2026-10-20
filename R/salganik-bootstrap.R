@@ -18,14 +18,23 @@ salganik.bootstrap.estimates <- function(rds.data, group.variable, number.of.boo
   is.cts <- is.numeric(group.memberships)
   outcome <- group.memberships
   if(is.cts){
-    rds.data[[group.variable]] <- group.memberships <- .cut2(group.memberships, g=cont.breaks)
+    # Excluded (NA) subjects form the internal level of the cut factor: they
+    # keep their degrees and chain positions; simulated members of that class
+    # draw an NA outcome value (masked in the replicate estimates).
+    rds.data[[group.variable]] <- group.memberships <-
+      .cut2.excl(group.memberships, g=cont.breaks, mask=is.na(group.memberships))
   }
   
-  group.names <- unique(group.memberships)
+  .assert.complete.outcome(group.memberships)
+  group.names <- sort(unique(as.character(group.memberships)))
   
   # NB: if one wants to treat missing values as a separate group,
   # then the following will need to be changed. 
   group.names <- group.names[!is.na(group.names)]
+  # Output columns cover the observed groups only; the internal excluded
+  # group (if present) is simulated but removed from replicate estimates
+  # by RDS.estimates.local.
+  out.group.names <- group.names[group.names != .rds.excluded]
   
   number.of.groups <- length(group.names)
   
@@ -101,14 +110,14 @@ salganik.bootstrap.estimates <- function(rds.data, group.variable, number.of.boo
         x[sample.int(length(x), ...)]
     }
     results[1,1] <- seed.group.index
-    index <- sample.int(length(degree.i[[results[1,1]]]),size=1, prob=degree.i[[results[1,1]]])
+    index <- sample.int(length(degree.i[[results[1,1]]]),size=1)
     results[1,2] <- degree.i[[results[1,1]]][index]
     out[1] <- outcome.i[[results[1,1]]][index]
     for(i in 2:(sample.size+1)){
       previous.group <- results[i-1,1]
       results[i,1] <- sample.int(number.of.groups,size=1,prob=tij[previous.group,])
       #results[i,2] <- resample(degree.i[[results[i,1]]],size=1)
-      index <- sample.int(length(degree.i[[results[i,1]]]),size=1, prob = degree.i[[results[i,1]]])
+      index <- sample.int(length(degree.i[[results[i,1]]]),size=1)
       results[i,2] <- degree.i[[results[i,1]]][index]
       out[i] <- outcome.i[[results[i,1]]][index]
     }
@@ -130,10 +139,10 @@ salganik.bootstrap.estimates <- function(rds.data, group.variable, number.of.boo
       rds.data=bootstrapper(),
       outcome.variable=group.variable,
       weight.type=estimator.name,
-      empir.lik=FALSE,
       N=N,
       to.factor=to.factor,
       cont.breaks=cont.breaks,
+      hcg.wave.fallback=TRUE,
       ...)@estimate
   }
   
@@ -142,8 +151,8 @@ salganik.bootstrap.estimates <- function(rds.data, group.variable, number.of.boo
   if(is.cts){
     value <- matrix(bs.results, ncol=1)
   }else{
-    value <- matrix(0,ncol=length(group.names),nrow=number.of.bootstrap.samples)
-    colnames(value) <- group.names
+    value <- matrix(0,ncol=length(out.group.names),nrow=number.of.bootstrap.samples)
+    colnames(value) <- out.group.names
     colnames(value)[colnames(value)=="NA.NA"] <- "NA"
     if(is.matrix(bs.results)){
       for(i in 1:nrow(bs.results)){

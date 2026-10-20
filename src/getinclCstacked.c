@@ -51,8 +51,8 @@ double *cdif = (double *) malloc(sizeof(double) * Ki);
 if(offbi>0){
   for (i=0; i<offbi; i++){
     dif[0]=props2[0]-nbyclass[0]/(1.0*Ni);
-    cdif[0] = dif[0];
     if(dif[0]<0.0){dif[0] = 0.0;}
+    cdif[0] = dif[0];
     for (j=1; j<Ki; j++){
       dif[j]=props2[j]-nbyclass[j]/(1.0*Ni);
       if(dif[j]<0.0){dif[j] = 0.0;}
@@ -61,6 +61,7 @@ if(offbi>0){
     }
     rU = unif_rand()*cdif[Ki-1];
     for (j = 0; j < Ki; j++) {if (rU <= cdif[j]) break;}
+    if(j == Ki) j = Ki - 1;
     nbyclass[j]++;
   }
 }
@@ -81,17 +82,26 @@ if(offbi<0){
     }
     if(temp==0.0){
       dif[0]=1.0-(props2[0]-nbyclass[0]/(1.0*Ni));
-      if(nbyclass[0]==1){dif[0] = 0.0;}
+      if(nbyclass[0]<=1){dif[0] = 0.0;}
       cdif[0] = dif[0];
       for (j=1; j<Ki; j++){
         dif[j]=1.0-(props2[j]-nbyclass[j]/(1.0*Ni));
-        if(nbyclass[j]==1){dif[j] = 0.0;}
+        if(nbyclass[j]<=1){dif[j] = 0.0;}
         /* compute cumulative probabilities */
         cdif[j] = cdif[j-1] + dif[j];
+      }
+      if(cdif[Ki-1] <= 0.0){
+        /* last resort: all classes at <=1 but removals still owed;
+         remove uniformly from non-empty classes */
+        cdif[0] = (nbyclass[0] > 0) ? 1.0 : 0.0;
+        for (j=1; j<Ki; j++){
+          cdif[j] = cdif[j-1] + ((nbyclass[j] > 0) ? 1.0 : 0.0);
+        }
       }
     }
     rU = unif_rand()*cdif[Ki-1];
     for (j = 0; j < Ki; j++) {if (rU <= cdif[j]) break;}
+    if (j == Ki) j = Ki-1;
     nbyclass[j]--;
   }
 }
@@ -174,6 +184,9 @@ static void ProbSampleNoReplaceStacked(int n, int *nbyclass, double *p, int *per
       mass += p[j];
       if (rT <= mass)
         break;
+    }
+    if (j == n) {                       /* FP drift: rT exceeded Σp        */
+      for (j = n - 1; j > 0 && nbyclass[j] == 0; j--) ;   /* last live class */
     }
     ans[i] = perm[j];
     /* update the reduced probabilities */

@@ -43,7 +43,6 @@ cumulative.estimate <- function(rds.data, outcome.variable, est.func=RDS.II.esti
   for(w in 0:max.wave){
     wtd.est <- est.func(rds.data=rds.data[wave<=w,],
                         outcome.variable=outcome.variable,
-                        empir.lik=FALSE,
                         ...)
     ests[[w+1]] <- wtd.est@estimate
     isna <- is.na(rds.data[wave<=w,outcome.variable])
@@ -203,7 +202,6 @@ bottleneck.plot <- function(rds.data, outcome.variable, est.func=RDS.II.estimate
   sids <- unique(seeds)
   ls <- list()
   for(i in 1:length(sids)){
-	print(sids[i])
     dat <- rds.data[seeds == sids[i],]
     if(nrow(dat)==0)
       next

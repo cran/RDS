@@ -47,9 +47,11 @@ incidence <- function(recent, hiv, weights=NULL, mean.duration=200, frr=.01, pos
 #' @details 
 #' The recent.variable and hiv should be the names of logical variables. Otherwise they are converted to logical using as.numeric(x) > 0.5.
 #' 
-#' This function estimates incidence using RDS sampling wieghts. Confidence intervals are constucted using HCG bootstraps.
+#' This function estimates incidence using RDS sampling weights. Confidence intervals are constructed using HCG bootstraps.
 #' See http://www.incidence-estimation.org/ for additional information on (non-RDS) incidence estimation.
-#' @examples 
+#' @seealso \code{\link{RDS.bootstrap.mechanics}} for a description of the HCG
+#' bootstrap used to construct the intervals.
+#' @examples
 #' data(faux)
 #' faux$hiv <- faux$X == "blue"
 #' faux$recent <- NA
@@ -102,8 +104,8 @@ bootstrap.incidence <- function(rds.data, recent.variable, hiv.variable,  N=NULL
   }
   
   # Create combination variable of both row and column
-  hiv <- as.numeric(rds.data[[hiv.variable]]) > .5
-  recent <- as.numeric(rds.data[[recent.variable]]) > .5
+  hiv <- as.numeric(rds[[hiv.variable]]) > .5
+  recent <- as.numeric(rds[[recent.variable]]) > .5
   v <- rep(NA, n)
   v[!hiv] <- 0
   v[hiv & is.na(recent)] <- 1

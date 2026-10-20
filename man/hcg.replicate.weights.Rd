@@ -39,11 +39,11 @@ analyze RDS data in other packages or software systems (e.g. the survey package
 with svrepdesign).
 }
 \examples{
-\dontrun{
+\donttest{
 data("fauxmadrona")
 set.seed(1)
 # Generate replicate weights
-result <- hcg.replicate.weights(fauxmadrona, "disease", 50, TRUE)
+result <- hcg.replicate.weights(fauxmadrona, "disease", 500, TRUE)
 # Analyze with survey package and compare to internal function
 if(require(survey)){
   set.seed(1)
@@ -51,8 +51,8 @@ if(require(survey)){
     weights= result[[1]], repweights = result[-1])
   svymean(~disease, design) |> print()
   RDS.bootstrap.intervals(fauxmadrona, "disease", "HCG", "HCG", 
-  number.of.bootstrap.samples = 50) |> print()
-}
+  number.of.bootstrap.samples = 500) |> print()
 }
 }
 
+}

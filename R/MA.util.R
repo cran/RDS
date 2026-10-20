@@ -354,88 +354,88 @@ varEL2 <- function(Q, QQ, indices, N, dissample) {
   list(est = estij, var = varest, var1 = varesti)
 }
 
-varGHT <- function(Q, QQ, indices, N, dissample) {
-  # This is the unbiased HT estimator
-  # Q: the inclusion probabilities of the 40 classes
-  # QQ: the joint inclusion probabilities of the 40 classes
-  # indices: the classes of the 500 samples
-  # N: the population size
-  # dissample: the disease status of the sample
-  # mu: GHT estimate of the prevalence
-  Qi <- Q[indices]
-  # Qi: vector of inclusion probabilities
-  QQi <- QQ[indices,]
-  QQi <- QQi[, indices]
-  diag(QQi) <- Qi
-  # QQi: matrix of joint inclusion probabilities
-  QtQi <- Qi %*% t(Qi)
-  Ne = sum(1 / Qi)
-  w = 1 / (Qi * Ne)
-  mu = sum(dissample * w)
-  dev <- dissample - mu
-  tmp <- (QQi - QtQi) / QtQi * (dev %*% t(dev)) / QQi
-  #   Note that this appears to double count the diagonal!!!
-  #   And is not the formula in Thompson or the paper!!!
-  varest <- sum((1 - Qi) / (Qi ^ 2) * dev ^ 2) + sum(tmp)
-  varest <- varest / (Ne * Ne)
-  varest
-}
-varJGHT <- function(Q, QQ, indices, dissample) {
-  # This is the jacknife estimator
-  # Q: the inclusion probabilities of the 40 classes
-  # QQ: the joint inclusion probabilities of the 40 classes
-  # indices: the classes of the 500 samples
-  # dissample: the disease status of the sample
-  # prev: GHT estimate of the prevalence
-  Qi <- Q[indices]
-  # Qi: vector of inclusion probabilities
-  QQi <- QQ[indices,]
-  QQi <- QQi[, indices]
-  diag(QQi) <- Qi
-  # QQi: matrix of joint inclusion probabilities
-  #
-  e <- rep(0, length(Qi))
-  Ne = sum(1 / Qi)
-  w = 1 / (Qi * Ne)
-  mu = sum(dissample * w)
-  for (j in seq(along = Qi)) {
-    Nj = sum(1 / (Qi[-j]))
-    wj = 1 / ((Qi[-j]) * Nj)
-    muj = sum(dissample[-j] * wj)
-    e[j] = (1 - w[j]) * (mu - muj)
-  }
-  QtQi <- Qi %*% t(Qi)
-  tmp <- (QQi - QtQi) * (e %*% t(e)) / QQi
-  # Double count the diagonal!!! This is wrong
-  # But it seems to work!!! Why!!!
-  # And it is *identical* to varGHT!!!
-  # when that is double counted too
-  varest <- sum(tmp) + sum(diag(tmp))
-  varest
-}
+# varGHT <- function(Q, QQ, indices, N, dissample) {
+#   # This is the unbiased HT estimator
+#   # Q: the inclusion probabilities of the 40 classes
+#   # QQ: the joint inclusion probabilities of the 40 classes
+#   # indices: the classes of the 500 samples
+#   # N: the population size
+#   # dissample: the disease status of the sample
+#   # mu: GHT estimate of the prevalence
+#   Qi <- Q[indices]
+#   # Qi: vector of inclusion probabilities
+#   QQi <- QQ[indices,]
+#   QQi <- QQi[, indices]
+#   diag(QQi) <- Qi
+#   # QQi: matrix of joint inclusion probabilities
+#   QtQi <- Qi %*% t(Qi)
+#   Ne = sum(1 / Qi)
+#   w = 1 / (Qi * Ne)
+#   mu = sum(dissample * w)
+#   dev <- dissample - mu
+#   tmp <- (QQi - QtQi) / QtQi * (dev %*% t(dev)) / QQi
+#   #   Note that this appears to double count the diagonal!!!
+#   #   And is not the formula in Thompson or the paper!!!
+#   varest <- sum((1 - Qi) / (Qi ^ 2) * dev ^ 2) + sum(tmp)
+#   varest <- varest / (Ne * Ne)
+#   varest
+# }
+# varJGHT <- function(Q, QQ, indices, dissample) {
+#   # This is the jacknife estimator
+#   # Q: the inclusion probabilities of the 40 classes
+#   # QQ: the joint inclusion probabilities of the 40 classes
+#   # indices: the classes of the 500 samples
+#   # dissample: the disease status of the sample
+#   # prev: GHT estimate of the prevalence
+#   Qi <- Q[indices]
+#   # Qi: vector of inclusion probabilities
+#   QQi <- QQ[indices,]
+#   QQi <- QQi[, indices]
+#   diag(QQi) <- Qi
+#   # QQi: matrix of joint inclusion probabilities
+#   #
+#   e <- rep(0, length(Qi))
+#   Ne = sum(1 / Qi)
+#   w = 1 / (Qi * Ne)
+#   mu = sum(dissample * w)
+#   for (j in seq(along = Qi)) {
+#     Nj = sum(1 / (Qi[-j]))
+#     wj = 1 / ((Qi[-j]) * Nj)
+#     muj = sum(dissample[-j] * wj)
+#     e[j] = (1 - w[j]) * (mu - muj)
+#   }
+#   QtQi <- Qi %*% t(Qi)
+#   tmp <- (QQi - QtQi) * (e %*% t(e)) / QQi
+#   # Double count the diagonal!!! This is wrong
+#   # But it seems to work!!! Why!!!
+#   # And it is *identical* to varGHT!!!
+#   # when that is double counted too
+#   varest <- sum(tmp) + sum(diag(tmp))
+#   varest
+# }
 
 
-varBSGHT <- function(Q, dummy, bsdegsamples, bsdissamples) {
-  # This is the MS BS estimator
-  # Q: the inclusion probabilities of the 40 classes
-  # indices: the classes of the 500 samples
-  # BSdissamples: the disease status of the BS samples
-  # BSdegsamples: the degrees of the BS samples
-  e <- rep(0, nrow(bsdegsamples))
-  for (j in 1:nrow(bsdegsamples)) {
-    indices <-
-      toindexref.RDS(bsdegsamples[j,], bsdissamples[j,], dummy)
-    #   this is the index of each sampled node within the ordered list of equivalence classes in dummy
-    Qi <- Q[indices]
-    #   Qi: vector of inclusion probabilities
-    Ne = sum(1 / Qi)
-    w = 1 / (Qi * Ne)
-    e[j] = sum(bsdissamples[j,] * w)
-  }
-  list(var = stats::var(e),
-       BSest = e,
-       median = stats::median(e))
-}
+# varBSGHT <- function(Q, dummy, bsdegsamples, bsdissamples) {
+#   # This is the MS BS estimator
+#   # Q: the inclusion probabilities of the 40 classes
+#   # indices: the classes of the 500 samples
+#   # BSdissamples: the disease status of the BS samples
+#   # BSdegsamples: the degrees of the BS samples
+#   e <- rep(0, nrow(bsdegsamples))
+#   for (j in 1:nrow(bsdegsamples)) {
+#     indices <-
+#       toindexref.RDS(bsdegsamples[j,], bsdissamples[j,], dummy)
+#     #   this is the index of each sampled node within the ordered list of equivalence classes in dummy
+#     Qi <- Q[indices]
+#     #   Qi: vector of inclusion probabilities
+#     Ne = sum(1 / Qi)
+#     w = 1 / (Qi * Ne)
+#     e[j] = sum(bsdissamples[j,] * w)
+#   }
+#   list(var = stats::var(e),
+#        BSest = e,
+#        median = stats::median(e))
+# }
 
 varNBSGHT <-
   function(degsample,
@@ -744,7 +744,7 @@ oneiteration <- function(sampleTab,
   popests <- N * popests / sum(popests)
   list(
     Q = Q,
-    coef = fit$coef,
+    coef = coef(fit),
     crossStat = crossStat,
     popests = popests,
     QQ = QQ,

@@ -47,3 +47,7 @@ data(faux)
 bootstrap.contingency.test(rds.data=faux, row.var="X", col.var="Y",
   number.of.bootstrap.samples=50, verbose=FALSE)
 }
+\seealso{
+\code{\link{RDS.bootstrap.mechanics}} for a description of the HCG
+bootstrap used here.
+}

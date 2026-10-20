@@ -6,7 +6,7 @@
 \usage{
 rid.from.coupons(
   data,
-  subject.coupon = NULL,
+  subject.coupon,
   coupon.variables,
   subject.id = NULL,
   seed.id = "seed"

@@ -27,7 +27,7 @@ RDS.compare.proportions <- function(first.interval,second.interval,M=10000){
   nlev1 <- length(levs1)
   bs1 <- boots1[sample(1:nrow(boots1),replace=TRUE,size=M),]
   tmp <- first.interval$estimate
-  obs <- tmp[match(names(tmp),levs1)]
+  obs <- tmp[match(levs1, names(tmp))]
   bs1 <- sweep(bs1,2,colMeans(bs1)-obs)
   
   bsresult2 <- attr(second.interval,"bsresult") 
@@ -36,7 +36,7 @@ RDS.compare.proportions <- function(first.interval,second.interval,M=10000){
   nlev2 <- length(levs2)
   bs2 <- boots2[sample(1:nrow(boots2),replace=TRUE,size=M),]
   tmp <- second.interval$estimate
-  obs <- tmp[match(names(tmp),levs2)]
+  obs <- tmp[match(levs2, names(tmp))]
   bs2 <- sweep(bs2,2,colMeans(bs2)-obs)
   
   res <- matrix(NA,ncol=nlev2,nrow=nlev1)
@@ -63,8 +63,7 @@ RDS.compare.proportions <- function(first.interval,second.interval,M=10000){
 #' @param confidence.level The confidence level for the confidence intervals. The default is 0.95 for 95\%.
 #' @param number.of.bootstrap.samples The number of Monte Carlo draws to determine the null distribution of the likelihood
 #' ratio statistic.
-#' @param plot Logical, if TRUE then a plot is produces of the null distribution of the likelihood
-#' ratio statistic with the observed statistics plotted as a vertical dashed line.
+#' @param plot A character vector with elements "estimates" for estimate plots, "distributions" for distribution plots and "par" if you want the plot layout to be set to two columns.
 #' @param seed The value of the random number seed. Preset by default to allow reproducability.
 #' @return An object of class \code{pvalue.table} containing the cross-tabulation of p-values
 #' for comparing the two classes
@@ -80,7 +79,7 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
   nlev1 <- length(levs1)
   bs1 <-boots1[sample(1:nrow(boots1),replace=TRUE,size=number.of.bootstrap.samples),]
   tmp <- first.interval$estimate
-  obs <- tmp[match(names(tmp),levs1)]
+  obs <- tmp[match(levs1, names(tmp))]
   bs1 <- sweep(bs1,2,colMeans(bs1)-obs)
   
   second.interval <- vars[2][[1]]
@@ -90,7 +89,7 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
   nlev2 <- length(levs2)
   bs2 <- boots2[sample(1:nrow(boots2),replace=TRUE,size=number.of.bootstrap.samples),]
   tmp <- second.interval$estimate
-  obs <- tmp[match(names(tmp),levs2)]
+  obs <- tmp[match(levs2, names(tmp))]
   bs2 <- sweep(bs2,2,colMeans(bs2)-obs)
   
   res <- matrix(NA,ncol=nlev2,nrow=nlev1)
@@ -98,7 +97,7 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
   rownames(res) <- levs1
   for(i in 1:nlev1){
     for(j in 1:nlev2){
-      bs <- bs2[,i] - bs1[,j]
+      bs <- bs1[,i] - bs2[,j]
       pval <- 2*min(c(mean(bs<=0),mean(bs>=0)))
       res[i,j] <- pval
     }
@@ -108,7 +107,13 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
   #
   x <- as.numeric( sapply(vars,function(x) {x$interval[2]}) )
   sigma <- as.numeric( sapply(vars,function(x) {x$interval[10]}) )
-  if ('par' %in% plot) {graphics::par(mfrow = c(1,2))} else {graphics::par(mfrow = c(1,1))}
+  oldpar <- graphics::par(no.readonly = TRUE)
+  on.exit(graphics::par(oldpar))
+  if ('par' %in% plot) {
+    graphics::par(mfrow = c(1,2))
+  } else {
+    graphics::par(mfrow = c(1,1))
+  }
   
   #  obsL <- diff(x)
   obsL <- 0
@@ -121,7 +126,7 @@ RDS.compare.two.proportions <- function(data,variables,confidence.level=0.95,
     #   yl <- locfit::locfit.raw(locfit::lp(bs2[,2]-bs1[,2],nn=0.1,h=0.8), xlim=c(minl,maxl))
     #   gpdf <- predict(yl, newdata=r)
     Range=range(bs2[,2]-bs1[,2])
-    a=bgk_kde(bs2[,2]-bs1[,2],n=2^(ceiling(log(maxl-minl)/log(2))),
+    a=bgk_kde(bs2[,2]-bs1[,2],n=512,
               MIN=1.1*Range[1]-0.1*Range[2],
               MAX=1.1*Range[2]-0.1*Range[1])
     gpdf <- stats::spline(x=a[1,],y=a[2,],xout=r)$y
